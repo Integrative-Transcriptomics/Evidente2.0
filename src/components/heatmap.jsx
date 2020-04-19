@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import * as d3v5 from "d3v5";
 import * as boxplot from "d3-boxplot";
 import * as $ from "jquery";
-import * as _ from "underscore";
+import * as _ from "lodash";
 class Heatmap extends Component {
   state = {};
   shouldComponentUpdate(nextProp, nextState) {
@@ -17,14 +17,17 @@ class Heatmap extends Component {
     let newSelectedNodes = nextProp.selectedNodes;
     let actualNodes = actualProp.nodes || [];
     let newNodes = nextProp.nodes || [];
+    let newVisualized = nextProp.visMd || [];
+    let actualVisualized = actualProp.visMd || [];
     if (
+      newVisualized.length !== 0 ||
       actualNodes.length !== newNodes.length ||
       actualHiddenNodes.length !== newHiddenNodes.length ||
       actualCollapsedClades.length !== newCollapsedClades.length ||
       actualSelectedNodes.length !== newSelectedNodes.length
     ) {
       return true;
-    } else if (!actualState.data) {
+    } else if (!nextState.taxadata) {
       return false;
     } else {
       return false;
@@ -35,31 +38,44 @@ class Heatmap extends Component {
     let itemSize = this.state.itemSize;
     let cellSize = itemSize - 0.5;
     let props = this.props;
-    let filteredData = state.data;
+    let filteredData = props.taxadata;
     let container = d3.select("#heatmap-container");
-
-    if (props.hiddenNodes.length !== 0 || false) {
-      let namesHiddenNodes = props.hiddenNodes.map(({ name }) => name);
-      filteredData = filteredData.filter(
-        ({ taxa }) => !namesHiddenNodes.includes(taxa)
-      );
-    }
+    let shownNodes = this.props.tree
+      .get_nodes()
+      .filter((node) => this.isVisibleEndNode(node))
+      .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
     if (props.collapsedClades.length !== 0 || false) {
       itemSize = 40;
       cellSize = itemSize - 0.5;
-      filteredData = this.clusterData(filteredData, props.collapsedClades);
+      filteredData = this.clusterData(
+        filteredData,
+        props.collapsedClades,
+        props.mdinfo
+      );
     }
+    // if (props.hiddenNodes.length !== 0 || false) {
+    //   // let namesHiddenNodes = props.hiddenNodes.map(({ name }) => name);
+
+    // }
+
     if (this.props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
     } else if (
-      filteredData.length !== state.data.length ||
+      this.props.visMd.length !== 0 ||
       prevProp.hiddenNodes.length !== 0 ||
-      prevProp.collapsedClades.length !== 0
+      prevProp.collapsedClades.length !== 0 ||
+      shownNodes.length !== this.props.nodes.length
     ) {
-      let x_elements = d3v5
-          .set(state.data.map(({ metadata }) => metadata)) // Wont work if one metadata is erased
-          .values(),
-        y_elements = d3v5.set(filteredData.map(({ taxa }) => taxa)).values();
+      filteredData = filteredData.filter(({ Information }) =>
+        shownNodes.includes(Information)
+      );
+      let x_elements = [
+          ...new Set(
+            this.props.visMd.concat(this.props.visSNPs.map((d) => `SNP:${d}`))
+          ),
+        ],
+        y_elements = shownNodes;
+
       let xScale = d3.scale
         .ordinal()
         .domain(x_elements)
@@ -81,6 +97,7 @@ class Heatmap extends Component {
         .scale(yScale)
         .tickFormat((d) => d)
         .orient("left");
+
       let cellHeight = state.height / y_elements.length - 1;
 
       container
@@ -96,58 +113,62 @@ class Heatmap extends Component {
         .selectAll("text")
         .style("text-anchor", "start")
         .attr("dx", ".8em")
-        .attr("dy", ".5em");
+        .attr("dy", ".5em")
+        .attr("transform", (d) => "rotate(-65)");
 
       let elements = container.selectAll(`.cell, .boxplot, .histo`).remove(); //remove before new creation
 
-      x_elements.forEach((md_name) => {
-        let data_metadata = filteredData.filter(
-          ({ metadata }) => metadata === md_name
-        );
-        let mdInformation = state.metadataInformation[md_name];
-        this.updateCells(
-          data_metadata,
-          cellHeight,
-          xScale,
-          yScale,
-          mdInformation.colorScale,
-          cellSize,
-          md_name
-        );
-        let dataDomain = mdInformation.extent;
-        let clusteredData2 = data_metadata.filter(({ clade }) => clade);
-        if (mdInformation.type === "numerical") {
-          let centering = cellHeight / 4;
-
-          this.createBoxplots(
-            clusteredData2,
+      if (filteredData.length !== 0 && x_elements.length !== 0) {
+        x_elements.forEach((md_name) => {
+          this.updateCells(
+            filteredData.filter((d) => !_.get(d, "clade", false)),
+            cellHeight,
             xScale,
             yScale,
-            cellHeight,
-            centering,
-            dataDomain,
-            md_name,
-            itemSize
+            props.mdinfo[md_name].colorScale,
+            cellSize,
+            md_name
           );
-        } else {
-          this.createHistogram(
-            clusteredData2,
-            xScale,
-            yScale,
-            cellHeight,
-            dataDomain,
-            md_name,
-            itemSize,
-            mdInformation.colorScale
-          );
-        }
-      });
+          let dataDomain = props.mdinfo[md_name].extent;
+          let onlyClusters = filteredData.filter(({ clade }) => clade);
+          if (props.mdinfo[md_name].type.toLowerCase() === "numerical") {
+            let centering = cellHeight / 4;
+            this.createBoxplots(
+              onlyClusters,
+              xScale,
+              yScale,
+              cellHeight,
+              centering,
+              dataDomain,
+              md_name,
+              itemSize
+            );
+          } else {
+            this.createHistogram(
+              onlyClusters,
+              xScale,
+              yScale,
+              cellHeight,
+              dataDomain,
+              md_name,
+              itemSize,
+              props.mdinfo[md_name].colorScale
+            );
+          }
+        });
+      }
     }
-
     this.highlight_leaves(this.props.selectedNodes);
   }
 
-  clusterData(filteredData, actualClades) {
+  isVisibleEndNode = (node) => {
+    return (
+      (this.props.tree.is_leafnode(node) || node["own-collapse"]) &&
+      d3.layout.phylotree.is_node_visible(node)
+    );
+  };
+
+  clusterData(filteredData, actualClades, mdinfo) {
     let allAggregatedData = [];
     let hiddenLeaves = [];
 
@@ -155,83 +176,56 @@ class Heatmap extends Component {
       // sort to avoid the showing of smaller clusters that are already hidden
       (a, b) => b.cladeLeaves.length - a.cladeLeaves.length
     );
-
     actualClades.forEach((actualClade) => {
       let leavesNames = actualClade.cladeLeaves.map(({ name }) => name);
       if (leavesNames.every((n) => hiddenLeaves.includes(n))) {
         return; // this cluster is already included in another one
       }
+
       hiddenLeaves = hiddenLeaves.concat(leavesNames);
-      let leavesToAggregate = filteredData.filter(({ taxa }) =>
-        leavesNames.includes(taxa)
+
+      let leavesToAggregate = filteredData.filter(({ Information }) =>
+        leavesNames.includes(Information)
       );
-      let aggregatedData = d3
-        .nest()
-        .key(({ metadata }) => metadata)
-        .rollup((separatedData) => {
-          let clusteredData = {
-            taxa: actualClade.showname,
-            metadata: separatedData[0].metadata,
-            md_name: separatedData[0].type,
-            order: separatedData[0].order,
-            // In case just show mean or major call
-            value:
-              separatedData[0].type === "numerical"
-                ? d3.mean(separatedData, ({ value }) => value)
-                : _.first(
-                    _.max(
-                      _.pairs(
-                        _.countBy(separatedData.map(({ value }) => value))
-                      ),
-                      _.last
-                    )
-                  ),
-            clade: true,
-            allValues:
-              separatedData[0].type === "numerical"
-                ? boxplot.boxplotStats(separatedData.map(({ value }) => value))
-                : _.countBy(separatedData.map(({ value }) => value)),
-          };
-          return clusteredData;
-        })
-        .entries(leavesToAggregate);
-      allAggregatedData = [
-        ...allAggregatedData,
-        ...aggregatedData.map(({ values }) => values),
-      ];
+      let joinLeavesInformation = _.mergeWith(
+        {},
+        ...leavesToAggregate,
+        (a, b) => (a || []).concat(b)
+      );
+      let aggregatedData = _.mapValues(joinLeavesInformation, (v, k) =>
+        mdinfo[k].type.toLowerCase() === "numerical"
+          ? boxplot.boxplotStats(v)
+          : mdinfo[k].type.toLowerCase() === "categorical"
+          ? _.countBy(v)
+          : actualClade.showname
+      );
+      aggregatedData["clade"] = true;
+
+      allAggregatedData = [...allAggregatedData, aggregatedData];
     });
 
-    filteredData = filteredData.filter(
-      (n) =>
-        // get only those data from currently visible
-        !hiddenLeaves.includes(n.taxa)
-    );
-
-    return [...allAggregatedData, ...filteredData]
-      .slice()
-      .sort((a, b) => d3.ascending(a.order, b.order));
+    return [...allAggregatedData, ...filteredData];
+    // .slice()
+    // .sort((a, b) => d3.ascending(a.order, b.order));
   }
 
   updateCells(data, cellHeight, xScale, yScale, colorScale, cellSize, type) {
     let div = d3.select("#tooltip");
     d3.select("#heatmap-container")
       .selectAll(`.cell.md-${type}`)
-      .data(
-        data.filter(({ clade }) => !clade),
-        ({ taxa }) => taxa
-      )
+      .data(data)
       .enter()
       .append("svg:rect")
-      .attr("class", ({ taxa }) => `cell ${taxa} md-${type}`)
+      .attr("class", ({ Information }) => `cell ${Information} md-${type}`)
       .attr("width", cellSize)
       .attr("height", cellHeight)
-      .attr("y", ({ taxa }) => yScale(taxa))
-      .attr("x", ({ metadata }) => xScale(metadata))
-      .attr("fill", ({ value }) => colorScale(value))
+      .attr("y", ({ Information }) => yScale(Information))
+      .attr("x", () => xScale(type))
+      .attr("fill", (d) => colorScale(d[type]))
       .on("mouseover", function (d) {
         div.transition().duration(200).style("opacity", 0.9);
         div
-          .html(typeof d.value === "number" ? d.value.toFixed(3) : d.value)
+          .html(typeof d[type] === "number" ? d[type].toFixed(3) : d[type])
           .style("left", d3.event.pageX + "px")
           .style("top", d3.event.pageY - 28 + "px");
       })
@@ -258,13 +252,13 @@ class Heatmap extends Component {
       .data(data)
       .enter()
       .append("g")
-      .attr("class", ({ taxa }) => `boxplot ${taxa} md-${type}`)
+      .attr("class", ({ Information }) => `boxplot ${Information} md-${type}`)
       .attr(
         "transform",
-        ({ metadata, taxa }) =>
-          `translate(${xScale(metadata)}, ${center + yScale(taxa)})`
+        ({ Information }) =>
+          `translate(${xScale(type)}, ${center + yScale(Information)})`
       )
-      .datum(({ allValues }) => allValues)
+      .datum((d) => d[type])
       .call(
         boxplot
           .boxplot()
@@ -284,34 +278,31 @@ class Heatmap extends Component {
     yScale,
     cellHeight,
     dataDomain,
-    md,
+    type,
     itemSize,
     colorScale
   ) {
     let max = d3.max(
-      data.reduce(
-        (acc, { allValues }) => [...acc, ...Object.values(allValues)],
-        []
-      )
+      data.reduce((acc, d) => [...acc, ...Object.values(d[type])], [])
     );
     let heatmapCell = d3
       .select("#heatmap-container")
-      .selectAll(`.histo.md-${md}`)
+      .selectAll(`.histo.md-${type}`)
       .data(data)
       .enter()
       .append("g")
-      .attr("class", ({ taxa }) => `histo ${taxa} md-${md}`)
+      .attr("class", ({ Information }) => `histo ${Information} md-${type}`)
       .attr(
         "transform",
-        ({ metadata, taxa }) =>
-          `translate(${xScale(metadata)}, ${yScale(taxa)})`
+        ({ Information }) =>
+          `translate(${xScale(type)}, ${yScale(Information)})`
       );
     let bars = heatmapCell
-      .selectAll(`.bars.md-${md}`)
-      .data(({ allValues }) => Object.entries(allValues))
+      .selectAll(`.bars.md-${type}`)
+      .data((d) => Object.entries(d[type]))
       .enter()
       .append("rect")
-      .attr("class", `.bars.md-${md}`)
+      .attr("class", `.bars.md-${type}`)
       .attr("fill", (d) => colorScale(d[0]));
     let xScaleBar = d3.scale
       .ordinal()
@@ -325,6 +316,7 @@ class Heatmap extends Component {
       .attr("width", barWidth)
       .attr("height", (d) => cellHeight - yScaleBar(d[1]));
   }
+
   highlight_leaves(selection = []) {
     if (selection.length === 0) {
       $(".cell, .boxplot, .histo").css("opacity", 1); // Nothing selected, everythin bold
@@ -377,61 +369,66 @@ class Heatmap extends Component {
     let itemSize = this.state.itemSize;
     let cellSize = this.state.cellSize;
     // let data = [];
-    let data = leaf_nodes.map((item, it) => {
-      let newItem = {};
-      newItem.taxa = item.name;
-      newItem.order = it;
-      newItem.type = "numerical";
-      newItem.metadata = "leaf_nodes";
-      newItem.value = Math.random();
-      // if (Math.random() < 0.75) return undefined;
+    // let metadataInformation = {};
+    // data = leaf_nodes.map((item, it) => {
+    //   let newItem = {};
+    //   newItem.taxa = item.name;
+    //   newItem.order = it;
+    //   newItem.type = "numerical";
+    //   newItem.metadata = "leaf_nodes";
+    //   newItem.value = Math.random();
+    //   // if (Math.random() < 0.75) return undefined;
 
-      return newItem;
-    });
+    //   return newItem;
+    // });
 
-    data = data.concat(
-      leaf_nodes.map((item, it) => {
-        let newItem = {};
-        newItem.taxa = item.name;
-        newItem.order = it;
-        newItem.type = "numerical";
-        newItem.metadata = "second";
-        newItem.value = Math.random() * 10;
-        // if (Math.random() < 0.75) return undefined;
+    // data = data.concat(
+    //   leaf_nodes.map((item, it) => {
+    //     let newItem = {};
+    //     newItem.taxa = item.name;
+    //     newItem.order = it;
+    //     newItem.type = "numerical";
+    //     newItem.metadata = "second";
+    //     newItem.value = Math.random() * 10;
+    //     // if (Math.random() < 0.75) return undefined;
 
-        return newItem;
-      })
-    );
+    //     return newItem;
+    //   })
+    // );
 
-    data = data.concat(
-      leaf_nodes.map((item, it) => {
-        let newItem = {};
-        newItem.taxa = item.name;
-        newItem.order = it;
-        newItem.type = "categorical";
-        newItem.metadata = "SNP";
-        newItem.value = _.sample(["A", "C", "G", "T", "N"]);
-        if (Math.random() < 0.75) return undefined;
-        return newItem;
-      })
-    );
-    data = data
-      .concat(
-        leaf_nodes.map((item, it) => {
-          let newItem = {};
-          newItem.taxa = String(item.name);
-          newItem.order = it;
-          newItem.type = "categorical";
-          newItem.metadata = "3";
-          newItem.value = _.sample(["A", "C", "G", "T", "N"]);
-          // if (Math.random() < 0.75) return undefined;
-          return newItem;
-        })
-      )
-      .filter((d) => d);
+    // data = data.concat(
+    //   leaf_nodes.map((item, it) => {
+    //     let newItem = {};
+    //     newItem.taxa = item.name;
+    //     newItem.order = it;
+    //     newItem.type = "categorical";
+    //     newItem.metadata = "SNP";
+    //     newItem.value = _.sample(["A", "C", "G", "T", "N"]);
+    //     if (Math.random() < 0.75) return undefined;
+    //     return newItem;
+    //   })
+    // );
+    // data = data
+    //   .concat(
+    //     leaf_nodes.map((item, it) => {
+    //       let newItem = {};
+    //       newItem.taxa = String(item.name);
+    //       newItem.order = it;
+    //       newItem.type = "categorical";
+    //       newItem.metadata = "3";
+    //       newItem.value = _.sample(["A", "C", "G", "T", "N"]);
+    //       // if (Math.random() < 0.75) return undefined;
+    //       return newItem;
+    //     })
+    //   )
+    //   .filter((d) => d);
 
-    let metadataInformation = this.getMetadataInformation(data);
-    let x_elements = d3v5.set(data.map(({ metadata }) => metadata)).values(),
+    // metadataInformation = this.getMetadataInformation(data);
+
+    // let x_elements = d3v5.set(data.map(({ metadata }) => metadata)).values(),
+    let x_elements = d3v5
+        .set(this.props.visMd.concat(this.props.visSNPs.map((d) => `SNP:${d}`)))
+        .values(),
       y_elements = leaf_nodes.map(({ name }) => `${String(name)}`);
     let cellHeight = height / y_elements.length - 1;
 
@@ -476,50 +473,50 @@ class Heatmap extends Component {
     let ticks = d3.selectAll(".tick text");
     ticks.attr("class", (d) => d);
 
-    x_elements.forEach((md_name) => {
-      let div = d3.select("#tooltip");
-      let data_metadata = data.filter((d) => d.metadata === md_name);
-      let colorScale =
-        metadataInformation[md_name].type === "numerical"
-          ? d3.scale
-              .linear()
-              .domain(metadataInformation[md_name].extent)
-              .range(["blue", "red"])
-          : d3.scale
-              .ordinal()
-              .domain(metadataInformation[md_name].extent)
-              .range(["black", "red", "blue", "green", "yellow"]);
+    // x_elements.forEach((md_name) => {
+    //   let div = d3.select("#tooltip");
+    //   let data_metadata = data.filter((d) => d.metadata === md_name);
+    //   let colorScale =
+    //     metadataInformation[md_name].type === "numerical"
+    //       ? d3.scale
+    //           .linear()
+    //           .domain(metadataInformation[md_name].extent)
+    //           .range(["blue", "red"])
+    //       : d3.scale
+    //           .ordinal()
+    //           .domain(metadataInformation[md_name].extent)
+    //           .range(["black", "red", "blue", "green", "yellow"]);
 
-      metadataInformation[md_name].colorScale = colorScale;
+    //   metadataInformation[md_name].colorScale = colorScale;
 
-      let cells = container
-        .selectAll(`.cell.md-${md_name}`)
-        .data(data_metadata, ({ taxa }) => taxa)
-        .enter()
-        .append("rect")
-        .attr("class", ({ taxa }) => `cell ${taxa} md-${md_name}`)
-        .attr("width", cellSize)
-        .attr("height", cellHeight)
-        .attr("y", ({ taxa }) => yScale(taxa))
-        .attr("x", ({ metadata }) => xScale(metadata))
-        .attr("fill", ({ value }) => colorScale(value))
-        .on("mouseover", function (d) {
-          div.transition().duration(200).style("opacity", 0.9);
-          div
-            .html(typeof d.value === "number" ? d.value.toFixed(3) : d.value)
-            .style("left", d3.event.pageX + "px")
-            .style("top", d3.event.pageY - 28 + "px");
-        })
-        .on("mouseout", function (d) {
-          div.transition().duration(500).style("opacity", 0);
-        });
-    });
+    //   let cells = container
+    //     .selectAll(`.cell.md-${md_name}`)
+    //     .data(data_metadata, ({ taxa }) => taxa)
+    //     .enter()
+    //     .append("rect")
+    //     .attr("class", ({ taxa }) => `cell ${taxa} md-${md_name}`)
+    //     .attr("width", cellSize)
+    //     .attr("height", cellHeight)
+    //     .attr("y", ({ taxa }) => yScale(taxa))
+    //     .attr("x", ({ metadata }) => xScale(metadata))
+    //     .attr("fill", ({ value }) => colorScale(value))
+    //     .on("mouseover", function (d) {
+    //       div.transition().duration(200).style("opacity", 0.9);
+    //       div
+    //         .html(typeof d.value === "number" ? d.value.toFixed(3) : d.value)
+    //         .style("left", d3.event.pageX + "px")
+    //         .style("top", d3.event.pageY - 28 + "px");
+    //     })
+    //     .on("mouseout", function (d) {
+    //       div.transition().duration(500).style("opacity", 0);
+    //     });
+    // });
 
     this.setState({
       yScale: yScale,
       xScale: xScale,
-      metadataInformation: metadataInformation,
-      data: data,
+      // metadataInformation: metadataInformation,
+      // data: data,
     });
   }
 

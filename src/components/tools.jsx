@@ -47,10 +47,29 @@ class Tools extends Component {
           </Card>
           <Card>
             <Accordion.Toggle as={Card.Header} eventKey="1">
-              Click me!
+              View Metadata
             </Accordion.Toggle>
             <Accordion.Collapse eventKey="1">
-              <Card.Body>Hello! I'm another body</Card.Body>
+              <div>
+                <Form.Control
+                  placeholder="Add metadata information"
+                  onKeyPress={this.props.onKeyPressed}
+                />
+                <ul>
+                  {this.props.visMd.map((md) => (
+                    <li key={md}>{md}</li>
+                  ))}
+                </ul>
+                <Form.Control
+                  placeholder="Add SNP position"
+                  onKeyPress={this.props.onKeyPressed}
+                />
+                <ul>
+                  {this.props.visSNPs.map((md) => (
+                    <li key={md}>{md}</li>
+                  ))}
+                </ul>
+              </div>
             </Accordion.Collapse>
           </Card>
         </Accordion>

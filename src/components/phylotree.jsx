@@ -25,14 +25,12 @@ class Phylotree extends Component {
 
   my_collapse(node) {
     node["own-collapse"] = !node["own-collapse"];
-    let nameClade = "";
     if (node["own-collapse"]) {
-      nameClade = this.props.onCollapse(node);
+      node["show-name"] = this.props.onCollapse(node);
     } else {
+      node["show-name"] = "";
       this.props.onDecollapse(node);
     }
-    node["show-name"] = nameClade;
-    this.props.tree.toggle_collapse(node).update();
     this.props.onSelection(this.props.tree.get_selection());
     d3.select("#tree-display")
       .call(this.props.onZoom)
@@ -42,8 +40,9 @@ class Phylotree extends Component {
   renameClade(node) {
     bootbox.prompt("Please enter the name of the clade", (name) => {
       name = name.replace(/ /g, "-");
-      this.props.onCladeUpdate(node["show-name"], name);
+      let oldName = node["show-name"];
       node["show-name"] = name;
+      this.props.onCladeUpdate(oldName, name);
       this.props.tree.update();
       d3.select("#tree-display")
         .call(this.props.onZoom)
@@ -118,6 +117,12 @@ class Phylotree extends Component {
   renderTree(example_tree) {
     this.props.tree(example_tree).style_nodes(this.my_style_nodes).layout();
     this.props.onUploadTree(this.props.tree.get_nodes());
+    let count = 1;
+    this.props.tree.traverse_and_compute((d) => {
+      d.tempid = count;
+      count = count + 1;
+      return d;
+    });
     this.props.tree
       .get_nodes()
       .filter((n) => {
