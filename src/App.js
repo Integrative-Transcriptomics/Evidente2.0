@@ -3,6 +3,8 @@ import "./App.css";
 import Phylotree from "./components/phylotree";
 import Heatmap from "./components/heatmap";
 import * as d3 from "d3";
+import * as d3v5 from "d3v5";
+
 import * as $ from "jquery";
 // import { observable } from "mobx";
 import "../node_modules/jquery/dist/jquery";
@@ -16,7 +18,34 @@ import { color } from "d3";
 
 class App extends Component {
   state = {};
-
+  color_cat = [
+    "#8dd3c7",
+    "#ffffb3",
+    "#bebada",
+    "#fb8072",
+    "#80b1d3",
+    "#fdb462",
+    "#b3de69",
+    "#fccde5",
+    "#d9d9d9",
+    "#bc80bd",
+    "#ccebc5",
+    "#ffed6f",
+  ];
+  color_cat = [
+    "#a6cee3",
+    "#1f78b4",
+    "#b2df8a",
+    "#33a02c",
+    "#fb9a99",
+    "#e31a1c",
+    "#fdbf6f",
+    "#ff7f00",
+    "#cab2d6",
+    "#6a3d9a",
+    "#ffff99",
+    "#b15928",
+  ];
   constructor() {
     super();
     let tree = d3.layout.phylotree().options({
@@ -31,6 +60,7 @@ class App extends Component {
       reroot: false,
       transitions: true,
       "internal-names": true,
+      // "align-tips": true,
     });
     // .style_nodes(this.nodeStyler)
     // tree.branch_length(() => 2);
@@ -89,6 +119,10 @@ class App extends Component {
       snpmd: json.snpInfo || [],
       mdinfo: metadataInfo,
     });
+    // _.keys(this.state.mdinfo).map((d) => {
+    //   console.log({ value: d, label: d });
+    //   return { value: d, label: d };
+    // });
   };
 
   createColorScales = (metadata) => {
@@ -96,10 +130,12 @@ class App extends Component {
       let colorScale =
         metadata[k].type.toLowerCase() === "numerical"
           ? d3.scale.linear().domain(metadata[k].extent).range(["blue", "red"])
+          : metadata[k].type.toLowerCase() === "categorical"
+          ? d3.scale.ordinal().domain(metadata[k].extent).range(this.color_cat)
           : d3.scale
               .ordinal()
-              .domain(metadata[k].extent)
-              .range(["black", "red", "blue", "green", "yellow"]);
+              .domain(["A", "C", "T", "G", "N"])
+              .range(["red", "yellow", "blue", "green", "purple"]);
       metadata[k].colorScale = colorScale;
     });
     return metadata;
@@ -155,8 +191,9 @@ class App extends Component {
   // };
 
   handleKeyPress = (ev) => {
-    if (ev.charCode == 13) {
+    if (ev.charCode === 13) {
       let md = ev.target.value;
+      console.log(_.keys(this.state.mdinfo));
       if (_.keys(this.state.mdinfo).includes(md)) {
         let visMD = this.state.visualizedMD;
         visMD.push(md);
@@ -313,6 +350,7 @@ class App extends Component {
           <Toolbox
             onFileUpload={this.handleSubmit}
             onKeyPressed={this.handleKeyPress}
+            availableMDs={this.state.mdinfo}
             visMd={this.state.visualizedMD}
             visSNPs={this.state.visualizedSNPs}
           ></Toolbox>

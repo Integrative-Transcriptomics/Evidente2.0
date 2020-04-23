@@ -1,7 +1,21 @@
 import React, { Component } from "react";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
+import Select from "react-select";
+import * as _ from "lodash";
+import * as $ from "jquery";
 class Tools extends Component {
   state = {};
+
+  componentDidUpdate() {
+    let visualizedInformation = _.keys(this.props.availableMDs)
+      .filter((d) => d !== "Information")
+      .map((d) => {
+        console.log({ value: d, label: d });
+        return { value: d, label: d };
+      });
+    $("#metadatashow").options = visualizedInformation;
+    console.log($("#metadatashow"));
+  }
   render() {
     return (
       <div>
@@ -51,6 +65,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey="1">
               <div>
+                <Select id="metadatashow" options={[]}></Select>
                 <Form.Control
                   placeholder="Add metadata information"
                   onKeyPress={this.props.onKeyPressed}

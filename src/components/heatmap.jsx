@@ -39,6 +39,9 @@ class Heatmap extends Component {
     let cellSize = itemSize - 0.5;
     let props = this.props;
     let filteredData = props.taxadata;
+    // let modifiedSNPData = modifySNPs(props.snpdata);
+    console.log(props.snpdata);
+    console.log(filteredData);
     let container = d3.select("#heatmap-container");
     let shownNodes = this.props.tree
       .get_nodes()
@@ -71,7 +74,7 @@ class Heatmap extends Component {
       );
       let x_elements = [
           ...new Set(
-            this.props.visMd.concat(this.props.visSNPs.map((d) => `SNP:${d}`))
+            this.props.visSNPs.map((d) => `SNP:${d}`).concat(this.props.visMd)
           ),
         ],
         y_elements = shownNodes;
@@ -103,6 +106,7 @@ class Heatmap extends Component {
       container
         .selectAll("g.y.axis")
         .call(yAxis)
+        .call((g) => g.select(".domain").remove())
         .selectAll("text")
         .style("font-size", `${Math.min(cellHeight, 12)}px`)
         .attr("dy", ".35em");
@@ -212,7 +216,7 @@ class Heatmap extends Component {
   updateCells(data, cellHeight, xScale, yScale, colorScale, cellSize, type) {
     let div = d3.select("#tooltip");
     d3.select("#heatmap-container")
-      .selectAll(`.cell.md-${type}`)
+      .selectAll(`.cell.md-${type.replace(/ /g, "_")}`)
       .data(data)
       .enter()
       .append("svg:rect")
@@ -248,7 +252,7 @@ class Heatmap extends Component {
 
     d3v5
       .select("#heatmap-container")
-      .selectAll(".boxplot.md-" + type)
+      .selectAll(`.boxplot.md-${type.replace(/ /g, "_")}`)
       .data(data)
       .enter()
       .append("g")
@@ -287,7 +291,7 @@ class Heatmap extends Component {
     );
     let heatmapCell = d3
       .select("#heatmap-container")
-      .selectAll(`.histo.md-${type}`)
+      .selectAll(`.histo.md-${type.replace(/ /g, "_")}`)
       .data(data)
       .enter()
       .append("g")
@@ -298,11 +302,11 @@ class Heatmap extends Component {
           `translate(${xScale(type)}, ${yScale(Information)})`
       );
     let bars = heatmapCell
-      .selectAll(`.bars.md-${type}`)
+      .selectAll(`.bars.md-${type.replace(/ /g, "_")}`)
       .data((d) => Object.entries(d[type]))
       .enter()
       .append("rect")
-      .attr("class", `.bars.md-${type}`)
+      .attr("class", `.bars.md-${type.replace(/ /g, "_")}`)
       .attr("fill", (d) => colorScale(d[0]));
     let xScaleBar = d3.scale
       .ordinal()
@@ -454,6 +458,7 @@ class Heatmap extends Component {
       .append("g")
       .attr("class", "y axis")
       .call(yAxis)
+      .call((g) => g.select(".domain").remove())
       .selectAll("text")
       .style("font-size", `${Math.min(cellHeight, 12)}px`)
       .attr("dy", ".35em")
