@@ -11,8 +11,10 @@ class Toolbox extends Component {
         <NodeInformation>Node Information</NodeInformation>
         <Tools
           availableMDs={this.props.availableMDs}
+          availableSNPs={this.props.availableSNPs}
           onFileUpload={this.props.onFileUpload}
-          onKeyPressed={this.props.onKeyPressed}
+          onMDChange={this.props.onMDChange}
+          onSNPChange={this.props.onSNPChange}
           visMd={this.props.visMd}
           visSNPs={this.props.visSNPs}
         >

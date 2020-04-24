@@ -112,7 +112,7 @@ class App extends Component {
     let metadataInfo = this.createColorScales(json.metadataInfo || {});
     this.setState({
       newick: json.newick,
-      snpdata: { support: json.support, notsupport: json.notsupport },
+      snpdata: { support: json.support, notsupport: json.notSupport },
       availableSNPs: json.availableSNPs,
       ids: json.ids,
       taxamd: json.taxaInfo || [],
@@ -127,6 +127,7 @@ class App extends Component {
 
   createColorScales = (metadata) => {
     _.keys(metadata).forEach((k) => {
+      console.log(metadata[k].extent);
       let colorScale =
         metadata[k].type.toLowerCase() === "numerical"
           ? d3.scale.linear().domain(metadata[k].extent).range(["blue", "red"])
@@ -141,17 +142,6 @@ class App extends Component {
     return metadata;
   };
 
-  // handleFileUpload = (el) => {
-  //   let file = el.files[0];
-  //   console.log(file);
-  //   let r = new FileReader();
-  //   let content = "";
-  //   r.onload = async (e) => {
-  //     content = e.target.result;
-  //     this.setState({ newick: content });
-  //   };
-  //   let s = r.readAsText(file);
-  // };
   // nodeStyler = (container, node) => {
   //   console.log("test");
 
@@ -190,24 +180,15 @@ class App extends Component {
   //   }
   // };
 
-  handleKeyPress = (ev) => {
-    if (ev.charCode === 13) {
-      let md = ev.target.value;
-      console.log(_.keys(this.state.mdinfo));
-      if (_.keys(this.state.mdinfo).includes(md)) {
-        let visMD = this.state.visualizedMD;
-        visMD.push(md);
-        this.setState({ visualizedMD: visMD });
-        ev.target.value = "";
-      } else if (this.state.availableSNPs.includes(md)) {
-        let visSNPs = this.state.visualizedSNPs;
-        visSNPs.push(md);
-        this.setState({ visualizedSNPs: visSNPs });
-        ev.target.value = "";
-      } else {
-        alert("False input");
-      }
-    }
+  handleMDChange = (ev) => {
+    this.setState({
+      visualizedMD: (ev || []).map(({ value }) => value),
+    });
+  };
+  handleSNPChange = (ev) => {
+    this.setState({
+      visualizedSNPs: (ev || []).map(({ value }) => value),
+    });
   };
 
   handleCladeCreation = () => {
@@ -341,6 +322,7 @@ class App extends Component {
             hiddenNodes={this.state.hiddenNodes}
             collapsedClades={this.state.collapsedClades}
             selectedNodes={this.state.selectedNodes}
+            ids={this.state.ids}
             visMd={this.state.visualizedMD}
             visSNPs={this.state.visualizedSNPs}
             taxadata={this.state.taxamd}
@@ -349,8 +331,10 @@ class App extends Component {
           />
           <Toolbox
             onFileUpload={this.handleSubmit}
-            onKeyPressed={this.handleKeyPress}
+            onMDChange={this.handleMDChange}
+            onSNPChange={this.handleSNPChange}
             availableMDs={this.state.mdinfo}
+            availableSNPs={this.state.availableSNPs}
             visMd={this.state.visualizedMD}
             visSNPs={this.state.visualizedSNPs}
           ></Toolbox>

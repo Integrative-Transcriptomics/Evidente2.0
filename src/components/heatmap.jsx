@@ -6,6 +6,12 @@ import * as $ from "jquery";
 import * as _ from "lodash";
 class Heatmap extends Component {
   state = {};
+  SNPcolorScale = d3.scale
+    .ordinal()
+    .domain(["A", "C", "T", "G", "N"])
+    .range(["red", "yellow", "blue", "green", "purple"]);
+
+  SNPprefix = "SNP_Pos_";
   shouldComponentUpdate(nextProp, nextState) {
     let actualProp = this.props;
     let actualState = this.state;
@@ -19,8 +25,11 @@ class Heatmap extends Component {
     let newNodes = nextProp.nodes || [];
     let newVisualized = nextProp.visMd || [];
     let actualVisualized = actualProp.visMd || [];
+    let newVisualizedSNPs = nextProp.visSNPs || [];
+    let actualVisualizedSNPs = actualProp.visSNPs || [];
     if (
       newVisualized.length !== 0 ||
+      actualVisualizedSNPs.length !== newVisualizedSNPs.length ||
       actualNodes.length !== newNodes.length ||
       actualHiddenNodes.length !== newHiddenNodes.length ||
       actualCollapsedClades.length !== newCollapsedClades.length ||
@@ -35,15 +44,33 @@ class Heatmap extends Component {
   }
   componentDidUpdate(prevProp, prevState) {
     let state = this.state;
-    let itemSize = this.state.itemSize;
-    let cellSize = itemSize - 0.5;
     let props = this.props;
+
+    let itemSize = state.itemSize;
+    let cellSize = itemSize - 0.5;
     let filteredData = props.taxadata;
-    // let modifiedSNPData = modifySNPs(props.snpdata);
-    console.log(props.snpdata);
-    console.log(filteredData);
+
+    let reducedSupportSNPs = (props.snpdata.support || []).filter(({ pos }) =>
+      props.visSNPs.includes(pos)
+    );
+    let reducedNotSupportSNPs = (
+      props.snpdata.notsupport || []
+    ).filter(({ pos }) => props.visSNPs.includes(pos));
+    let modifiedSNPData = this.modifySNPs(
+      reducedSupportSNPs,
+      props.ids.labToNum
+    );
+    modifiedSNPData = modifiedSNPData.concat(
+      this.modifySNPs(reducedNotSupportSNPs, props.ids.labToNum, true)
+    );
+    let mergedSNPs = modifiedSNPData.reduce((acc, cur) => {
+      let obj = acc.find((d) => d.Information === cur.Information) || {};
+      let filteredOutput = acc.filter((d) => d.Information !== cur.Information);
+      return [...filteredOutput, { ...obj, ...cur }];
+    }, []);
+
     let container = d3.select("#heatmap-container");
-    let shownNodes = this.props.tree
+    let shownNodes = props.tree
       .get_nodes()
       .filter((node) => this.isVisibleEndNode(node))
       .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
@@ -53,7 +80,14 @@ class Heatmap extends Component {
       filteredData = this.clusterData(
         filteredData,
         props.collapsedClades,
+        this.clusterMetadata,
         props.mdinfo
+      );
+
+      mergedSNPs = this.clusterData(
+        mergedSNPs,
+        props.collapsedClades,
+        this.clusterSNPs
       );
     }
     // if (props.hiddenNodes.length !== 0 || false) {
@@ -61,10 +95,9 @@ class Heatmap extends Component {
 
     // }
 
-    if (this.props.nodes && !prevProp.nodes) {
+    if (props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
     } else if (
-      this.props.visMd.length !== 0 ||
       prevProp.hiddenNodes.length !== 0 ||
       prevProp.collapsedClades.length !== 0 ||
       shownNodes.length !== this.props.nodes.length
@@ -72,11 +105,13 @@ class Heatmap extends Component {
       filteredData = filteredData.filter(({ Information }) =>
         shownNodes.includes(Information)
       );
-      let x_elements = [
-          ...new Set(
-            this.props.visSNPs.map((d) => `SNP:${d}`).concat(this.props.visMd)
-          ),
-        ],
+      mergedSNPs = mergedSNPs.filter(({ Information }) =>
+        shownNodes.includes(Information)
+      );
+      let x_elements = this.props.visSNPs
+          .map((d) => `${this.SNPprefix}${d}`)
+          .concat(this.props.visMd),
+        // let x_elements = props.visMd,
         y_elements = shownNodes;
 
       let xScale = d3.scale
@@ -120,48 +155,67 @@ class Heatmap extends Component {
         .attr("dy", ".5em")
         .attr("transform", (d) => "rotate(-65)");
 
-      let elements = container.selectAll(`.cell, .boxplot, .histo`).remove(); //remove before new creation
+      let elements = container
+        .selectAll(`.cell, .boxplot, .histo, .pattern`)
+        .remove(); //remove before new creation
 
-      if (filteredData.length !== 0 && x_elements.length !== 0) {
-        x_elements.forEach((md_name) => {
-          this.updateCells(
-            filteredData.filter((d) => !_.get(d, "clade", false)),
-            cellHeight,
+      // if (x_elements.length !== 0) {
+      x_elements.forEach((md_name) => {
+        this.updateCells(
+          (md_name.includes(this.SNPprefix) ? mergedSNPs : filteredData).filter(
+            (d) => !_.get(d, "clade", false)
+          ),
+          cellHeight,
+          xScale,
+          yScale,
+          (props.mdinfo[md_name] || { colorScale: this.SNPcolorScale })
+            .colorScale,
+          cellSize,
+          md_name,
+          md_name.includes(this.SNPprefix)
+        );
+        let dataDomain = _.get(props.mdinfo, `${md_name}.extent`, [
+          "A",
+          "C",
+          "T",
+          "G",
+          "N",
+        ]);
+        let onlyClusters = (md_name.includes(this.SNPprefix)
+          ? mergedSNPs
+          : filteredData
+        ).filter(({ clade }) => clade);
+        if (
+          _.get(props.mdinfo, `${md_name}.type`, "").toLowerCase() ===
+          "numerical"
+        ) {
+          let centering = cellHeight / 4;
+          this.createBoxplots(
+            onlyClusters,
             xScale,
             yScale,
-            props.mdinfo[md_name].colorScale,
-            cellSize,
-            md_name
+            cellHeight,
+            centering,
+            dataDomain,
+            md_name,
+            itemSize
           );
-          let dataDomain = props.mdinfo[md_name].extent;
-          let onlyClusters = filteredData.filter(({ clade }) => clade);
-          if (props.mdinfo[md_name].type.toLowerCase() === "numerical") {
-            let centering = cellHeight / 4;
-            this.createBoxplots(
-              onlyClusters,
-              xScale,
-              yScale,
-              cellHeight,
-              centering,
-              dataDomain,
-              md_name,
-              itemSize
-            );
-          } else {
-            this.createHistogram(
-              onlyClusters,
-              xScale,
-              yScale,
-              cellHeight,
-              dataDomain,
-              md_name,
-              itemSize,
-              props.mdinfo[md_name].colorScale
-            );
-          }
-        });
-      }
+        } else {
+          this.createHistogram(
+            onlyClusters,
+            xScale,
+            yScale,
+            cellHeight,
+            dataDomain,
+            md_name,
+            itemSize,
+            _.get(props.mdinfo, `${md_name}.colorScale`, this.SNPcolorScale),
+            md_name.includes(this.SNPprefix)
+          );
+        }
+      });
     }
+    // }
     this.highlight_leaves(this.props.selectedNodes);
   }
 
@@ -171,8 +225,30 @@ class Heatmap extends Component {
       d3.layout.phylotree.is_node_visible(node)
     );
   };
+  modifySNPs = (SNPdata, labelToID, notSupport = false) => {
+    let nodes = this.props.tree.get_nodes();
+    let mappedSNPs = SNPdata.map((SNP) => {
+      let actualID = labelToID[SNP.node];
+      let actualPos = SNP.pos;
+      let actualAllele = SNP.allele;
+      let node = nodes.find(({ tempid }) => {
+        return String(tempid) === actualID;
+      });
 
-  clusterData(filteredData, actualClades, mdinfo) {
+      return this.props.tree
+        .descendants(node)
+        .filter(this.props.tree.is_leafnode)
+        .map(({ name }) => ({
+          Information: name,
+          [actualPos]: { allele: actualAllele, notsupport: notSupport },
+        }));
+    });
+    let flattenSNPs = _.flatten(mappedSNPs);
+
+    return flattenSNPs;
+  };
+
+  clusterData(data, actualClades, clusterMethod, mdinfo = {}) {
     let allAggregatedData = [];
     let hiddenLeaves = [];
 
@@ -188,34 +264,43 @@ class Heatmap extends Component {
 
       hiddenLeaves = hiddenLeaves.concat(leavesNames);
 
-      let leavesToAggregate = filteredData.filter(({ Information }) =>
+      let metadataToAggregate = data.filter(({ Information }) =>
         leavesNames.includes(Information)
       );
-      let joinLeavesInformation = _.mergeWith(
+
+      let jointMetadataInformation = _.mergeWith(
         {},
-        ...leavesToAggregate,
+        ...metadataToAggregate,
         (a, b) => (a || []).concat(b)
       );
-      let aggregatedData = _.mapValues(joinLeavesInformation, (v, k) =>
-        mdinfo[k].type.toLowerCase() === "numerical"
-          ? boxplot.boxplotStats(v)
-          : mdinfo[k].type.toLowerCase() === "categorical"
-          ? _.countBy(v)
-          : actualClade.showname
+      let aggregatedData = _.mapValues(jointMetadataInformation, (v, k) =>
+        clusterMethod(v, k, mdinfo, actualClade)
       );
       aggregatedData["clade"] = true;
 
       allAggregatedData = [...allAggregatedData, aggregatedData];
     });
 
-    return [...allAggregatedData, ...filteredData];
+    return [...allAggregatedData, ...data];
     // .slice()
     // .sort((a, b) => d3.ascending(a.order, b.order));
   }
 
-  updateCells(data, cellHeight, xScale, yScale, colorScale, cellSize, type) {
+  updateCells(
+    data,
+    cellHeight,
+    xScale,
+    yScale,
+    colorScale,
+    cellSize,
+    type,
+    isSNP
+  ) {
+    let subtype = isSNP ? type.split("_")[2] : "";
+    data = data.filter((d) => _.keys(d).includes(isSNP ? subtype : type));
     let div = d3.select("#tooltip");
-    d3.select("#heatmap-container")
+    let cells = d3
+      .select("#heatmap-container")
       .selectAll(`.cell.md-${type.replace(/ /g, "_")}`)
       .data(data)
       .enter()
@@ -225,11 +310,31 @@ class Heatmap extends Component {
       .attr("height", cellHeight)
       .attr("y", ({ Information }) => yScale(Information))
       .attr("x", () => xScale(type))
-      .attr("fill", (d) => colorScale(d[type]))
+      .attr("fill", (d) =>
+        colorScale(_.get(d, isSNP ? `${subtype}.allele` : type))
+      );
+    if (isSNP) {
+      d3.select("#heatmap-container")
+        .selectAll(`.pattern.md-${type.replace(/ /g, "_")}`)
+        .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
+        .enter()
+        .append("svg:rect")
+        .attr("class", ({ Information }) => `pattern ${Information} md-${type}`)
+        .attr("width", cellSize)
+        .attr("height", cellHeight)
+        .attr("y", ({ Information }) => yScale(Information))
+        .attr("x", () => xScale(type))
+        .attr("fill", "url(#diagonalHatch)");
+    }
+    cells
       .on("mouseover", function (d) {
         div.transition().duration(200).style("opacity", 0.9);
         div
-          .html(typeof d[type] === "number" ? d[type].toFixed(3) : d[type])
+          .html(
+            typeof d[type] === "number"
+              ? d[type].toFixed(3)
+              : _.get(d, isSNP ? `${subtype}.allele` : type)
+          )
           .style("left", d3.event.pageX + "px")
           .style("top", d3.event.pageY - 28 + "px");
       })
@@ -284,10 +389,17 @@ class Heatmap extends Component {
     dataDomain,
     type,
     itemSize,
-    colorScale
+    colorScale,
+    isSNP
   ) {
+    let subtype = isSNP ? type.split("_")[2] : "";
+
     let max = d3.max(
-      data.reduce((acc, d) => [...acc, ...Object.values(d[type])], [])
+      data.reduce((acc, d) => {
+        let temp = d[isSNP ? subtype : type];
+        console.log(d);
+        return [...acc, ...Object.values(temp ? temp : {})];
+      }, [])
     );
     let heatmapCell = d3
       .select("#heatmap-container")
@@ -303,11 +415,11 @@ class Heatmap extends Component {
       );
     let bars = heatmapCell
       .selectAll(`.bars.md-${type.replace(/ /g, "_")}`)
-      .data((d) => Object.entries(d[type]))
+      .data((d) => Object.entries(_.get(d, isSNP ? subtype : type, {})))
       .enter()
       .append("rect")
       .attr("class", `.bars.md-${type.replace(/ /g, "_")}`)
-      .attr("fill", (d) => colorScale(d[0]));
+      .attr("fill", (d) => colorScale(isSNP ? d[0][0] : d[0]));
     let xScaleBar = d3.scale
       .ordinal()
       .domain(dataDomain)
@@ -315,7 +427,7 @@ class Heatmap extends Component {
     let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight, 0]);
     let barWidth = itemSize / dataDomain.length;
     bars
-      .attr("x", (d) => xScaleBar(d[0]))
+      .attr("x", (d) => xScaleBar(isSNP ? d[0][0] : d[0]))
       .attr("y", (d) => yScaleBar(d[1]))
       .attr("width", barWidth)
       .attr("height", (d) => cellHeight - yScaleBar(d[1]));
@@ -323,9 +435,9 @@ class Heatmap extends Component {
 
   highlight_leaves(selection = []) {
     if (selection.length === 0) {
-      $(".cell, .boxplot, .histo").css("opacity", 1); // Nothing selected, everythin bold
+      $(".cell, .boxplot, .histo, .pattern").css("opacity", 1); // Nothing selected, everythin bold
     } else {
-      $(".cell, .boxplot, .histo").css("opacity", 0.2);
+      $(".cell, .boxplot, .histo, .pattern").css("opacity", 0.2);
       selection.forEach((t) => {
         let lookFor = t.collapsed ? t["show-name"] : t.name; // Either clade or leaf
         $(`.${lookFor}`).css("opacity", 1);
@@ -333,37 +445,17 @@ class Heatmap extends Component {
     }
   }
 
-  getMetadataInformation(data) {
-    let temp = data.reduce((acc, d) => {
-      let { metadata, type, value } = d;
-      return {
-        ...acc,
-        [metadata]: {
-          ...(acc[metadata] || {}),
-          type: type,
-          values: [...(acc[metadata] || { values: [] })["values"], value],
-        },
-      };
-    }, {});
+  clusterMetadata = (v, k, mdinfo, actualClade) =>
+    mdinfo[k].type.toLowerCase() === "numerical"
+      ? boxplot.boxplotStats(v)
+      : mdinfo[k].type.toLowerCase() === "categorical"
+      ? _.countBy(v)
+      : actualClade.showname;
 
-    temp = Object.entries(temp).map((e) => {
-      let k = e[0];
-      let { values, ...others } = e[1];
-      return {
-        key: k,
-        ...others,
-        extent:
-          others.type === "numerical"
-            ? d3.extent(values)
-            : d3.set(values).values(),
-      };
-    });
-
-    temp = temp.reduce((acc, { key, ...otherAttrs }) => {
-      return { ...acc, [key]: { ...otherAttrs } };
-    }, {});
-    return temp;
-  }
+  clusterSNPs = (v, k, mdinfo, actualClade) =>
+    k === "Information"
+      ? actualClade.showname
+      : _.countBy(v.map((d) => `${d.allele}${d.notsupport ? "-" : "+"}`));
 
   initHeatmap(container) {
     let leaf_nodes = (this.props.nodes || []).filter(
@@ -372,66 +464,12 @@ class Heatmap extends Component {
     let height = this.state.height;
     let itemSize = this.state.itemSize;
     let cellSize = this.state.cellSize;
-    // let data = [];
-    // let metadataInformation = {};
-    // data = leaf_nodes.map((item, it) => {
-    //   let newItem = {};
-    //   newItem.taxa = item.name;
-    //   newItem.order = it;
-    //   newItem.type = "numerical";
-    //   newItem.metadata = "leaf_nodes";
-    //   newItem.value = Math.random();
-    //   // if (Math.random() < 0.75) return undefined;
-
-    //   return newItem;
-    // });
-
-    // data = data.concat(
-    //   leaf_nodes.map((item, it) => {
-    //     let newItem = {};
-    //     newItem.taxa = item.name;
-    //     newItem.order = it;
-    //     newItem.type = "numerical";
-    //     newItem.metadata = "second";
-    //     newItem.value = Math.random() * 10;
-    //     // if (Math.random() < 0.75) return undefined;
-
-    //     return newItem;
-    //   })
-    // );
-
-    // data = data.concat(
-    //   leaf_nodes.map((item, it) => {
-    //     let newItem = {};
-    //     newItem.taxa = item.name;
-    //     newItem.order = it;
-    //     newItem.type = "categorical";
-    //     newItem.metadata = "SNP";
-    //     newItem.value = _.sample(["A", "C", "G", "T", "N"]);
-    //     if (Math.random() < 0.75) return undefined;
-    //     return newItem;
-    //   })
-    // );
-    // data = data
-    //   .concat(
-    //     leaf_nodes.map((item, it) => {
-    //       let newItem = {};
-    //       newItem.taxa = String(item.name);
-    //       newItem.order = it;
-    //       newItem.type = "categorical";
-    //       newItem.metadata = "3";
-    //       newItem.value = _.sample(["A", "C", "G", "T", "N"]);
-    //       // if (Math.random() < 0.75) return undefined;
-    //       return newItem;
-    //     })
-    //   )
-    //   .filter((d) => d);
-
-    // metadataInformation = this.getMetadataInformation(data);
-
-    // let x_elements = d3v5.set(data.map(({ metadata }) => metadata)).values(),
     let x_elements = d3v5
-        .set(this.props.visMd.concat(this.props.visSNPs.map((d) => `SNP:${d}`)))
+        .set(
+          this.props.visMd.concat(
+            this.props.visSNPs.map((d) => `${this.SNPprefix}${d}`)
+          )
+        )
         .values(),
       y_elements = leaf_nodes.map(({ name }) => `${String(name)}`);
     let cellHeight = height / y_elements.length - 1;
@@ -474,55 +512,19 @@ class Heatmap extends Component {
       .attr("dx", ".8em")
       .attr("dy", ".5em")
       .attr("transform", (d) => "rotate(-65)");
-
+    container
+      .append("defs")
+      .append("pattern")
+      .attr("id", "diagonalHatch")
+      .attr("patternUnits", "userSpaceOnUse")
+      .attr("width", 4)
+      .attr("height", 4)
+      .append("path")
+      .attr("d", "M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
+      .attr("stroke", "#000000")
+      .attr("stroke-width", 1);
     let ticks = d3.selectAll(".tick text");
     ticks.attr("class", (d) => d);
-
-    // x_elements.forEach((md_name) => {
-    //   let div = d3.select("#tooltip");
-    //   let data_metadata = data.filter((d) => d.metadata === md_name);
-    //   let colorScale =
-    //     metadataInformation[md_name].type === "numerical"
-    //       ? d3.scale
-    //           .linear()
-    //           .domain(metadataInformation[md_name].extent)
-    //           .range(["blue", "red"])
-    //       : d3.scale
-    //           .ordinal()
-    //           .domain(metadataInformation[md_name].extent)
-    //           .range(["black", "red", "blue", "green", "yellow"]);
-
-    //   metadataInformation[md_name].colorScale = colorScale;
-
-    //   let cells = container
-    //     .selectAll(`.cell.md-${md_name}`)
-    //     .data(data_metadata, ({ taxa }) => taxa)
-    //     .enter()
-    //     .append("rect")
-    //     .attr("class", ({ taxa }) => `cell ${taxa} md-${md_name}`)
-    //     .attr("width", cellSize)
-    //     .attr("height", cellHeight)
-    //     .attr("y", ({ taxa }) => yScale(taxa))
-    //     .attr("x", ({ metadata }) => xScale(metadata))
-    //     .attr("fill", ({ value }) => colorScale(value))
-    //     .on("mouseover", function (d) {
-    //       div.transition().duration(200).style("opacity", 0.9);
-    //       div
-    //         .html(typeof d.value === "number" ? d.value.toFixed(3) : d.value)
-    //         .style("left", d3.event.pageX + "px")
-    //         .style("top", d3.event.pageY - 28 + "px");
-    //     })
-    //     .on("mouseout", function (d) {
-    //       div.transition().duration(500).style("opacity", 0);
-    //     });
-    // });
-
-    this.setState({
-      yScale: yScale,
-      xScale: xScale,
-      // metadataInformation: metadataInformation,
-      // data: data,
-    });
   }
 
   componentDidMount() {
@@ -553,7 +555,6 @@ class Heatmap extends Component {
 
     this.setState({
       height: height,
-
       cellSize: cellSize,
       itemSize: itemSize,
     });
