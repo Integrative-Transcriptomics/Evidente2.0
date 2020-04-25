@@ -1,21 +1,8 @@
 import * as d3 from "d3";
 import "../../node_modules/phylotree/phylotree";
 import * as $ from "jquery";
-// import "../../node_modules/jquery-ui-dist/jquery-ui";
-// import "../../node_modules/jquery-ui/themes/base/theme.css";
-// import "../../node_modules/jquery-ui/themes/base/selectable.css";
-// import "../../node_modules/jquery-ui/ui/core";
-// import "../../node_modules/jquery-ui/ui/widgets/selectable";
-// import * as $ from "jquery-ui";
-// import * as popperjs from "@popperjs/core";
-// import "../../node_modules/jquery/dist/core";
-
-// import "../../node_modules/@popperjs/core/dist/cjs/popper";
-
 import * as bootbox from "bootbox";
 import React, { Component } from "react";
-// window.$ = window.jQuery = window.jquery = require("jquery");
-// import "../../node_modules/bootstrap/dist/js";
 
 class Phylotree extends Component {
   state = {};
@@ -32,9 +19,7 @@ class Phylotree extends Component {
       this.props.onDecollapse(node);
     }
     this.props.onSelection(this.props.tree.get_selection());
-    d3.select("#tree-display")
-      .call(this.props.onZoom)
-      .call(this.props.onZoom.event);
+    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
   }
 
   renameClade(node) {
@@ -44,19 +29,16 @@ class Phylotree extends Component {
       node["show-name"] = name;
       this.props.onCladeUpdate(oldName, name);
       this.props.tree.update();
-      d3.select("#tree-display")
-        .call(this.props.onZoom)
-        .call(this.props.onZoom.event);
+      d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     });
   }
+
   my_hide(node) {
     if (!node["hidden-t"]) {
       node["hidden-t"] = !node["hidden-t"];
       this.props.tree
         .modify_selection(
-          [node].concat(
-            this.props.tree.select_all_descendants(node, true, true)
-          ),
+          [node].concat(this.props.tree.select_all_descendants(node, true, true)),
           "notshown",
           true,
           true,
@@ -65,9 +47,7 @@ class Phylotree extends Component {
         .update_has_hidden_nodes()
         .update();
 
-      d3.select("#tree-display")
-        .call(this.props.onZoom)
-        .call(this.props.onZoom.event);
+      d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
       this.props.onHide(this.props.tree.descendants(node));
       this.props.onSelection(this.props.tree.get_selection());
     }
@@ -93,9 +73,7 @@ class Phylotree extends Component {
         .update_has_hidden_nodes()
         .update();
       this.props.onShowNodes(this.props.tree.descendants(node));
-      d3.select("#tree-display")
-        .call(this.props.onZoom)
-        .call(this.props.onZoom.event);
+      d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
       this.props.onSelection(this.props.tree.get_selection());
     }
   }
@@ -104,9 +82,7 @@ class Phylotree extends Component {
     if (prevProp.newick === undefined && this.props.newick !== "") {
       this.renderTree(this.props.newick);
     }
-    d3.select("#tree-display")
-      .call(this.props.onZoom)
-      .call(this.props.onZoom.event);
+    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
   }
   componentDidMount() {
     this.props.tree
@@ -138,12 +114,7 @@ class Phylotree extends Component {
             return "Collapse substree";
           },
           () => {
-            this.my_collapse(
-              tnode,
-              this.props.tree,
-              this.props.onZoom,
-              this.props.onCollapse
-            );
+            this.my_collapse(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse);
           },
           () => {
             return true;
@@ -152,10 +123,7 @@ class Phylotree extends Component {
         d3.layout.phylotree.add_custom_menu(
           tnode, // add to this node
           (node) => {
-            return (
-              "Hide this " +
-              (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree")
-            );
+            return "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree");
           }, // display this text for the menu
           () => {
             this.my_hide(tnode, this.props.tree, this.props.onZoom);
@@ -210,8 +178,8 @@ class Phylotree extends Component {
 
   render() {
     return (
-      <div className="lchild" ref={(el) => (this.container = el)}>
-        <svg id="tree-display"></svg>{" "}
+      <div className='lchild' ref={(el) => (this.container = el)}>
+        <svg id='tree-display'></svg>
       </div>
     );
   }

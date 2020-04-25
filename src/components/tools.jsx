@@ -3,8 +3,13 @@ import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
+
 class Tools extends Component {
   state = {};
+  /**
+   * Creates the labels and values for the correspoinding selecting menu
+   * @param {dictionary of metadata} metadata
+   */
   getMetadata(metadata) {
     return _.keys(metadata)
       .filter((d) => d !== "Information")
@@ -12,19 +17,18 @@ class Tools extends Component {
         return { value: d, label: d };
       });
   }
-  componentDidUpdate() {}
   render() {
     return (
       <div>
         <h3>{this.props.children}</h3>
-        <Accordion defaultActiveKey="0">
+        <Accordion defaultActiveKey='0'>
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey="0">
+            <Accordion.Toggle as={Card.Header} eventKey='0'>
               Load Files
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey="0">
+            <Accordion.Collapse eventKey='0'>
               <Card.Body>
-                <Form id="fileform" onSubmit={this.props.onFileUpload}>
+                <Form id='fileform' onSubmit={this.props.onFileUpload}>
                   {[
                     { id: "nwk", label: "Newick Tree" },
                     { id: "snp", label: "SNP Table" },
@@ -45,11 +49,7 @@ class Tools extends Component {
                       />
                     </Form.Group>
                   ))}
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    // onSubmit={(ev) => this.props.onFileUpload(ev)}
-                  >
+                  <Button variant='primary' type='submit'>
                     Submit
                   </Button>
                 </Form>
@@ -57,19 +57,19 @@ class Tools extends Component {
             </Accordion.Collapse>
           </Card>
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey="1">
+            <Accordion.Toggle as={Card.Header} eventKey='1'>
               View Metadata
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey="1">
+            <Accordion.Collapse eventKey='1'>
               <div>
                 <Select
-                  id="metadatashow"
+                  id='metadatashow'
                   options={this.getMetadata(this.props.availableMDs || [])}
                   onChange={this.props.onMDChange}
                   isMulti
                 ></Select>
                 <Select
-                  id="snpdatashow"
+                  id='snpdatashow'
                   options={(this.props.availableSNPs || []).map((d) => {
                     return { value: d, label: d };
                   })}

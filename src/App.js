@@ -12,6 +12,7 @@ import "../node_modules/bootstrap/dist/js/bootstrap";
 import React, { Component } from "react";
 import Toolbox from "./components/toolbox";
 import * as _ from "underscore";
+import ConnectElements from "react-connect-elements";
 import bootbox from "bootbox";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import { color } from "d3";
@@ -268,9 +269,8 @@ class App extends Component {
   handleSelection = (selection) => {
     let filteredSelection = selection.filter((node) => {
       return (
-        d3.layout.phylotree.is_leafnode(node) || node.collapsed
-        // &&
-        // d3.layout.phylotree.is_node_visible(node)
+        d3.layout.phylotree.is_leafnode(node) ||
+        (node.collapsed && d3.layout.phylotree.is_node_visible(node))
       );
     });
     this.setState({ selectedNodes: filteredSelection });
@@ -301,9 +301,9 @@ class App extends Component {
 
   render() {
     return (
-      <div id="outer">
-        <header id="inner_fixed">Evidente</header>
-        <div id="div-container-all" className=" parent-div">
+      <div id='outer'>
+        <header id='inner_fixed'>Evidente</header>
+        <div id='div-container-all' className='parent-div'>
           <Phylotree
             tree={this.state.tree}
             onZoom={this.state.zoom}
