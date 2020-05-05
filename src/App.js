@@ -12,13 +12,53 @@ import "../node_modules/bootstrap/dist/js/bootstrap";
 import React, { Component } from "react";
 import Toolbox from "./components/toolbox";
 import * as _ from "underscore";
-import ConnectElements from "react-connect-elements";
 import bootbox from "bootbox";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import { color } from "d3";
+function nodeStyler(container, node) {
+  if (d3.layout.phylotree.is_leafnode(node)) {
+    var existing_circle = container.selectAll("circle");
 
+    if (existing_circle.size() == 1) {
+      existing_circle.remove();
+    }
+
+    //   if (node.copy_number) {
+    existing_circle = container.selectAll("path.node_shape").data([1]);
+    existing_circle.enter().append("path").classed("node_shape", true);
+
+    var bubble_size = this.node_bubble_size(node);
+
+    //     var label = existing_circle.attr("d", function(d) {
+    //       return d3.svg.symbol().type(compartment_labels(d)).size(bubble_size * bubble_size)();
+    //     }).selectAll("title").data([node.copy_number]);
+    //     label.enter().append("title");
+    //     label.text("" + node.copy_number + " copies");
+
+    //     existing_circle.style("stroke-width", "1px").style("stroke", "black");
+    //     if (node.text_angle) {
+    //       existing_circle.attr("transform", function(d) {
+    //         return "rotate(" + node.text_angle + ") translate(" + (node.text_align == "end" ? -1 : 1) * bubble_size / 2 + ",0)";
+    //       });
+    //     } else {
+    //       existing_circle.attr("transform", function(d) {
+    //         return "translate(" + bubble_size / 2 + ",0)";
+    //       });
+    //     }
+    //   }
+
+    // }
+
+    // if (node.date) {
+    //   var node_color = coloring_scheme(node.date);
+    //   container.selectAll("circle").style("fill", node_color);
+    //   container.selectAll("path").style("fill", node_color);
+    //   container.style("fill", node_color);
+  }
+}
 class App extends Component {
   state = {};
+  lr = d3.behavior.drag().on("drag", this.handleLR);
   color_cat = [
     "#8dd3c7",
     "#ffffb3",
@@ -49,20 +89,28 @@ class App extends Component {
   ];
   constructor() {
     super();
-    let tree = d3.layout.phylotree().options({
-      brush: false,
-      zoom: true,
-      "show-scale": false,
-      selectable: true,
-      collapsible: false,
-      hide: false,
-      "left-right-spacing": "fit-to-size",
-      "top-bottom-spacing": "fit-to-size",
-      reroot: false,
-      transitions: true,
-      "internal-names": true,
-      // "align-tips": true,
-    });
+    let tree = d3.layout
+      .phylotree()
+      .options({
+        brush: false,
+        zoom: true,
+        "show-scale": false,
+        selectable: true,
+        collapsible: false,
+        hide: false,
+        "left-right-spacing": "fit-to-size",
+        "top-bottom-spacing": "fit-to-size",
+        reroot: false,
+        transitions: true,
+        "internal-names": true,
+        "draw-size-bubbles": true,
+        // "align-tips": true,
+      })
+      .node_span((d) => 2)
+      // .style_nodes(nodeStyler)
+      .branch_name(function () {
+        return "";
+      });
     // .style_nodes(this.nodeStyler)
     // tree.branch_length(() => 2);
     const zoom = d3.behavior
@@ -71,6 +119,7 @@ class App extends Component {
       .scale(1)
       .scaleExtent([1, 15])
       .on("zoom", this.handleZoom);
+
     let cladeNumber = 0;
     let collapsedClades = [];
     this.state = {
@@ -82,6 +131,7 @@ class App extends Component {
       selectedNodes: [],
       visualizedMD: [],
       visualizedSNPs: [],
+      SNPTable: {},
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -120,10 +170,11 @@ class App extends Component {
       snpmd: json.snpInfo || [],
       mdinfo: metadataInfo,
     });
-    // _.keys(this.state.mdinfo).map((d) => {
-    //   console.log({ value: d, label: d });
-    //   return { value: d, label: d };
-    // });
+    $("#metadata-card").click();
+  };
+
+  updateSNPTable = (supportSNPTable, nonSupportSNPTable) => {
+    this.setState({ SNPTable: { support: supportSNPTable, notsupport: nonSupportSNPTable } });
   };
 
   createColorScales = (metadata) => {
@@ -143,44 +194,6 @@ class App extends Component {
     return metadata;
   };
 
-  // nodeStyler = (container, node) => {
-  //   console.log("test");
-
-  //   var compartment_labels = d3.scale
-  //     .ordinal()
-  //     .range(["circle", "square", "diamond", "triangle-down", "triangle-up"]);
-  //   if (node[s"own-collapse"] || false) {
-  //     var existing_circle = container.selectAll("circle");
-  //     console.log("existing_circle:", existing_circle);
-  //     existing_circle
-  //       .attr("fill", "red !important")
-  //       .attr("r", 4)
-  //       .attr("opacity", 0.5);
-  //     console.log("existing_circle:", existing_circle);
-
-  //     existing_circle = container
-  //       .selectAll("path.node_shape")
-  //       .data([node.compartment]);
-  //     existing_circle.enter().append("path").classed("node_shape", true);
-
-  //     var bubble_size = this.state.tree.node_bubble_size(node);
-
-  //     var label = existing_circle
-  //       .attr("d", function (d) {
-  //         return d3.svg
-  //           .symbol()
-  //           .type(compartment_labels(d))
-  //           .size(bubble_size * bubble_size)();
-  //       })
-  //       .selectAll("title")
-  //       .data([node.copy_number]);
-  //     label.enter().append("title");
-  //     label.text("" + node.copy_number + " copies");
-
-  //     existing_circle.style("stroke-width", "1px").style("stroke", "black");
-  //   }
-  // };
-
   handleMDChange = (ev) => {
     this.setState({
       visualizedMD: (ev || []).map(({ value }) => value),
@@ -189,6 +202,11 @@ class App extends Component {
   handleSNPChange = (ev) => {
     this.setState({
       visualizedSNPs: (ev || []).map(({ value }) => value),
+    });
+  };
+  handleSNPaddition = (snp) => {
+    this.setState({
+      visualizedSNPs: _.uniq(this.state.visualizedSNPs.concat([snp])),
     });
   };
 
@@ -269,8 +287,8 @@ class App extends Component {
   handleSelection = (selection) => {
     let filteredSelection = selection.filter((node) => {
       return (
-        d3.layout.phylotree.is_leafnode(node) ||
-        (node.collapsed && d3.layout.phylotree.is_node_visible(node))
+        (d3.layout.phylotree.is_leafnode(node) || node.collapsed) &&
+        d3.layout.phylotree.is_node_visible(node)
       );
     });
     this.setState({ selectedNodes: filteredSelection });
@@ -279,23 +297,35 @@ class App extends Component {
   componentDidMount() {
     let zoom = this.state.zoom;
     // Adds zoom on both
-    d3.select("#tree-display").call(zoom).call(zoom.event);
-    d3.select("#display_heatmap").call(zoom).call(zoom.event);
-
-    // // Uncomment to use loading function
-    // let example_tree =
-    //   "(((343:0.150276,CONGERA:0.213019)0.9600:0.230956,(45:0.263487,CONGERB:0.202633)0.9600:0.246917)0.9600:0.094785,((CAVEFISH:0.451027,(GOLDFISH:0.340495,ZEBRAFISH:0.390163)0.9600:0.220565)0.9600:0.067778,((((((NSAM:0.008113,NARG:0.014065)0.9600:0.052991,SPUN:0.061003,(SMIC:0.027806,SDIA:0.015298,SXAN:0.046873)0.9600:0.046977)0.9600:0.009822,(NAUR:0.081298,(SSPI:0.023876,STIE:0.013652)0.9600:0.058179)0.9600:0.091775)0.9600:0.073346,(MVIO:0.012271,MBER:0.039798)0.9600:0.178835)0.9600:0.147992,((BFNKILLIFISH:0.317455,(ONIL:0.029217,XCAU:0.084388)0.9600:0.201166)0.9600:0.055908,THORNYHEAD:0.252481)0.9600:0.061905)0.9600:0.157214,LAMPFISH:0.717196,((SCABBARDA:0.189684,SCABBARDB:0.362015)0.9600:0.282263,((VIPERFISH:0.318217,BLACKDRAGON:0.109912)0.9600:0.123642,LOOSEJAW:0.397100)0.9600:0.287152)0.9600:0.140663)0.9600:0.206729)0.9600:0.222485,(COELACANTH:0.558103,((CLAWEDFROG:0.441842,SALAMANDER:0.299607)0.9600:0.135307,((CHAMELEON:0.771665,((PIGEON:0.150909,CHICKEN:0.172733)0.9600:0.082163,ZEBRAFINCH:0.099172)0.9600:0.272338)0.9600:0.014055,((BOVINE:0.167569,DOLPHIN:0.157450)0.9600:0.104783,ELEPHANT:0.166557)0.9600:0.367205)0.9600:0.050892)0.9600:0.114731)0.9600:0.295021)";
-    // this.setState({ newick: example_tree });
+    // for (let container of ["#tree-display", "#display_heatmap_viz", "#display_md_viz"]) {
+    for (let container of ["#tree-display", "#display_heatmap_viz"]) {
+      d3.select(container).call(zoom).call(this.lr);
+    }
   }
 
   handleZoom() {
-    $("#heatmap-container").attr(
+    // for (let id of ["#heatmap-container", "#md-container", ".phylotree-container"]) {
+    for (let id of ["#heatmap-container", ".phylotree-container"]) {
+      let temp = d3.transform(d3.select(id).attr("transform"));
+      $(id).attr(
+        "transform",
+        `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
+      );
+    }
+  }
+
+  handleLR() {
+    let translate = {
+      "tree-display": ".phylotree-container",
+      display_heatmap_viz: "#heatmap-container",
+      display_md_viz: "#md-container",
+    };
+    let container = $(translate[this.id]);
+    // this.id === "tree-display" ? $(".phylotree-container") : $("#heatmap-container");
+    let t = d3.transform(container.attr("transform"));
+    container.attr(
       "transform",
-      `translate(0,  ${d3.event.translate[1]} )scale(${d3.event.scale})`
-    );
-    $(".phylotree-container").attr(
-      "transform",
-      `translate( ${d3.event.translate} )scale(${d3.event.scale})`
+      `translate( ${t.translate[0] + d3.event.dx}, ${t.translate[1]})scale(${t.scale})`
     );
   }
 
@@ -305,6 +335,7 @@ class App extends Component {
         <header id='inner_fixed'>Evidente</header>
         <div id='div-container-all' className='parent-div'>
           <Phylotree
+            updateSNPTable={this.updateSNPTable}
             tree={this.state.tree}
             onZoom={this.state.zoom}
             onCollapse={this.handleCollapse}
@@ -315,8 +346,12 @@ class App extends Component {
             onSelection={this.handleSelection}
             onCladeUpdate={this.handleCladeUpdate}
             newick={this.state.newick}
+            snpdata={this.state.snpdata}
+            ids={this.state.ids}
           />
           <Heatmap
+            divID={"heatmap_viz"}
+            containerID={"heatmap-container"}
             tree={this.state.tree}
             nodes={this.state.nodes}
             hiddenNodes={this.state.hiddenNodes}
@@ -329,10 +364,27 @@ class App extends Component {
             snpdata={this.state.snpdata}
             mdinfo={this.state.mdinfo}
           />
+          {/* <Heatmap
+            divID={"md_viz"}
+            containerID={"md-container"}
+            tree={this.state.tree}
+            nodes={this.state.nodes}
+            hiddenNodes={this.state.hiddenNodes}
+            collapsedClades={this.state.collapsedClades}
+            selectedNodes={this.state.selectedNodes}
+            ids={this.state.ids}
+            visMd={this.state.visualizedMD}
+            visSNPs={this.state.visualizedSNPs}
+            taxadata={this.state.taxamd}
+            snpdata={this.state.snpdata}
+            mdinfo={this.state.mdinfo}
+          /> */}
           <Toolbox
+            onSNPaddition={this.handleSNPaddition}
             onFileUpload={this.handleSubmit}
             onMDChange={this.handleMDChange}
             onSNPChange={this.handleSNPChange}
+            SNPTable={this.state.SNPTable}
             availableMDs={this.state.mdinfo}
             availableSNPs={this.state.availableSNPs}
             visMd={this.state.visualizedMD}

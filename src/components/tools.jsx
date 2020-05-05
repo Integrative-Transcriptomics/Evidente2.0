@@ -1,9 +1,56 @@
 import React, { Component } from "react";
+import ReactDOM from "react-dom";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
-import Select from "react-select";
+import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
 
+import { Tooltip, Slider, Typography } from "@material-ui/core";
+
+const { ValueContainer, Placeholder, MultiValueContainer } = components;
+
+const CustomValueContainer = ({ children, ...props }) => {
+  return (
+    <ValueContainer {...props}>
+      <Placeholder {...props} isFocused={props.isFocused}>
+        {props.selectProps.placeholder}
+      </Placeholder>
+      {React.Children.map(children, (child) =>
+        child && child.type !== Placeholder ? child : null
+      )}
+    </ValueContainer>
+  );
+};
+
+const CustomMultiValue = (props) => {
+  return (
+    <Tooltip title={"Here we could show the legend of the element"}>
+      <span>
+        <MultiValueContainer {...props} />
+      </span>
+    </Tooltip>
+  );
+};
+
+const selectStates = {
+  container: (provided, state) => ({
+    ...provided,
+    marginTop: 20,
+    height: "auto",
+  }),
+  valueContainer: (provided, state) => ({
+    ...provided,
+    overflow: "visible",
+    height: "auto",
+  }),
+  placeholder: (provided, state) => ({
+    ...provided,
+    position: "absolute",
+    top: state.hasValue || state.selectProps.inputValue ? -15 : "50%",
+    transition: "top 0.1s, font-size 0.1s",
+    fontSize: (state.hasValue || state.selectProps.inputValue) && 13,
+  }),
+};
 class Tools extends Component {
   state = {};
   /**
@@ -21,9 +68,9 @@ class Tools extends Component {
     return (
       <div>
         <h3>{this.props.children}</h3>
-        <Accordion defaultActiveKey='0'>
+        <Accordion id='tools' defaultActiveKey='0'>
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey='0'>
+            <Accordion.Toggle as={Card.Header} eventKey='0' id='files-card'>
               Load Files
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
@@ -36,17 +83,8 @@ class Tools extends Component {
                     { id: "SNPinfo", label: "SNP metadata" },
                     { id: "decoding", label: "Decoding files" },
                   ].map(({ id, label }) => (
-                    <Form.Group>
-                      <Form.File
-                        id={id}
-                        label={label}
-                        name={id}
-                        custom
-                        // onChange={(ev) =>
-                        //   (document.getElementById(`#${id}`).label =
-                        //     ev.target.files[0])
-                        // }
-                      />
+                    <Form.Group key={id}>
+                      <Form.File id={id} label={label} name={id} custom />
                     </Form.Group>
                   ))}
                   <Button variant='primary' type='submit'>
@@ -57,28 +95,83 @@ class Tools extends Component {
             </Accordion.Collapse>
           </Card>
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey='1'>
+            <Accordion.Toggle as={Card.Header} eventKey='1' id='metadata-card'>
               View Metadata
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='1'>
-              <div>
+              <Card.Body>
+                <span>Select to Visualize</span>
+                <Select
+                  id='snpdatashow'
+                  options={(this.props.availableSNPs || []).map((d) => ({ value: d, label: d }))}
+                  value={(this.props.visSNPs || []).map((d) => ({ value: d, label: d }))}
+                  onChange={this.props.onSNPChange}
+                  placeholder={"Visualize SNPs"}
+                  isMulti
+                  components={{
+                    ValueContainer: CustomValueContainer,
+                    MultiValueContainer: CustomMultiValue,
+                  }}
+                  menuPortalTarget={document.getElementById("tools")}
+                  styles={selectStates}
+                ></Select>
                 <Select
                   id='metadatashow'
                   options={this.getMetadata(this.props.availableMDs || [])}
                   onChange={this.props.onMDChange}
                   isMulti
+                  placeholder={"Visualize Taxa Metadata"}
+                  components={{
+                    ValueContainer: CustomValueContainer,
+                    MultiValueContainer: CustomMultiValue,
+                  }}
+                  menuPortalTarget={document.getElementById("tools")}
+                  styles={selectStates}
                 ></Select>
-                <Select
-                  id='snpdatashow'
-                  options={(this.props.availableSNPs || []).map((d) => {
-                    return { value: d, label: d };
-                  })}
-                  onChange={this.props.onSNPChange}
-                  isMulti
-                ></Select>
-                <br /> <br />
-                <br />
-              </div>
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+          <Card>
+            <Accordion.Toggle as={Card.Header} eventKey='2' id='filtering-card'>
+              Filter Nodes
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='2'>
+              <Card.Body>
+                {_.toPairs(this.props.availableMDs).map((arr) => {
+                  let k = arr[0],
+                    v = arr[1];
+                  let type = v.type.toLowerCase();
+                  if (type === "numerical") {
+                    return (
+                      <div key={k}>
+                        <Typography id='range-slider' gutterBottom>
+                          {k}
+                        </Typography>
+                        <Slider
+                          value={[20, 40]}
+                          valueLabelDisplay='auto'
+                          aria-labelledby='range-slider'
+                        />
+                      </div>
+                    );
+                  } else if (["categorical", "ordinal"].includes(type)) {
+                    return (
+                      <Select
+                        id='metadatashow'
+                        options={v.extent.map((d) => ({ value: d, label: d }))}
+                        isMulti
+                        placeholder={`Visualize ${k}`}
+                        components={{
+                          ValueContainer: CustomValueContainer,
+                          // MultiValueContainer: CustomMultiValue,
+                        }}
+                        menuPortalTarget={document.getElementById("tools")}
+                        styles={selectStates}
+                      ></Select>
+                    );
+                  }
+                })}
+              </Card.Body>
             </Accordion.Collapse>
           </Card>
         </Accordion>

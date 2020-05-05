@@ -1,6 +1,8 @@
 import * as d3 from "d3";
 import "../../node_modules/phylotree/phylotree";
 import * as $ from "jquery";
+import * as _ from "lodash";
+
 import * as bootbox from "bootbox";
 import React, { Component } from "react";
 
@@ -31,6 +33,34 @@ class Phylotree extends Component {
       this.props.tree.update();
       d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     });
+  }
+
+  show_node_snps(node) {
+    let node_name = [this.props.ids.numToLabel[node.tempid]];
+    let descendants = this.props.tree
+      .descendants(node)
+      .filter((d) => d.tempid !== node.tempid)
+      .map((d) => this.props.ids.numToLabel[d.tempid]);
+    let supportSNPs = this.props.snpdata.support;
+    let notSupportSNPs = this.props.snpdata.notsupport;
+    const modifyListOfSNPs = (listSNPs, listNames) =>
+      _.uniqWith(
+        listSNPs
+          .filter((snp) => listNames.includes(snp.node))
+          .map((snp) => ({ pos: snp.pos, allele: snp.allele }))
+          .sort((a, b) => d3.ascending(parseInt(a.pos), parseInt(b.pos))),
+        _.isEqual
+      );
+    let supportSNPTable = {
+      actualNode: modifyListOfSNPs(supportSNPs, node_name),
+      descendants: modifyListOfSNPs(supportSNPs, descendants),
+    };
+
+    let nonSupportSNPTable = {
+      actualNode: modifyListOfSNPs(notSupportSNPs, node_name),
+      descendants: modifyListOfSNPs(notSupportSNPs, descendants),
+    };
+    this.props.updateSNPTable(supportSNPTable, nonSupportSNPTable);
   }
 
   my_hide(node) {
@@ -101,70 +131,40 @@ class Phylotree extends Component {
     });
     this.props.tree
       .get_nodes()
-      .filter((n) => {
-        return !d3.layout.phylotree.is_leafnode(n);
-      })
+      // .filter((n) => {
+      //   return !d3.layout.phylotree.is_leafnode(n);
+      // })
       .forEach((tnode) => {
         d3.layout.phylotree.add_custom_menu(
           tnode,
-          (node) => {
-            if (node["own-collapse"]) {
-              return "Decollapse subtree";
-            }
-            return "Collapse substree";
-          },
-          () => {
-            this.my_collapse(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse);
-          },
-          () => {
-            return true;
-          }
+          () => "Show SNPs from Node",
+          () => this.show_node_snps(tnode),
+          () => true
+        );
+
+        d3.layout.phylotree.add_custom_menu(
+          tnode,
+          (node) => (node["own-collapse"] ? "Decollapse subtree" : "Collapse substree"),
+          () => this.my_collapse(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse),
+          () => !d3.layout.phylotree.is_leafnode(tnode)
         );
         d3.layout.phylotree.add_custom_menu(
           tnode, // add to this node
-          (node) => {
-            return "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree");
-          }, // display this text for the menu
-          () => {
-            this.my_hide(tnode, this.props.tree, this.props.onZoom);
-          },
-          // on-click callback include a reference to tree_node via transitive closure
-          (node) => {
-            return node.name !== "root";
-          } // condition on when to display the menu
-          // a function that takes node as an argument
+          (node) => "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree"), // display this text for the menu
+          () => this.my_hide(tnode, this.props.tree, this.props.onZoom),
+          (node) => node.name !== "root" // condition on when to display the menu
         );
         d3.layout.phylotree.add_custom_menu(
           tnode, // add to this node
-          (node) => {
-            if (node.has_hidden_nodes || false) {
-              return "Show the hidden nodes";
-            }
-          }, // display this text for the menu
-          () => {
-            this.my_showNodes(tnode);
-          },
-          // on-click callback include a reference to tree_node via transitive closure
-          (node) => {
-            return node.has_hidden_nodes || false;
-          } // condition on when to display the menu
-          // a function that takes node as an argument
+          (node) => (node.has_hidden_nodes || false) && "Show the hidden nodes", // display this text for the menu
+          () => this.my_showNodes(tnode),
+          (node) => node.has_hidden_nodes || false
         );
         d3.layout.phylotree.add_custom_menu(
           tnode, // add to this node
-          (node) => {
-            if (node["own-collapse"] || false) {
-              return "Rename clade";
-            }
-          }, // display this text for the menu
-          () => {
-            this.renameClade(tnode);
-          },
-          // on-click callback include a reference to tree_node via transitive closure
-          (node) => {
-            return node["own-collapse"] || false;
-          } // condition on when to display the menu
-          // a function that takes node as an argument
+          (node) => (node["own-collapse"] || false) && "Rename clade", // display this text for the menu
+          () => this.renameClade(tnode),
+          (node) => node["own-collapse"] || false
         );
       });
     this.runSelection();

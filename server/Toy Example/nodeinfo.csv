@@ -1,4 +1,4 @@
-Information,Value1,Value2,Cat1,Cat2
+Information,Value1,Value2,Cat1,CategoricalValue2
 Type,Numerical,Numerical,Categorical,Categorical
 343,0.644993873,0.375822982,2,4
 CONGERA,0.837524814,2.604385643,5,5

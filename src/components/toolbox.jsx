@@ -7,8 +7,10 @@ class Toolbox extends Component {
   componentDidUpdate() {}
   render() {
     return (
-      <div className="rchild">
-        <NodeInformation>Node Information</NodeInformation>
+      <div className='rchild'>
+        <NodeInformation SNPTable={this.props.SNPTable} onSNPaddition={this.props.onSNPaddition}>
+          Node Information
+        </NodeInformation>
         <Tools
           availableMDs={this.props.availableMDs}
           availableSNPs={this.props.availableSNPs}
