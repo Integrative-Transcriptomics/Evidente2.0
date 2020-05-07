@@ -5,13 +5,75 @@ import * as _ from "lodash";
 
 import * as bootbox from "bootbox";
 import React, { Component } from "react";
-
 class Phylotree extends Component {
   state = {};
   constructor() {
     super();
   }
+  nodeStyler = (container, node) => {
+    let div = d3.select("#tooltip");
+    let lookFor = node.collapsed ? node["show-name"] : node.name; // Either clade or leaf
+    console.log(node);
+    if (d3.layout.phylotree.is_leafnode(node) || node["own-collapse"]) {
+      container
+        .selectAll("circle")
+        .style("fill", "black")
+        .on("mouseover", () => {
+          if (!node.selected) {
+            $(`.${lookFor}.guides`).css("stroke", "red");
+          }
+          div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+          div
+            .html(lookFor)
+            .style("left", d3.event.pageX + "px")
+            .style("top", d3.event.pageY - 28 + "px");
+        })
+        .on("mouseout", () => {
+          if (!node.selected) {
+            $(`.${lookFor}.guides`).css("stroke", "gray");
+          }
+          div.transition().duration(500).style("opacity", 0);
+        });
 
+      // var existing_circle = container.selectAll("circle");
+      // console.log(existing_circle);
+      // existing_circle.attr("fill", "black");
+
+      // if (existing_circle.size() == 1) {
+      //   existing_circle.remove();
+      // }
+
+      //   if (node.copy_number) {
+
+      // var bubble_size = this.node_bubble_size(node);
+
+      //     var label = existing_circle.attr("d", function(d) {
+      //       return d3.svg.symbol().type(compartment_labels(d)).size(bubble_size * bubble_size)();
+      //     }).selectAll("title").data([node.copy_number]);
+      //     label.enter().append("title");
+      //     label.text("" + node.copy_number + " copies");
+
+      //     existing_circle.style("stroke-width", "1px").style("stroke", "black");
+      //     if (node.text_angle) {
+      //       existing_circle.attr("transform", function(d) {
+      //         return "rotate(" + node.text_angle + ") translate(" + (node.text_align == "end" ? -1 : 1) * bubble_size / 2 + ",0)";
+      //       });
+      //     } else {
+      //       existing_circle.attr("transform", function(d) {
+      //         return "translate(" + bubble_size / 2 + ",0)";
+      //       });
+      //     }
+      //   }
+
+      // }
+
+      // if (node.date) {
+      //   var node_color = coloring_scheme(node.date);
+      //   container.selectAll("circle").style("fill", node_color);
+      //   container.selectAll("path").style("fill", node_color);
+      //   container.style("fill", node_color);
+    }
+  };
   my_collapse(node) {
     node["own-collapse"] = !node["own-collapse"];
     if (node["own-collapse"]) {
@@ -118,10 +180,11 @@ class Phylotree extends Component {
     this.props.tree
       .size([this.container.offsetHeight, this.container.offsetWidth])
       .svg(d3.select("#tree-display"));
+    // .style_nodes(nodeStyler);
   }
 
   renderTree(example_tree) {
-    this.props.tree(example_tree).style_nodes(this.my_style_nodes).layout();
+    this.props.tree(example_tree).style_nodes(this.nodeStyler).layout();
     this.props.onUploadTree(this.props.tree.get_nodes());
     let count = 1;
     this.props.tree.traverse_and_compute((d) => {

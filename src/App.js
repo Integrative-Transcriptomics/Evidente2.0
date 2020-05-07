@@ -15,47 +15,7 @@ import * as _ from "underscore";
 import bootbox from "bootbox";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import { color } from "d3";
-function nodeStyler(container, node) {
-  if (d3.layout.phylotree.is_leafnode(node)) {
-    var existing_circle = container.selectAll("circle");
 
-    if (existing_circle.size() == 1) {
-      existing_circle.remove();
-    }
-
-    //   if (node.copy_number) {
-    existing_circle = container.selectAll("path.node_shape").data([1]);
-    existing_circle.enter().append("path").classed("node_shape", true);
-
-    var bubble_size = this.node_bubble_size(node);
-
-    //     var label = existing_circle.attr("d", function(d) {
-    //       return d3.svg.symbol().type(compartment_labels(d)).size(bubble_size * bubble_size)();
-    //     }).selectAll("title").data([node.copy_number]);
-    //     label.enter().append("title");
-    //     label.text("" + node.copy_number + " copies");
-
-    //     existing_circle.style("stroke-width", "1px").style("stroke", "black");
-    //     if (node.text_angle) {
-    //       existing_circle.attr("transform", function(d) {
-    //         return "rotate(" + node.text_angle + ") translate(" + (node.text_align == "end" ? -1 : 1) * bubble_size / 2 + ",0)";
-    //       });
-    //     } else {
-    //       existing_circle.attr("transform", function(d) {
-    //         return "translate(" + bubble_size / 2 + ",0)";
-    //       });
-    //     }
-    //   }
-
-    // }
-
-    // if (node.date) {
-    //   var node_color = coloring_scheme(node.date);
-    //   container.selectAll("circle").style("fill", node_color);
-    //   container.selectAll("path").style("fill", node_color);
-    //   container.style("fill", node_color);
-  }
-}
 class App extends Component {
   state = {};
   lr = d3.behavior.drag().on("drag", this.handleLR);
@@ -107,7 +67,6 @@ class App extends Component {
         // "align-tips": true,
       })
       .node_span((d) => 2)
-      // .style_nodes(nodeStyler)
       .branch_name(function () {
         return "";
       });
@@ -238,6 +197,7 @@ class App extends Component {
   };
 
   handleCladeUpdate = (oldName, newName) => {
+    $(`.guides.${oldName}`).removeClass(oldName).addClass(newName);
     let clades = this.state.collapsedClades;
     let renamedClade = clades.find((x) => x.showname === oldName);
     renamedClade.showname = newName;
@@ -297,15 +257,20 @@ class App extends Component {
   componentDidMount() {
     let zoom = this.state.zoom;
     // Adds zoom on both
-    // for (let container of ["#tree-display", "#display_heatmap_viz", "#display_md_viz"]) {
-    for (let container of ["#tree-display", "#display_heatmap_viz"]) {
+    for (let container of ["#tree-display", "#display_heatmap_viz", "#display_md_viz"]) {
+      // for (let container of ["#tree-display", "#display_heatmap_viz"]) {
       d3.select(container).call(zoom).call(this.lr);
     }
+    d3.select("body")
+      .append("div")
+      .attr("class", "tooltip")
+      .attr("id", "tooltip")
+      .style("display", "none");
   }
 
   handleZoom() {
-    // for (let id of ["#heatmap-container", "#md-container", ".phylotree-container"]) {
-    for (let id of ["#heatmap-container", ".phylotree-container"]) {
+    for (let id of ["#heatmap-container", "#md-container", ".phylotree-container"]) {
+      // for (let id of ["#heatmap-container", ".phylotree-container"]) {
       let temp = d3.transform(d3.select(id).attr("transform"));
       $(id).attr(
         "transform",
@@ -343,6 +308,7 @@ class App extends Component {
             onUploadTree={this.handleUploadTree}
             onHide={this.handleHide}
             onShowNodes={this.handleShow}
+            selectedNodes={this.state.selectedNodes}
             onSelection={this.handleSelection}
             onCladeUpdate={this.handleCladeUpdate}
             newick={this.state.newick}
@@ -352,6 +318,7 @@ class App extends Component {
           <Heatmap
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
+            margin={{ top: 0, right: 20, bottom: 0, left: 100 }}
             tree={this.state.tree}
             nodes={this.state.nodes}
             hiddenNodes={this.state.hiddenNodes}
@@ -360,13 +327,15 @@ class App extends Component {
             ids={this.state.ids}
             visMd={this.state.visualizedMD}
             visSNPs={this.state.visualizedSNPs}
-            taxadata={this.state.taxamd}
+            taxadata={[]}
             snpdata={this.state.snpdata}
-            mdinfo={this.state.mdinfo}
+            mdinfo={[]}
+            isSNP={true}
           />
-          {/* <Heatmap
+          <Heatmap
             divID={"md_viz"}
             containerID={"md-container"}
+            margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
             tree={this.state.tree}
             nodes={this.state.nodes}
             hiddenNodes={this.state.hiddenNodes}
@@ -374,11 +343,12 @@ class App extends Component {
             selectedNodes={this.state.selectedNodes}
             ids={this.state.ids}
             visMd={this.state.visualizedMD}
-            visSNPs={this.state.visualizedSNPs}
+            visSNPs={[]}
             taxadata={this.state.taxamd}
-            snpdata={this.state.snpdata}
+            snpdata={[]}
             mdinfo={this.state.mdinfo}
-          /> */}
+            isSNP={false}
+          />
           <Toolbox
             onSNPaddition={this.handleSNPaddition}
             onFileUpload={this.handleSubmit}

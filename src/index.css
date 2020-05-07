@@ -30,11 +30,11 @@ code {
   /* background-color: aqua; */
 }
 .lchild {
-  width: 45%;
+  width: 40%;
   flex: 1 1 auto;
 }
 .mchild {
-  width: 35%;
+  width: 20%;
   flex: 1 1 auto;
 }
 .rchild {
@@ -61,4 +61,14 @@ div.tooltip {
   border: 0px;
   border-radius: 8px;
   pointer-events: none;
+}
+.guides {
+  stroke: "grey";
+  stroke-dasharray: "10,3";
+  stroke-opacity: 0.25;
+}
+
+.guides-selected,
+.guides-hovered {
+  stroke: "red" !important;
 }

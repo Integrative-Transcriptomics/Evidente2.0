@@ -22,15 +22,15 @@ const CustomValueContainer = ({ children, ...props }) => {
   );
 };
 
-const CustomMultiValue = (props) => {
-  return (
-    <Tooltip title={"Here we could show the legend of the element"}>
-      <span>
-        <MultiValueContainer {...props} />
-      </span>
-    </Tooltip>
-  );
-};
+// const CustomMultiValue = (props) => {
+//   return (
+//     <Tooltip title={"Here we could show the legend of the element"}>
+//       <span>
+//         <MultiValueContainer {...props} />
+//       </span>
+//     </Tooltip>
+//   );
+// };
 
 const selectStates = {
   container: (provided, state) => ({
@@ -110,7 +110,7 @@ class Tools extends Component {
                   isMulti
                   components={{
                     ValueContainer: CustomValueContainer,
-                    MultiValueContainer: CustomMultiValue,
+                    // MultiValueContainer: CustomMultiValue,
                   }}
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
@@ -123,7 +123,7 @@ class Tools extends Component {
                   placeholder={"Visualize Taxa Metadata"}
                   components={{
                     ValueContainer: CustomValueContainer,
-                    MultiValueContainer: CustomMultiValue,
+                    // MultiValueContainer: CustomMultiValue,
                   }}
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
