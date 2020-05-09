@@ -60,8 +60,6 @@ class Heatmap extends Component {
     if (props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
     } else if (shownNodes.length !== this.props.nodes.length) {
-      let filteredData = props.taxadata;
-
       let processedData = this.isSNP
         ? this.preprocessSNPs(
             props.snpdata.support,
@@ -70,6 +68,7 @@ class Heatmap extends Component {
             props.ids.labToNum
           )
         : props.taxadata;
+
       // Cluster the data
       if (props.collapsedClades.length !== 0 || false) {
         cellWidth = 40;
@@ -128,9 +127,7 @@ class Heatmap extends Component {
 
       let ticks = container.select(".y").selectAll(".tick");
 
-      let elements = container
-        .selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`)
-        .remove(); //remove before new creation
+      container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
 
       ticks
 
@@ -203,7 +200,7 @@ class Heatmap extends Component {
         //     .style("stroke-opacity", 1);
         // }
       });
-      if (this.isSNP && this.props.visMd.length != 0) {
+      if (this.isSNP && this.props.visMd.length !== 0) {
         ticks
           .append("line")
           .attr("class", (d) => `guides  ${d}`)
@@ -496,13 +493,13 @@ class Heatmap extends Component {
   highlight_leaves(selection = []) {
     if (selection.length === 0) {
       $(".cell, .boxplot, .histo, .pattern").css("opacity", 1); // Nothing selected, everythin bold
-      $(".guides").css("stroke", "grey");
+      d3.selectAll(`.guides`).style("stroke", "grey").style("stroke-opacity", 0.25);
     } else {
       $(".cell, .boxplot, .histo, .pattern").css("opacity", 0.2);
       selection.forEach((t) => {
         let lookFor = t.collapsed ? t["show-name"] : t.name; // Either clade or leaf
         $(`.${lookFor}`).css("opacity", 1);
-        $(`.${lookFor}.guides`).css("stroke", "red");
+        d3.selectAll(`.${lookFor}.guides`).style("stroke", "red").style("stroke-opacity", 0.75);
       });
     }
   }
@@ -526,7 +523,7 @@ class Heatmap extends Component {
   clusterMetadata = (v, k, mdinfo, actualClade) =>
     mdinfo[k].type.toLowerCase() === "numerical"
       ? boxplot.boxplotStats(v)
-      : mdinfo[k].type.toLowerCase() === "categorical"
+      : ["categorical", "ordinal"].includes(mdinfo[k].type.toLowerCase())
       ? _.countBy(v)
       : actualClade.showname;
 
@@ -588,10 +585,8 @@ class Heatmap extends Component {
       .style("stroke-dasharray", "10,3")
       .style("stroke-opacity", 0.25);
 
-    container
-      .append("g")
-      .attr("class", "x axis")
-      .call(xAxis)
+    let xAxe = container.append("g").attr("class", "x axis").call(xAxis);
+    xAxe
       .selectAll("text")
       .attr("font-weight", "normal")
       .style("text-anchor", "start")

@@ -1,13 +1,12 @@
 import React, { Component } from "react";
-import ReactDOM from "react-dom";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
 
-import { Tooltip, Slider, Typography } from "@material-ui/core";
+import { Slider, Typography } from "@material-ui/core";
 
-const { ValueContainer, Placeholder, MultiValueContainer } = components;
+const { ValueContainer, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
   return (

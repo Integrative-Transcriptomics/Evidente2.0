@@ -4,6 +4,7 @@ import Phylotree from "./components/phylotree";
 import Heatmap from "./components/heatmap";
 import * as d3 from "d3";
 import * as d3v5 from "d3v5";
+import SNPTable from "./components/table";
 
 import * as $ from "jquery";
 // import { observable } from "mobx";
@@ -11,10 +12,11 @@ import "../node_modules/jquery/dist/jquery";
 import "../node_modules/bootstrap/dist/js/bootstrap";
 import React, { Component } from "react";
 import Toolbox from "./components/toolbox";
-import * as _ from "underscore";
+import * as _ from "lodash";
 import bootbox from "bootbox";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import { color } from "d3";
+import OrdinalModal from "./components/modal-ordinal-sort";
 
 class App extends Component {
   state = {};
@@ -91,6 +93,7 @@ class App extends Component {
       visualizedMD: [],
       visualizedSNPs: [],
       SNPTable: {},
+      ordinalModalShow: false,
     };
 
     this.handleChange = this.handleChange.bind(this);
@@ -119,7 +122,56 @@ class App extends Component {
     });
 
     let json = await response.json();
-    let metadataInfo = this.createColorScales(json.metadataInfo || {});
+
+    let metadataInfo = json.metadataInfo || {};
+    let ordinalValues = _.toPairs(metadataInfo).filter(
+      (d) => d[1].type.toLowerCase() === "ordinal"
+    );
+    if (ordinalValues.length !== 0) {
+      console.log(ordinalValues);
+      this.setState({
+        ordinalModalShow: true,
+        ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
+      });
+      // $("#ordinal-modal").modal("show");
+      //   let dialog = bootbox.dialog({
+      //     title: "A custom dialog with init",
+      //     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+      //     callback: (result) => console.log(result),
+      //     buttons: {
+      //       cancel: {
+      //         label: "I'm a cancel button!",
+      //         className: "btn-danger",
+      //         callback: function () {
+      //           console.log("Custom cancel clicked");
+      //         },
+      //       },
+      //       ok: {
+      //         label: "I'm an OK button!",
+      //         className: "btn-info",
+      //         callback: function () {
+      //           console.log("Custom OK clicked");
+      //         },
+      //       },
+      //     },
+      //   });
+      //   dialog.init(() => {
+      //     dialog
+      //       .find(".bootbox-body")
+      //       .html(
+      //         `${(
+      //           <SNPTable
+      //             rows={_.get(this.state.SNPTable, `notsupport.descendants`, [])}
+      //             title={"SNPs among the actual subtree"}
+      //             onSNPaddition={this.onSNPaddition}
+      //           ></SNPTable>
+      //         )}`
+      //       );
+      //   });
+      // }
+    }
+    metadataInfo = this.createColorScales(metadataInfo);
+
     this.setState({
       newick: json.newick,
       snpdata: { support: json.support, notsupport: json.notSupport },
@@ -138,12 +190,13 @@ class App extends Component {
 
   createColorScales = (metadata) => {
     _.keys(metadata).forEach((k) => {
-      console.log(metadata[k].extent);
+      let actualType = metadata[k].type.toLowerCase();
+      let actualExtent = metadata[k].extent;
       let colorScale =
-        metadata[k].type.toLowerCase() === "numerical"
-          ? d3.scale.linear().domain(metadata[k].extent).range(["blue", "red"])
-          : metadata[k].type.toLowerCase() === "categorical"
-          ? d3.scale.ordinal().domain(metadata[k].extent).range(this.color_cat)
+        actualType === "numerical"
+          ? d3.scale.linear().domain(actualExtent).range(["blue", "red"])
+          : ["categorical", "ordinal"].includes(actualType)
+          ? d3.scale.ordinal().domain(actualExtent).range(this.color_cat)
           : d3.scale
               .ordinal()
               .domain(["A", "C", "T", "G", "N"])
@@ -195,7 +248,15 @@ class App extends Component {
     this.setState({ collapsedClades: jointNodes });
     return clade.name;
   };
+  handleCloseModal = (extents) => {
+    let metadataInfo = this.state.mdinfo;
+    for (let pair of extents) {
+      metadataInfo[pair[0]].extent = pair[1];
+    }
+    metadataInfo = this.createColorScales(metadataInfo);
 
+    this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
+  };
   handleCladeUpdate = (oldName, newName) => {
     $(`.guides.${oldName}`).removeClass(oldName).addClass(newName);
     let clades = this.state.collapsedClades;
@@ -361,6 +422,12 @@ class App extends Component {
             visSNPs={this.state.visualizedSNPs}
           ></Toolbox>
         </div>
+        <OrdinalModal
+          ID='ordinal-modal'
+          show={this.state.ordinalModalShow}
+          ordinalValues={this.state.ordinalValues}
+          handleClose={this.handleCloseModal}
+        ></OrdinalModal>
       </div>
     );
   }

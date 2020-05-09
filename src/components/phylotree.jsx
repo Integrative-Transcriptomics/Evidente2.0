@@ -13,14 +13,13 @@ class Phylotree extends Component {
   nodeStyler = (container, node) => {
     let div = d3.select("#tooltip");
     let lookFor = node.collapsed ? node["show-name"] : node.name; // Either clade or leaf
-    console.log(node);
     if (d3.layout.phylotree.is_leafnode(node) || node["own-collapse"]) {
       container
         .selectAll("circle")
         .style("fill", "black")
         .on("mouseover", () => {
           if (!node.selected) {
-            $(`.${lookFor}.guides`).css("stroke", "red");
+            d3.selectAll(`.${lookFor}.guides`).style("stroke", "red").style("stroke-opacity", 0.75);
           }
           div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
           div
@@ -30,48 +29,12 @@ class Phylotree extends Component {
         })
         .on("mouseout", () => {
           if (!node.selected) {
-            $(`.${lookFor}.guides`).css("stroke", "gray");
+            d3.selectAll(`.${lookFor}.guides`)
+              .style("stroke", "gray")
+              .style("stroke-opacity", 0.25);
           }
           div.transition().duration(500).style("opacity", 0);
         });
-
-      // var existing_circle = container.selectAll("circle");
-      // console.log(existing_circle);
-      // existing_circle.attr("fill", "black");
-
-      // if (existing_circle.size() == 1) {
-      //   existing_circle.remove();
-      // }
-
-      //   if (node.copy_number) {
-
-      // var bubble_size = this.node_bubble_size(node);
-
-      //     var label = existing_circle.attr("d", function(d) {
-      //       return d3.svg.symbol().type(compartment_labels(d)).size(bubble_size * bubble_size)();
-      //     }).selectAll("title").data([node.copy_number]);
-      //     label.enter().append("title");
-      //     label.text("" + node.copy_number + " copies");
-
-      //     existing_circle.style("stroke-width", "1px").style("stroke", "black");
-      //     if (node.text_angle) {
-      //       existing_circle.attr("transform", function(d) {
-      //         return "rotate(" + node.text_angle + ") translate(" + (node.text_align == "end" ? -1 : 1) * bubble_size / 2 + ",0)";
-      //       });
-      //     } else {
-      //       existing_circle.attr("transform", function(d) {
-      //         return "translate(" + bubble_size / 2 + ",0)";
-      //       });
-      //     }
-      //   }
-
-      // }
-
-      // if (node.date) {
-      //   var node_color = coloring_scheme(node.date);
-      //   container.selectAll("circle").style("fill", node_color);
-      //   container.selectAll("path").style("fill", node_color);
-      //   container.style("fill", node_color);
     }
   };
   my_collapse(node) {
@@ -87,13 +50,20 @@ class Phylotree extends Component {
   }
 
   renameClade(node) {
-    bootbox.prompt("Please enter the name of the clade", (name) => {
-      name = name.replace(/ /g, "-");
-      let oldName = node["show-name"];
-      node["show-name"] = name;
-      this.props.onCladeUpdate(oldName, name);
-      this.props.tree.update();
-      d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+    bootbox.prompt({
+      title: `Please insert the new name for the clade named "${node["show-name"]}" `,
+      centerVertical: true,
+      callback: (name) => {
+        if (name) {
+          // TODO: Catch that the name is not already given!!!!
+          name = name.replace(/ /g, "-");
+          let oldName = node["show-name"];
+          node["show-name"] = name;
+          this.props.onCladeUpdate(oldName, name);
+          this.props.tree.update();
+          d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+        }
+      },
     });
   }
 
@@ -123,6 +93,7 @@ class Phylotree extends Component {
       descendants: modifyListOfSNPs(notSupportSNPs, descendants),
     };
     this.props.updateSNPTable(supportSNPTable, nonSupportSNPTable);
+    $("#supportingSNPs-header").click();
   }
 
   my_hide(node) {
@@ -169,18 +140,17 @@ class Phylotree extends Component {
       this.props.onSelection(this.props.tree.get_selection());
     }
   }
-
+  shouldComponentUpdate(nextProp, nextState) {
+    return nextProp.newick && nextProp.newick !== this.props.newick;
+  }
   componentDidUpdate(prevProp) {
-    if (prevProp.newick === undefined && this.props.newick !== "") {
-      this.renderTree(this.props.newick);
-    }
+    this.renderTree(this.props.newick);
     d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
   }
   componentDidMount() {
     this.props.tree
       .size([this.container.offsetHeight, this.container.offsetWidth])
       .svg(d3.select("#tree-display"));
-    // .style_nodes(nodeStyler);
   }
 
   renderTree(example_tree) {
@@ -192,44 +162,39 @@ class Phylotree extends Component {
       count = count + 1;
       return d;
     });
-    this.props.tree
-      .get_nodes()
-      // .filter((n) => {
-      //   return !d3.layout.phylotree.is_leafnode(n);
-      // })
-      .forEach((tnode) => {
-        d3.layout.phylotree.add_custom_menu(
-          tnode,
-          () => "Show SNPs from Node",
-          () => this.show_node_snps(tnode),
-          () => true
-        );
+    this.props.tree.get_nodes().forEach((tnode) => {
+      d3.layout.phylotree.add_custom_menu(
+        tnode,
+        () => "Show SNPs from Node",
+        () => this.show_node_snps(tnode),
+        () => true
+      );
 
-        d3.layout.phylotree.add_custom_menu(
-          tnode,
-          (node) => (node["own-collapse"] ? "Decollapse subtree" : "Collapse substree"),
-          () => this.my_collapse(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse),
-          () => !d3.layout.phylotree.is_leafnode(tnode)
-        );
-        d3.layout.phylotree.add_custom_menu(
-          tnode, // add to this node
-          (node) => "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree"), // display this text for the menu
-          () => this.my_hide(tnode, this.props.tree, this.props.onZoom),
-          (node) => node.name !== "root" // condition on when to display the menu
-        );
-        d3.layout.phylotree.add_custom_menu(
-          tnode, // add to this node
-          (node) => (node.has_hidden_nodes || false) && "Show the hidden nodes", // display this text for the menu
-          () => this.my_showNodes(tnode),
-          (node) => node.has_hidden_nodes || false
-        );
-        d3.layout.phylotree.add_custom_menu(
-          tnode, // add to this node
-          (node) => (node["own-collapse"] || false) && "Rename clade", // display this text for the menu
-          () => this.renameClade(tnode),
-          (node) => node["own-collapse"] || false
-        );
-      });
+      d3.layout.phylotree.add_custom_menu(
+        tnode,
+        (node) => (node["own-collapse"] ? "Decollapse subtree" : "Collapse substree"),
+        () => this.my_collapse(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse),
+        () => !d3.layout.phylotree.is_leafnode(tnode)
+      );
+      d3.layout.phylotree.add_custom_menu(
+        tnode, // add to this node
+        (node) => "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree"), // display this text for the menu
+        () => this.my_hide(tnode, this.props.tree, this.props.onZoom),
+        (node) => node.name !== "root" // condition on when to display the menu
+      );
+      d3.layout.phylotree.add_custom_menu(
+        tnode, // add to this node
+        (node) => (node.has_hidden_nodes || false) && "Show the hidden nodes", // display this text for the menu
+        () => this.my_showNodes(tnode),
+        (node) => node.has_hidden_nodes || false
+      );
+      d3.layout.phylotree.add_custom_menu(
+        tnode, // add to this node
+        (node) => (node["own-collapse"] || false) && "Rename clade", // display this text for the menu
+        () => this.renameClade(tnode),
+        (node) => node["own-collapse"] || false
+      );
+    });
     this.runSelection();
   }
 

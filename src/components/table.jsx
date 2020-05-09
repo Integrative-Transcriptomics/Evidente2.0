@@ -7,6 +7,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import * as $ from "jquery";
+import { Button } from "@material-ui/core";
 
 class SNPTable extends Component {
   state = {};
@@ -38,15 +39,16 @@ class SNPTable extends Component {
                   </TableCell>
                   <TableCell align='left'>{row.allele}</TableCell>
                   <TableCell>
-                    <a
-                      href='#'
+                    <Button
+                      size='small'
+                      variant='outlined'
                       style={{ color: "black" }}
                       onClick={() => {
                         this.props.onSNPaddition(row.pos);
                       }}
                     >
                       Visualize
-                    </a>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

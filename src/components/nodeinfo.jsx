@@ -6,11 +6,6 @@ import * as _ from "lodash";
 class NodeInformation extends Component {
   state = {};
 
-  createData(name, calories, fat, carbs, protein) {
-    return { name, calories, fat, carbs, protein };
-  }
-
-  rows = _.times(100, () => this.createData("Frozen yoghurt", 6.0, 24, 4.0));
   render() {
     return (
       <div>
@@ -18,11 +13,11 @@ class NodeInformation extends Component {
         <div>
           <Accordion>
             <Card>
-              <Accordion.Toggle as={Card.Header} eventKey='0'>
+              <Accordion.Toggle as={Card.Header} eventKey='0' id='supportingSNPs-header'>
                 Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='0'>
-                <Card.Body style={{ maxHeight: 400, overflow: "auto" }}>
+                <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `support.actualNode`, [])}
                     title={"SNPs among the actual node"}
@@ -43,7 +38,7 @@ class NodeInformation extends Component {
                 Non Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='1'>
-                <Card.Body style={{ maxHeight: 400, overflow: "auto" }}>
+                <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `notsupport.actualNode`, [])}
                     title={"SNPs among the actual node"}
