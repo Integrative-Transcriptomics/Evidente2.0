@@ -1,5 +1,5 @@
 Information	Origin Place	Origin Date	AR 1	AR 2	AR 3	AR 4	AR 5	AR 6	AR 7	Gene Expressed	No Of Infections	Source	NumValue
-Type	Categorical	Date	Categorical	Categorical	Categorical	Categorical	Categoriacal	Categorical	Categorical	Categorical	Numerical	Categorical	Numerical
+Type	Categorical	Date	Categorical	Categorical	Categorical	Categorical	Categorical	Categorical	Categorical	Categorical	Numerical	Categorical	Numerical
 1126-2011 Brazil 2011	BRA	01-01-11	0	1	1	1	1	1	1	1	1	FIRST	8.068849019
 1262-16 Pakistan 2016	PAK	01-01-16	0	1	1	1	1	1	1	0	2	THIRD	6.974552148
 2188-2007 Brazil 2007	BRA	01-01-07	0	1	1	1	1	1	1	1	3	SECOND	0.712791855

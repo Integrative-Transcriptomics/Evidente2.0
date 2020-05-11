@@ -22,10 +22,13 @@ app.post("/api/upload", (req, res, next) => {
     // Read all files
     let newick = fs.readFileSync(files.nwk.path, "utf8");
     let taxaInfo = await readCSV(files.taxainfo.path, {
-      separator:
-        pathparser.extname(files.taxainfo.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
+      separator: pathparser.extname(files.taxainfo.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
     });
     let { metadataInfo, taxaInfoMod } = await extractMetadata(taxaInfo); // extract line with metadata information
+    metadataInfo = _.assign(
+      { SNP: { type: "SNP", extent: ["A", "C", "T", "G", "N"] } },
+      metadataInfo
+    );
     let snpInfo = await readCSV(files.SNPinfo.path, {
       separator: pathparser.extname(files.SNPinfo.name) === ".tsv" ? "\t" : ",",
     });
@@ -39,10 +42,7 @@ app.post("/api/upload", (req, res, next) => {
 
       true
     );
-    let notSupport = await readCSV(
-      "./server/Ergebnis/notSupportSplitKeys.txt",
-      noHeaders
-    );
+    let notSupport = await readCSV("./server/Ergebnis/notSupportSplitKeys.txt", noHeaders);
 
     // Delete files after they are read
     _.keys(files).forEach((d) => {
@@ -61,10 +61,7 @@ app.post("/api/upload", (req, res, next) => {
       resultTransformation[1]
     );
     let transformedNonSupportKeys = resultTransformationNonSupport[0];
-    let setOfSnps = _.sortBy(
-      [...resultTransformationNonSupport[1].values()],
-      (d) => parseInt(d)
-    );
+    let setOfSnps = _.sortBy([...resultTransformationNonSupport[1].values()], (d) => parseInt(d));
     res.json({
       newick: newick,
       taxaInfo: taxaInfoMod,
@@ -80,9 +77,11 @@ app.post("/api/upload", (req, res, next) => {
 
 async function extractMetadata(taxaInfo) {
   let metadataInfo = _.head(taxaInfo);
+  // metadataInfo = _.mapKeys(metadataInfo, (v, k) => k.replace(/ /g, "-"));
   taxaInfoMod = _.tail(taxaInfo).map((d) =>
     _.update(_.pickBy(d), "Information", (v) => v.replace(/ /g, "_"))
   );
+
   _.toPairs(metadataInfo).forEach((entry) => {
     let k = entry[0],
       v = entry[1];
@@ -95,7 +94,7 @@ async function extractMetadata(taxaInfo) {
       dataDomain = [...new Set(allValues).values()];
     }
 
-    metadataInfo[k] = { type: v, extent: dataDomain };
+    metadataInfo[k] = { type: v.toLowerCase(), extent: dataDomain };
   });
   return { metadataInfo, taxaInfoMod };
 }
@@ -133,20 +132,19 @@ const executeJava = async (snp, nwk) => {
   console.log(snp, nwk);
   let exec = require("child_process").exec;
   return new Promise((resolve, reject) => {
-    const child = exec(
-      `java -jar ./server/main.jar ${snp} ${nwk} ./server/`,
-      async function (error, stdout, stderr) {
-        console.log(stdout);
-        resolve(stdout);
-        if (error !== null) {
-          console.log(`exec error: ${error}`);
-          reject(error);
-        }
+    const child = exec(`java -jar ./server/main.jar ${snp} ${nwk} ./server/`, async function (
+      error,
+      stdout,
+      stderr
+    ) {
+      console.log(stdout);
+      resolve(stdout);
+      if (error !== null) {
+        console.log(`exec error: ${error}`);
+        reject(error);
       }
-    );
+    });
   });
 };
 
-app.listen(3001, () =>
-  console.log("Express server is running on localhost:3001")
-);
+app.listen(3001, () => console.log("Express server is running on localhost:3001"));

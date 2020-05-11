@@ -388,6 +388,7 @@ class App extends Component {
             ids={this.state.ids}
             visMd={this.state.visualizedMD}
             visSNPs={this.state.visualizedSNPs}
+            SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
             taxadata={[]}
             snpdata={this.state.snpdata}
             mdinfo={[]}

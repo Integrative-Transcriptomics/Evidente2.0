@@ -7,10 +7,7 @@ import * as _ from "lodash";
 class Heatmap extends Component {
   isSNP = this.props.isSNP;
   state = {};
-  SNPcolorScale = d3.scale
-    .ordinal()
-    .domain(["A", "C", "T", "G", "N"])
-    .range(["red", "yellow", "blue", "green", "purple"]);
+  SNPcolorScale = this.props.SNPcolorScale;
 
   SNPprefix = "SNP_Pos_";
 
@@ -47,6 +44,7 @@ class Heatmap extends Component {
   componentDidUpdate(prevProp, prevState) {
     let state = this.state;
     let props = this.props;
+    this.SNPcolorScale = this.props.SNPcolorScale;
 
     let cellWidth = state.cellWidth;
     let cellSize = cellWidth - 0.5;

@@ -5,6 +5,7 @@ import * as _ from "lodash";
 import * as $ from "jquery";
 
 import { Slider, Typography } from "@material-ui/core";
+import Legend from "./legend";
 
 const { ValueContainer, Placeholder } = components;
 
@@ -51,14 +52,13 @@ const selectStates = {
   }),
 };
 class Tools extends Component {
-  state = {};
   /**
    * Creates the labels and values for the correspoinding selecting menu
    * @param {dictionary of metadata} metadata
    */
   getMetadata(metadata) {
     return _.keys(metadata)
-      .filter((d) => d !== "Information")
+      .filter((d) => !["SNP", "Information"].includes(d))
       .map((d) => {
         return { value: d, label: d };
       });
@@ -98,7 +98,7 @@ class Tools extends Component {
               View Metadata
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='1'>
-              <Card.Body>
+              <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                 <span>Select to Visualize</span>
                 <Select
                   id='snpdatashow'
@@ -127,6 +127,7 @@ class Tools extends Component {
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
                 ></Select>
+                <Legend availableMDs={this.props.availableMDs}></Legend>
               </Card.Body>
             </Accordion.Collapse>
           </Card>
