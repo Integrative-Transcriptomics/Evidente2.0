@@ -61,6 +61,46 @@ class Legend extends Component {
           .attr("width", cellWidth)
           .attr("height", 15)
           .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")})`);
+        group
+          .append("text")
+          .style("text-anchor", "start")
+          .attr({
+            x: 2,
+            y: 15 * 0.75,
+          })
+          .attr("stroke", "white")
+          .attr("stroke-width", "3px")
+          .attr("opacity", 0.75)
+          .text(extent[0].toFixed(2));
+        group
+          .append("text")
+          .style("text-anchor", "start")
+          .attr({
+            x: 2,
+            y: 15 * 0.75,
+          })
+          .attr("fill", "black")
+          .text(extent[0].toFixed(2));
+        group
+          .append("text")
+          .style("text-anchor", "end")
+          .attr({
+            x: cellWidth - 2,
+            y: 15 * 0.75,
+          })
+          .attr("stroke", "white")
+          .attr("stroke-width", "3px")
+          .attr("opacity", 0.75)
+          .text(extent[1].toFixed(2));
+        group
+          .append("text")
+          .style("text-anchor", "end")
+          .attr({
+            x: cellWidth - 2,
+            y: 15 * 0.75,
+          })
+          .attr("fill", "black")
+          .text(extent[1].toFixed(2));
         break;
       case "snp":
       case "categorical":
@@ -77,20 +117,26 @@ class Legend extends Component {
               x: i * cubeWidth,
             })
             .style("fill", colorScale(value));
+
           group
             .append("text")
-            // .style({
-            //   "text-stroke": "1px black",
-            //   "text-anchor": "middle",
-            //   "text-color": "white",
-            // })
+            .style("text-anchor", "middle")
             .attr({
               x: i * cubeWidth + cubeWidth * 0.5,
               y: 15 * 0.75,
             })
-            .attr("fill", "white")
-            .attr("stroke", "black")
-            .attr("stroke-width", "1px")
+            .attr("stroke", "white")
+            .attr("stroke-width", "3px")
+            .attr("opacity", 0.75)
+            .text(value);
+          group
+            .append("text")
+            .style("text-anchor", "middle")
+            .attr({
+              x: i * cubeWidth + cubeWidth * 0.5,
+              y: 15 * 0.75,
+            })
+            .attr("fill", "black")
             .text(value);
           i = i + 1;
         }

@@ -494,6 +494,8 @@ class Heatmap extends Component {
       d3.selectAll(`.guides`).style("stroke", "grey").style("stroke-opacity", 0.25);
     } else {
       $(".cell, .boxplot, .histo, .pattern").css("opacity", 0.2);
+      d3.selectAll(`.guides`).style("stroke", "grey").style("stroke-opacity", 0.25);
+
       selection.forEach((t) => {
         let lookFor = t.collapsed ? t["show-name"] : t.name; // Either clade or leaf
         $(`.${lookFor}`).css("opacity", 1);
