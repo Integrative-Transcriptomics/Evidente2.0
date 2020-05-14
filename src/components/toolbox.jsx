@@ -19,6 +19,7 @@ class Toolbox extends Component {
           onSNPChange={this.props.onSNPChange}
           visMd={this.props.visMd}
           visSNPs={this.props.visSNPs}
+          onColorChange={this.props.onColorChange}
         >
           Tools
         </Tools>

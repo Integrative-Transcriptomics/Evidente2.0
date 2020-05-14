@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Modal, Button } from "react-bootstrap";
+import ModalOwn from "./ModalOwn";
 import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
 import arrayMove from "array-move";
 import * as _ from "lodash";
@@ -57,28 +57,18 @@ class OrdinalModal extends Component {
   }
   render() {
     return (
-      <Modal
-        animation={false}
+      <ModalOwn
         id={this.props.ID}
         show={this.props.show}
-        onHide={() => this.props.handleClose(this.state.collections)}
+        onClose={() => this.props.handleClose(this.state.collections)}
+        title='Select order for ordinal values'
       >
-        <Modal.Header className='ModalHeaderBody' closeButton>
-          <Modal.Title>Select order for ordinal values</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className='ModalLimited'>
-          <SortableList
-            className='SortableList'
-            collections={this.state.collections}
-            onSortEnd={this.onSortEnd}
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant='primary' onClick={() => this.props.handleClose(this.state.collections)}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        <SortableList
+          className='SortableList'
+          collections={this.state.collections}
+          onSortEnd={this.onSortEnd}
+        />
+      </ModalOwn>
     );
   }
 }

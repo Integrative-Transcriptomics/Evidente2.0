@@ -4,7 +4,9 @@ import Phylotree from "./components/phylotree";
 import Heatmap from "./components/heatmap";
 import * as d3 from "d3";
 import * as d3v5 from "d3v5";
-import SNPTable from "./components/table";
+// import SNPTable from "./components/table";
+import ColorScaleModal from "./components/color-scale-modal";
+import OrdinalModal from "./components/modal-ordinal-sort";
 
 import * as $ from "jquery";
 // import { observable } from "mobx";
@@ -16,7 +18,6 @@ import * as _ from "lodash";
 import bootbox from "bootbox";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import { color } from "d3";
-import OrdinalModal from "./components/modal-ordinal-sort";
 
 class App extends Component {
   state = {};
@@ -96,25 +97,11 @@ class App extends Component {
       ordinalModalShow: false,
     };
 
-    this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  handleChange(event) {
-    this.setState({ name: event.target.value });
   }
 
   handleSubmit = async (e) => {
     e.preventDefault();
-    // bootbox.dialog({
-    //   message: $(`<Form id="fileform" onSubmit={this.props.onFileUpload}>
-    //     <Form.File id="nwk-file" label="Newick Tree" name="nwk" custom />
-    //     <Form.File id="snp-file" label="SNP table" name="snp" custom />
-    //     <Button variant="primary" type="submit">
-    //       Submit
-    //     </Button>
-    //   </Form>`).html(),
-    // });
     const formData = new FormData(document.getElementById("fileform"));
     let response = await fetch(`/api/upload`, {
       method: "post",
@@ -128,47 +115,10 @@ class App extends Component {
       (d) => d[1].type.toLowerCase() === "ordinal"
     );
     if (ordinalValues.length !== 0) {
-      console.log(ordinalValues);
       this.setState({
         ordinalModalShow: true,
         ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
       });
-      // $("#ordinal-modal").modal("show");
-      //   let dialog = bootbox.dialog({
-      //     title: "A custom dialog with init",
-      //     message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-      //     callback: (result) => console.log(result),
-      //     buttons: {
-      //       cancel: {
-      //         label: "I'm a cancel button!",
-      //         className: "btn-danger",
-      //         callback: function () {
-      //           console.log("Custom cancel clicked");
-      //         },
-      //       },
-      //       ok: {
-      //         label: "I'm an OK button!",
-      //         className: "btn-info",
-      //         callback: function () {
-      //           console.log("Custom OK clicked");
-      //         },
-      //       },
-      //     },
-      //   });
-      //   dialog.init(() => {
-      //     dialog
-      //       .find(".bootbox-body")
-      //       .html(
-      //         `${(
-      //           <SNPTable
-      //             rows={_.get(this.state.SNPTable, `notsupport.descendants`, [])}
-      //             title={"SNPs among the actual subtree"}
-      //             onSNPaddition={this.onSNPaddition}
-      //           ></SNPTable>
-      //         )}`
-      //       );
-      //   });
-      // }
     }
     metadataInfo = this.createColorScales(metadataInfo);
 
@@ -206,6 +156,9 @@ class App extends Component {
     return metadata;
   };
 
+  handleColorChange = (metadataName) => {
+    this.setState({ colorScaleModalShow: true });
+  };
   handleMDChange = (ev) => {
     this.setState({
       visualizedMD: (ev || []).map(({ value }) => value),
@@ -248,7 +201,7 @@ class App extends Component {
     this.setState({ collapsedClades: jointNodes });
     return clade.name;
   };
-  handleCloseModal = (extents) => {
+  handleOrdinalCloseModal = (extents) => {
     let metadataInfo = this.state.mdinfo;
     for (let pair of extents) {
       metadataInfo[pair[0]].extent = pair[1];
@@ -256,6 +209,17 @@ class App extends Component {
     metadataInfo = this.createColorScales(metadataInfo);
 
     this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
+  };
+
+  handleColorScaleCloseModal = (extents) => {
+    let metadataInfo = this.state.mdinfo;
+
+    // for (let pair of extents) {
+    //   metadataInfo[pair[0]].extent = pair[1];
+    // }
+    // metadataInfo = this.createColorScales(metadataInfo);
+
+    this.setState({ colorScaleModalShow: false, mdinfo: metadataInfo });
   };
   handleCladeUpdate = (oldName, newName) => {
     $(`.guides.${oldName}`).removeClass(oldName).addClass(newName);
@@ -416,6 +380,7 @@ class App extends Component {
             onFileUpload={this.handleSubmit}
             onMDChange={this.handleMDChange}
             onSNPChange={this.handleSNPChange}
+            onColorChange={this.handleColorChange}
             SNPTable={this.state.SNPTable}
             availableMDs={this.state.mdinfo}
             availableSNPs={this.state.availableSNPs}
@@ -427,8 +392,13 @@ class App extends Component {
           ID='ordinal-modal'
           show={this.state.ordinalModalShow}
           ordinalValues={this.state.ordinalValues}
-          handleClose={this.handleCloseModal}
+          handleClose={this.handleOrdinalCloseModal}
         ></OrdinalModal>
+        <ColorScaleModal
+          ID='color-scale-modal'
+          show={this.state.colorScaleModalShow}
+          handleClose={this.handleColorScaleCloseModal}
+        ></ColorScaleModal>
       </div>
     );
   }

@@ -69,7 +69,7 @@ class Legend extends Component {
             y: 15 * 0.75,
           })
           .attr("stroke", "white")
-          .attr("stroke-width", "3px")
+          .attr("stroke-width", "5px")
           .attr("opacity", 0.75)
           .text(extent[0].toFixed(2));
         group
@@ -89,7 +89,7 @@ class Legend extends Component {
             y: 15 * 0.75,
           })
           .attr("stroke", "white")
-          .attr("stroke-width", "3px")
+          .attr("stroke-width", "5px")
           .attr("opacity", 0.75)
           .text(extent[1].toFixed(2));
         group
@@ -126,7 +126,7 @@ class Legend extends Component {
               y: 15 * 0.75,
             })
             .attr("stroke", "white")
-            .attr("stroke-width", "3px")
+            .attr("stroke-width", "5px")
             .attr("opacity", 0.75)
             .text(value);
           group
@@ -198,7 +198,7 @@ class Legend extends Component {
                               variant='outlined'
                               style={{ color: "black" }}
                               onClick={() => {
-                                console.log("test");
+                                this.props.onChange(row.name);
                               }}
                             >
                               Change Scale

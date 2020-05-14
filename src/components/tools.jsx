@@ -127,7 +127,10 @@ class Tools extends Component {
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
                 ></Select>
-                <Legend availableMDs={this.props.availableMDs}></Legend>
+                <Legend
+                  availableMDs={this.props.availableMDs}
+                  onChange={this.props.onColorChange}
+                ></Legend>
               </Card.Body>
             </Accordion.Collapse>
           </Card>
