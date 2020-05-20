@@ -3,6 +3,7 @@ import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
+import MyColorPicker from "./color-picker";
 
 import { Slider, Typography } from "@material-ui/core";
 import Legend from "./legend";
@@ -52,6 +53,11 @@ const selectStates = {
   }),
 };
 class Tools extends Component {
+  state = {};
+
+  onChangeFilter = (value) => {
+    this.setState({ selectedFeatures: value.map(({ value }) => value) });
+  };
   /**
    * Creates the labels and values for the correspoinding selecting menu
    * @param {dictionary of metadata} metadata
@@ -140,7 +146,30 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='2'>
               <Card.Body>
-                {_.toPairs(this.props.availableMDs).map((arr) => {
+                <Form.Group key='metadatafilter'>
+                  <Select
+                    id='metadatafilter'
+                    options={this.getMetadata(this.props.availableMDs || [])}
+                    isMulti
+                    onChange={this.onChangeFilter}
+                    placeholder={"Select Metadata for Filter"}
+                    components={{
+                      ValueContainer: CustomValueContainer,
+                      // MultiValueContainer: CustomMultiValue,
+                    }}
+                    menuPortalTarget={document.getElementById("tools")}
+                    styles={selectStates}
+                  ></Select>
+                </Form.Group>
+
+                <Button
+                  variant='primary'
+                  onClick={() => this.props.onOpenFilter(this.state.selectedFeatures)}
+                >
+                  Create filter
+                </Button>
+
+                {/* {_.toPairs(this.props.availableMDs).map((arr) => {
                   let k = arr[0],
                     v = arr[1];
                   let type = v.type.toLowerCase();
@@ -173,7 +202,7 @@ class Tools extends Component {
                       ></Select>
                     );
                   }
-                })}
+                })} */}
               </Card.Body>
             </Accordion.Collapse>
           </Card>

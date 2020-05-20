@@ -26,13 +26,21 @@ class Heatmap extends Component {
     let actualVisualized = actualProp.visMd || [];
     let newVisualizedSNPs = nextProp.visSNPs || [];
     let actualVisualizedSNPs = actualProp.visSNPs || [];
+    console.log(newNodes);
     if (
-      newVisualized.length !== actualVisualized.length ||
-      actualVisualizedSNPs.length !== newVisualizedSNPs.length ||
-      actualNodes.length !== newNodes.length ||
-      actualHiddenNodes.length !== newHiddenNodes.length ||
-      actualCollapsedClades.length !== newCollapsedClades.length ||
-      actualSelectedNodes.length !== newSelectedNodes.length
+      !_.isEqual(newVisualized, actualVisualized) ||
+      !_.isEqual(actualVisualizedSNPs, newVisualizedSNPs) ||
+      !_.isEqual(actualNodes, newNodes) ||
+      !_.isEqual(actualHiddenNodes, newHiddenNodes) ||
+      !_.isEqual(actualCollapsedClades, newCollapsedClades) ||
+      !_.isEqual(actualSelectedNodes, newSelectedNodes) ||
+      (!_.isEqual(actualState.mdinfo, nextProp.mdinfo) && newNodes.length > 0)
+      // newVisualized.length !== actualVisualized.length ||
+      // actualVisualizedSNPs.length !== newVisualizedSNPs.length ||
+      // actualNodes.length !== newNodes.length ||
+      // actualHiddenNodes.length !== newHiddenNodes.length ||
+      // actualCollapsedClades.length !== newCollapsedClades.length ||
+      // actualSelectedNodes.length !== newSelectedNodes.length
     ) {
       return true;
     } else if (!nextState.taxadata) {

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { withStyles } from "@material-ui/core/styles";
 import * as d3 from "d3";
 
 import {
@@ -16,6 +17,27 @@ import {
   Button,
 } from "@material-ui/core";
 import * as _ from "lodash";
+
+const AntSwitch = withStyles((theme) => ({
+  switchBase: {
+    color: theme.palette.grey[500],
+    "&$checked": {
+      color: theme.palette.common.white,
+      "& + $track": {
+        opacity: 1,
+        backgroundColor: "#337AB7",
+        borderColor: theme.palette.primary.main,
+      },
+    },
+  },
+  track: {
+    border: `1px solid ${theme.palette.grey[500]}`,
+    borderRadius: 16 / 2,
+    opacity: 1,
+    backgroundColor: theme.palette.common.white,
+  },
+  checked: {},
+}))(Switch);
 class Legend extends Component {
   classes = makeStyles((theme) => ({
     root: {
@@ -29,11 +51,11 @@ class Legend extends Component {
     },
   }));
   giveLegend = ({ name, colorScale, extent, type }) => {
-    console.log(type, extent);
     let svg = d3.select(`#svg-legend-${name.replace(/ /g, "-")}`);
     let cellWidth = this.cell.offsetWidth / 3;
     svg.style("width", cellWidth + "px").style("height", "15px");
     svg.selectAll("*").remove();
+    let div = d3.select("#tooltip");
     switch (type.toLowerCase()) {
       case "numerical":
         var defs = svg.append("defs");
@@ -80,7 +102,17 @@ class Legend extends Component {
             y: 15 * 0.75,
           })
           .attr("fill", "black")
-          .text(extent[0].toFixed(2));
+          .text(extent[0].toFixed(2))
+          .on("mouseover", () => {
+            div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+            div
+              .html(`${extent[0].toFixed(2)}`)
+              .style("left", d3.event.pageX + "px")
+              .style("top", d3.event.pageY - 28 + "px");
+          })
+          .on("mouseout", function (d) {
+            div.transition().duration(500).style("opacity", 0);
+          });
         group
           .append("text")
           .style("text-anchor", "end")
@@ -100,7 +132,17 @@ class Legend extends Component {
             y: 15 * 0.75,
           })
           .attr("fill", "black")
-          .text(extent[1].toFixed(2));
+          .text(extent[1].toFixed(2))
+          .on("mouseover", () => {
+            div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+            div
+              .html(`${extent[1].toFixed(2)}`)
+              .style("left", d3.event.pageX + "px")
+              .style("top", d3.event.pageY - 28 + "px");
+          })
+          .on("mouseout", function (d) {
+            div.transition().duration(500).style("opacity", 0);
+          });
         break;
       case "snp":
       case "categorical":
@@ -137,7 +179,17 @@ class Legend extends Component {
               y: 15 * 0.75,
             })
             .attr("fill", "black")
-            .text(value);
+            .text(value)
+            .on("mouseover", () => {
+              div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+              div
+                .html(`${value}`)
+                .style("left", d3.event.pageX + "px")
+                .style("top", d3.event.pageY - 28 + "px");
+            })
+            .on("mouseout", function (d) {
+              div.transition().duration(500).style("opacity", 0);
+            });
           i = i + 1;
         }
 
@@ -167,7 +219,7 @@ class Legend extends Component {
     return (
       <div className={this.classes.root}>
         <FormControlLabel
-          control={<Switch checked={this.state.checked} onChange={this.setChecked} />}
+          control={<AntSwitch checked={this.state.checked} onChange={this.setChecked} />}
           label='Show legend'
         />
         <div className={this.classes.container}>
@@ -201,7 +253,7 @@ class Legend extends Component {
                                 this.props.onChange(row.name);
                               }}
                             >
-                              Change Scale
+                              Change
                             </Button>
                           </TableCell>
                         </TableRow>

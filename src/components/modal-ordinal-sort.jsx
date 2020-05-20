@@ -55,6 +55,7 @@ class OrdinalModal extends Component {
       this.setState({ collections: this.props.ordinalValues });
     }
   }
+
   render() {
     return (
       <ModalOwn

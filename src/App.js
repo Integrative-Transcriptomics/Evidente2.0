@@ -7,6 +7,7 @@ import * as d3v5 from "d3v5";
 // import SNPTable from "./components/table";
 import ColorScaleModal from "./components/color-scale-modal";
 import OrdinalModal from "./components/modal-ordinal-sort";
+import FilterModal from "./components/filter-modal";
 
 import * as $ from "jquery";
 // import { observable } from "mobx";
@@ -50,6 +51,7 @@ class App extends Component {
     "#ffff99",
     "#b15928",
   ];
+  chosenMD = "";
   constructor() {
     super();
     let tree = d3.layout
@@ -157,6 +159,7 @@ class App extends Component {
   };
 
   handleColorChange = (metadataName) => {
+    this.chosenMD = metadataName;
     this.setState({ colorScaleModalShow: true });
   };
   handleMDChange = (ev) => {
@@ -210,9 +213,35 @@ class App extends Component {
 
     this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
   };
+  handleFilterOpenModal = (selectedFeatures) => {
+    console.log(selectedFeatures);
+    this.setState({ filterModalShow: true, filterFeatures: selectedFeatures });
+  };
+  handleFilterCloseModal = () => {
+    // let metadataInfo = this.state.mdinfo;
+    // for (let pair of extents) {
+    //   metadataInfo[pair[0]].extent = pair[1];
+    // }
+    // metadataInfo = this.createColorScales(metadataInfo);
 
+    this.setState({ filterModalShow: false });
+  };
   handleColorScaleCloseModal = (extents) => {
     let metadataInfo = this.state.mdinfo;
+    let selectedMetadata = _.get(metadataInfo, `${this.chosenMD}`, null);
+    if (selectedMetadata) {
+      let extent = selectedMetadata.extent;
+      let actualType = selectedMetadata.type;
+      let colors = extent.map((value, i) => {
+        return $(`#colorScale-legendValue-${i}`).attr("fill");
+      });
+
+      let colorScale =
+        actualType === "numerical"
+          ? d3.scale.linear().domain(extent).range(colors)
+          : d3.scale.ordinal().domain(extent).range(colors);
+      _.set(metadataInfo, `${this.chosenMD}.colorScale`, colorScale);
+    }
 
     // for (let pair of extents) {
     //   metadataInfo[pair[0]].extent = pair[1];
@@ -381,6 +410,7 @@ class App extends Component {
             onMDChange={this.handleMDChange}
             onSNPChange={this.handleSNPChange}
             onColorChange={this.handleColorChange}
+            onOpenFilter={this.handleFilterOpenModal}
             SNPTable={this.state.SNPTable}
             availableMDs={this.state.mdinfo}
             availableSNPs={this.state.availableSNPs}
@@ -396,9 +426,18 @@ class App extends Component {
         ></OrdinalModal>
         <ColorScaleModal
           ID='color-scale-modal'
+          mdinfo={this.state.mdinfo}
+          chosenMD={this.chosenMD}
           show={this.state.colorScaleModalShow}
           handleClose={this.handleColorScaleCloseModal}
         ></ColorScaleModal>
+        <FilterModal
+          ID='filter-modal'
+          mdinfo={this.state.mdinfo}
+          show={this.state.filterModalShow}
+          filterFeatures={this.state.filterFeatures || []}
+          handleClose={this.handleFilterCloseModal}
+        ></FilterModal>
       </div>
     );
   }

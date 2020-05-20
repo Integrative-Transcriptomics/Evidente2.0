@@ -7,7 +7,7 @@ class ModalOwn extends Component {
     return (
       <Modal
         animation={false}
-        id={this.props.ID}
+        id={this.props.id}
         show={this.props.show}
         onHide={() => this.props.onClose()}
       >
