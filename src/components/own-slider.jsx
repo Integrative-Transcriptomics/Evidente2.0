@@ -3,7 +3,8 @@ import { Slider, Typography } from "@material-ui/core";
 import * as _ from "lodash";
 
 class OwnSlider extends Component {
-  onChange = (ev, newValue) => {
+  onChange = (ev, newValue, name) => {
+    this.props.onChange(name, newValue);
     this.setState({ value: newValue });
   };
   constructor(props) {
@@ -36,7 +37,7 @@ class OwnSlider extends Component {
           value={this.state.value}
           scale={(x) => x.toFixed(3)}
           valueLabelDisplay='auto'
-          onChange={this.onChange}
+          onChange={(ev, newValue) => this.onChange(ev, newValue, this.props.name)}
           aria-labelledby='range-slider'
         />
       </div>

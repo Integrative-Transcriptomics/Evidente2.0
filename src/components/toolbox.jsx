@@ -21,6 +21,10 @@ class Toolbox extends Component {
           visSNPs={this.props.visSNPs}
           onColorChange={this.props.onColorChange}
           onOpenFilter={this.props.onOpenFilter}
+          createdFilters={this.props.createdFilters}
+          onDeleteFilter={this.props.onDeleteFilter}
+          onDeleteAllFilters={this.props.onDeleteAllFilters}
+          onApplyAllFilters={this.props.onApplyAllFilters}
         >
           Tools
         </Tools>

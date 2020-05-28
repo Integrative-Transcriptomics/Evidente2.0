@@ -3,10 +3,10 @@ import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
-import MyColorPicker from "./color-picker";
-
-import { Slider, Typography } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
+import Divider from "@material-ui/core/Divider";
 import Legend from "./legend";
+import FilterList from "./filter-list";
 
 const { ValueContainer, Placeholder } = components;
 
@@ -22,16 +22,6 @@ const CustomValueContainer = ({ children, ...props }) => {
     </ValueContainer>
   );
 };
-
-// const CustomMultiValue = (props) => {
-//   return (
-//     <Tooltip title={"Here we could show the legend of the element"}>
-//       <span>
-//         <MultiValueContainer {...props} />
-//       </span>
-//     </Tooltip>
-//   );
-// };
 
 const selectStates = {
   container: (provided, state) => ({
@@ -53,10 +43,10 @@ const selectStates = {
   }),
 };
 class Tools extends Component {
-  state = {};
+  state = { value: [] };
 
   onChangeFilter = (value) => {
-    this.setState({ selectedFeatures: value.map(({ value }) => value) });
+    this.setState({ selectedFeatures: value.map(({ value }) => value), value: value });
   };
   /**
    * Creates the labels and values for the correspoinding selecting menu
@@ -105,7 +95,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='1'>
               <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
-                <span>Select to Visualize</span>
+                <Typography variant='h6'>Select to visualize</Typography>
                 <Select
                   id='snpdatashow'
                   options={(this.props.availableSNPs || []).map((d) => ({ value: d, label: d }))}
@@ -115,7 +105,6 @@ class Tools extends Component {
                   isMulti
                   components={{
                     ValueContainer: CustomValueContainer,
-                    // MultiValueContainer: CustomMultiValue,
                   }}
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
@@ -128,7 +117,6 @@ class Tools extends Component {
                   placeholder={"Visualize Taxa Metadata"}
                   components={{
                     ValueContainer: CustomValueContainer,
-                    // MultiValueContainer: CustomMultiValue,
                   }}
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
@@ -136,7 +124,7 @@ class Tools extends Component {
                 <Legend
                   availableMDs={this.props.availableMDs}
                   onChange={this.props.onColorChange}
-                ></Legend>
+                />
               </Card.Body>
             </Accordion.Collapse>
           </Card>
@@ -146,16 +134,18 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='2'>
               <Card.Body>
+                <Typography variant='h6'>Filter nodes by metadata</Typography>
+
                 <Form.Group key='metadatafilter'>
                   <Select
-                    id='metadatafilter'
+                    id='select-filter'
                     options={this.getMetadata(this.props.availableMDs || [])}
                     isMulti
+                    value={this.state.value}
                     onChange={this.onChangeFilter}
                     placeholder={"Select Metadata for Filter"}
                     components={{
                       ValueContainer: CustomValueContainer,
-                      // MultiValueContainer: CustomMultiValue,
                     }}
                     menuPortalTarget={document.getElementById("tools")}
                     styles={selectStates}
@@ -164,45 +154,28 @@ class Tools extends Component {
 
                 <Button
                   variant='primary'
-                  onClick={() => this.props.onOpenFilter(this.state.selectedFeatures)}
+                  onClick={() => {
+                    this.setState({ value: null });
+                    this.props.onOpenFilter(this.state.selectedFeatures);
+                  }}
                 >
                   Create filter
                 </Button>
-
-                {/* {_.toPairs(this.props.availableMDs).map((arr) => {
-                  let k = arr[0],
-                    v = arr[1];
-                  let type = v.type.toLowerCase();
-                  if (type === "numerical") {
-                    return (
-                      <div key={k}>
-                        <Typography id='range-slider' gutterBottom>
-                          {k}
-                        </Typography>
-                        <Slider
-                          value={[20, 40]}
-                          valueLabelDisplay='auto'
-                          aria-labelledby='range-slider'
-                        />
-                      </div>
-                    );
-                  } else if (["categorical", "ordinal"].includes(type)) {
-                    return (
-                      <Select
-                        id='metadatashow'
-                        options={v.extent.map((d) => ({ value: d, label: d }))}
-                        isMulti
-                        placeholder={`Visualize ${k}`}
-                        components={{
-                          ValueContainer: CustomValueContainer,
-                          // MultiValueContainer: CustomMultiValue,
-                        }}
-                        menuPortalTarget={document.getElementById("tools")}
-                        styles={selectStates}
-                      ></Select>
-                    );
-                  }
-                })} */}
+                {this.props.createdFilters.length > 0 && (
+                  <React.Fragment>
+                    <Divider
+                      variant='middle'
+                      style={{ "margin-top": "5px", "margin-bottom": "5px" }}
+                    />
+                    <Typography variant='h6'>Active Filters</Typography>
+                    <FilterList
+                      onApplyAllFilters={this.props.onApplyAllFilters}
+                      createdFilters={this.props.createdFilters}
+                      onDeleteFilter={this.props.onDeleteFilter}
+                      onDeleteAllFilters={this.props.onDeleteAllFilters}
+                    />
+                  </React.Fragment>
+                )}
               </Card.Body>
             </Accordion.Collapse>
           </Card>

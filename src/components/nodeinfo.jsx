@@ -13,7 +13,16 @@ class NodeInformation extends Component {
         <div>
           <Accordion>
             <Card>
-              <Accordion.Toggle as={Card.Header} eventKey='0' id='supportingSNPs-header'>
+              <Accordion.Toggle
+                as={Card.Header}
+                eventKey={
+                  _.get(this.props.SNPTable, `support.actualNode`, []).length > 0 ||
+                  _.get(this.props.SNPTable, `support.descendants`, []).length > 0
+                    ? "0"
+                    : "-1"
+                }
+                id='supportingSNPs-header'
+              >
                 Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='0'>
@@ -23,7 +32,6 @@ class NodeInformation extends Component {
                     title={"SNPs among the actual node"}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
-                  <br />
 
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `support.descendants`, [])}
@@ -34,7 +42,15 @@ class NodeInformation extends Component {
               </Accordion.Collapse>
             </Card>
             <Card>
-              <Accordion.Toggle as={Card.Header} eventKey='1'>
+              <Accordion.Toggle
+                as={Card.Header}
+                eventKey={
+                  _.get(this.props.SNPTable, `notsupport.actualNode`, []).length > 0 ||
+                  _.get(this.props.SNPTable, `notsupport.descendants`, []).length > 0
+                    ? "1"
+                    : "-1"
+                }
+              >
                 Non Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='1'>
@@ -44,7 +60,6 @@ class NodeInformation extends Component {
                     title={"SNPs among the actual node"}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
-                  <br />
 
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `notsupport.descendants`, [])}

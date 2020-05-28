@@ -4,6 +4,8 @@ import Phylotree from "./components/phylotree";
 import Heatmap from "./components/heatmap";
 import * as d3 from "d3";
 import * as d3v5 from "d3v5";
+import getValue from "react-select";
+
 // import SNPTable from "./components/table";
 import ColorScaleModal from "./components/color-scale-modal";
 import OrdinalModal from "./components/modal-ordinal-sort";
@@ -97,6 +99,8 @@ class App extends Component {
       visualizedSNPs: [],
       SNPTable: {},
       ordinalModalShow: false,
+      createdFilters: [],
+      activeFilters: [],
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -152,7 +156,7 @@ class App extends Component {
           : d3.scale
               .ordinal()
               .domain(["A", "C", "T", "G", "N"])
-              .range(["red", "yellow", "blue", "green", "purple"]);
+              .range(["red", "#E6D700", "blue", "green", "purple"]);
       metadata[k].colorScale = colorScale;
     });
     return metadata;
@@ -214,17 +218,37 @@ class App extends Component {
     this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
   };
   handleFilterOpenModal = (selectedFeatures) => {
-    console.log(selectedFeatures);
     this.setState({ filterModalShow: true, filterFeatures: selectedFeatures });
   };
-  handleFilterCloseModal = () => {
+  handleApplyAllFilter = () => {
+    this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    this.setState({ activeFilters: this.state.createdFilters });
+    this.state.tree.update();
+  };
+  handleDeleteFilter = (index) => {
+    this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    let modActiveFilters = _.clone(this.state.createdFilters);
+    let tmp = _.remove(modActiveFilters, (n, i) => i === index);
+    this.setState({ createdFilters: modActiveFilters });
+    this.state.tree.update();
+  };
+  handleDeleteAllFilters = () => {
+    this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    this.setState({ createdFilters: [] });
+    this.state.tree.update();
+  };
+  handleFilterCloseModal = (filter) => {
+    // let filterFeatures = this.state.filterFeatures;
     // let metadataInfo = this.state.mdinfo;
     // for (let pair of extents) {
     //   metadataInfo[pair[0]].extent = pair[1];
     // }
     // metadataInfo = this.createColorScales(metadataInfo);
 
-    this.setState({ filterModalShow: false });
+    this.setState({
+      filterModalShow: false,
+      createdFilters: [...this.state.createdFilters, filter],
+    });
   };
   handleColorScaleCloseModal = (extents) => {
     let metadataInfo = this.state.mdinfo;
@@ -263,15 +287,6 @@ class App extends Component {
     this.setState({ collapsedClades: jointNodes });
   };
 
-  compareArrays = (array1, array2) => {
-    return (
-      array1.length === array2.length &&
-      array1.sort().every(function (value, index) {
-        return value === array2.sort()[index];
-      })
-    );
-  };
-
   handleDecollapse = (cladeNode) => {
     this.state.tree.toggle_collapse(cladeNode).update();
     let filteredClades = this.state.collapsedClades.filter((n) => {
@@ -289,7 +304,28 @@ class App extends Component {
       nodes: nodes,
     });
   };
-
+  my_showNodes = (node) => {
+    this.state.tree.modify_selection(
+      this.state.tree.select_all_descendants(node, true, true),
+      "hidden-t",
+      true,
+      true,
+      "false"
+    );
+    this.state.tree
+      .modify_selection(
+        this.state.tree.select_all_descendants(node, true, true),
+        "notshown",
+        true,
+        true,
+        "false"
+      )
+      .update_has_hidden_nodes()
+      .update();
+    this.handleShow(this.state.tree.descendants(node));
+    d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
+    this.handleSelection(this.state.tree.get_selection());
+  };
   handleShow = (showNodes) => {
     let namesShowNodes = showNodes.map(({ name }) => name);
     let filteredNodes = this.state.hiddenNodes.filter((n) => {
@@ -356,6 +392,7 @@ class App extends Component {
           <Phylotree
             updateSNPTable={this.updateSNPTable}
             tree={this.state.tree}
+            onShowMyNodes={this.my_showNodes}
             onZoom={this.state.zoom}
             onCollapse={this.handleCollapse}
             onDecollapse={this.handleDecollapse}
@@ -367,7 +404,10 @@ class App extends Component {
             onCladeUpdate={this.handleCladeUpdate}
             newick={this.state.newick}
             snpdata={this.state.snpdata}
+            taxadata={this.state.taxamd}
             ids={this.state.ids}
+            mdinfo={this.state.mdinfo}
+            activeFilters={this.state.activeFilters}
           />
           <Heatmap
             divID={"heatmap_viz"}
@@ -403,8 +443,10 @@ class App extends Component {
             snpdata={[]}
             mdinfo={this.state.mdinfo}
             isSNP={false}
+            createdFilters={this.state.createdFilters}
           />
           <Toolbox
+            onApplyAllFilters={this.handleApplyAllFilter}
             onSNPaddition={this.handleSNPaddition}
             onFileUpload={this.handleSubmit}
             onMDChange={this.handleMDChange}
@@ -416,6 +458,9 @@ class App extends Component {
             availableSNPs={this.state.availableSNPs}
             visMd={this.state.visualizedMD}
             visSNPs={this.state.visualizedSNPs}
+            createdFilters={this.state.createdFilters}
+            onDeleteFilter={this.handleDeleteFilter}
+            onDeleteAllFilters={this.handleDeleteAllFilters}
           ></Toolbox>
         </div>
         <OrdinalModal
