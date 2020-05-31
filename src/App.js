@@ -208,71 +208,69 @@ class App extends Component {
     this.setState({ collapsedClades: jointNodes });
     return clade.name;
   };
-  handleOrdinalCloseModal = (extents) => {
-    let metadataInfo = this.state.mdinfo;
-    for (let pair of extents) {
-      metadataInfo[pair[0]].extent = pair[1];
+  handleOrdinalCloseModal = (save, extents) => {
+    if (!save) {
+      this.setState({ ordinalModalShow: false });
+    } else {
+      let metadataInfo = this.state.mdinfo;
+      for (let [metadataName, newExtent] of extents) {
+        metadataInfo[metadataName].extent = newExtent;
+      }
+      metadataInfo = this.createColorScales(metadataInfo);
+      this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
     }
-    metadataInfo = this.createColorScales(metadataInfo);
-
-    this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
   };
   handleFilterOpenModal = (selectedFeatures) => {
     this.setState({ filterModalShow: true, filterFeatures: selectedFeatures });
   };
   handleApplyAllFilter = () => {
-    this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    // this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
     this.setState({ activeFilters: this.state.createdFilters });
-    this.state.tree.update();
+    // this.state.tree.update();
   };
   handleDeleteFilter = (index) => {
-    this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    // this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
     let modActiveFilters = _.clone(this.state.createdFilters);
     let tmp = _.remove(modActiveFilters, (n, i) => i === index);
     this.setState({ createdFilters: modActiveFilters });
-    this.state.tree.update();
+    // this.state.tree.update();
   };
   handleDeleteAllFilters = () => {
     this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
     this.setState({ createdFilters: [] });
-    this.state.tree.update();
+    // this.state.tree.update();
   };
-  handleFilterCloseModal = (filter) => {
-    // let filterFeatures = this.state.filterFeatures;
-    // let metadataInfo = this.state.mdinfo;
-    // for (let pair of extents) {
-    //   metadataInfo[pair[0]].extent = pair[1];
-    // }
-    // metadataInfo = this.createColorScales(metadataInfo);
-
-    this.setState({
-      filterModalShow: false,
-      createdFilters: [...this.state.createdFilters, filter],
-    });
+  handleFilterCloseModal = (save, filter) => {
+    save
+      ? this.setState({
+          filterModalShow: false,
+          createdFilters: [...this.state.createdFilters, filter],
+        })
+      : this.setState({
+          filterModalShow: false,
+        });
   };
-  handleColorScaleCloseModal = (extents) => {
-    let metadataInfo = this.state.mdinfo;
-    let selectedMetadata = _.get(metadataInfo, `${this.chosenMD}`, null);
-    if (selectedMetadata) {
-      let extent = selectedMetadata.extent;
-      let actualType = selectedMetadata.type;
-      let colors = extent.map((value, i) => {
-        return $(`#colorScale-legendValue-${i}`).attr("fill");
-      });
+  handleColorScaleCloseModal = (save, extents) => {
+    if (!save) {
+      this.setState({ colorScaleModalShow: false });
+    } else {
+      let metadataInfo = this.state.mdinfo;
+      let selectedMetadata = _.get(metadataInfo, `${this.chosenMD}`, null);
+      if (selectedMetadata) {
+        let extent = selectedMetadata.extent;
+        let actualType = selectedMetadata.type;
+        let colors = extent.map((value, i) => {
+          return $(`#colorScale-legendValue-${i}`).attr("fill");
+        });
 
-      let colorScale =
-        actualType === "numerical"
-          ? d3.scale.linear().domain(extent).range(colors)
-          : d3.scale.ordinal().domain(extent).range(colors);
-      _.set(metadataInfo, `${this.chosenMD}.colorScale`, colorScale);
+        let colorScale =
+          actualType === "numerical"
+            ? d3.scale.linear().domain(extent).range(colors)
+            : d3.scale.ordinal().domain(extent).range(colors);
+        _.set(metadataInfo, `${this.chosenMD}.colorScale`, colorScale);
+      }
+      this.setState({ colorScaleModalShow: false, mdinfo: metadataInfo });
     }
-
-    // for (let pair of extents) {
-    //   metadataInfo[pair[0]].extent = pair[1];
-    // }
-    // metadataInfo = this.createColorScales(metadataInfo);
-
-    this.setState({ colorScaleModalShow: false, mdinfo: metadataInfo });
   };
   handleCladeUpdate = (oldName, newName) => {
     $(`.guides.${oldName}`).removeClass(oldName).addClass(newName);

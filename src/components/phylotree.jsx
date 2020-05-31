@@ -1,5 +1,7 @@
 import * as d3 from "d3";
 import "../../node_modules/phylotree/phylotree";
+// import "../../node_modules/phylotree/src/main";
+
 import * as $ from "jquery";
 import * as _ from "lodash";
 
@@ -126,40 +128,41 @@ class Phylotree extends Component {
           true,
           "true"
         );
+        this.props.onHide(this.props.tree.descendants(node));
       }
       this.props.tree.update_has_hidden_nodes().update();
 
       d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
-      this.props.onHide(this.props.tree.descendants(node));
       this.props.onSelection(this.props.tree.get_selection());
     }
   }
 
-  // my_showNodes(node) {
-  //   this.props.tree.modify_selection(
-  //     this.props.tree.select_all_descendants(node, true, true),
-  //     "hidden-t",
-  //     true,
-  //     true,
-  //     "false"
-  //   );
-  //   this.props.tree
-  //     .modify_selection(
-  //       this.props.tree.select_all_descendants(node, true, true),
-  //       "notshown",
-  //       true,
-  //       true,
-  //       "false"
-  //     )
-  //     .update_has_hidden_nodes()
-  //     .update();
-  //   this.props.onShowNodes(this.props.tree.descendants(node));
-  //   d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
-  //   this.props.onSelection(this.props.tree.get_selection());
-  // }
+  my_showNodes(node) {
+    this.props.tree.modify_selection(
+      this.props.tree.select_all_descendants(node, true, true),
+      "hidden-t",
+      true,
+      true,
+      "false"
+    );
+    this.props.tree
+      .modify_selection(
+        this.props.tree.select_all_descendants(node, true, true),
+        "notshown",
+        true,
+        true,
+        "false"
+      )
+      .update_has_hidden_nodes()
+      .update();
+    this.props.onShowNodes(this.props.tree.descendants(node));
+    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+    this.props.onSelection(this.props.tree.get_selection());
+  }
   testForFilters(node, filters, data) {
     let nodeName = node.name;
     let processedFilter = filters.map((filter) => {
+      console.log("filter:", filter);
       let keyValuePair = _.toPairs(filter);
       let resultGroup = keyValuePair.map((el) => {
         let key = el[0],
@@ -194,6 +197,7 @@ class Phylotree extends Component {
       d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     }
     if (this.props.activeFilters.length > 0) {
+      this.my_showNodes(this.props.tree.get_nodes().filter((n) => n.name === "root")[0]);
       console.log("activeFilters:", this.props.activeFilters);
       console.log("running for filters");
       let taxaDataModified = _.keyBy(this.props.taxadata, "Information");

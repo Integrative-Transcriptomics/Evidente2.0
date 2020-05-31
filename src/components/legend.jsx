@@ -55,6 +55,7 @@ class Legend extends Component {
     let cellWidth = this.cell.offsetWidth / 3;
     svg.style("width", cellWidth + "px").style("height", "15px");
     svg.selectAll("*").remove();
+    svg = svg.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
     let div = d3.select("#tooltip");
     switch (type.toLowerCase()) {
       case "numerical":
@@ -93,6 +94,8 @@ class Legend extends Component {
           .attr("stroke", "white")
           .attr("stroke-width", "5px")
           .attr("opacity", 0.75)
+          .classed("noselect", true)
+
           .text(extent[0].toFixed(2));
         group
           .append("text")
@@ -102,6 +105,8 @@ class Legend extends Component {
             y: 15 * 0.75,
           })
           .attr("fill", "black")
+          .classed("noselect", true)
+
           .text(extent[0].toFixed(2))
           .on("mouseover", () => {
             div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
@@ -121,12 +126,16 @@ class Legend extends Component {
             y: 15 * 0.75,
           })
           .attr("stroke", "white")
+          .classed("noselect", true)
+
           .attr("stroke-width", "5px")
           .attr("opacity", 0.75)
           .text(extent[1].toFixed(2));
         group
           .append("text")
           .style("text-anchor", "end")
+          .classed("noselect", true)
+
           .attr({
             x: cellWidth - 2,
             y: 15 * 0.75,
@@ -147,56 +156,80 @@ class Legend extends Component {
       case "snp":
       case "categorical":
       case "ordinal":
+        let textWidth = [];
         let cubeWidth = cellWidth / extent.length;
-        let i = 0;
-        for (let value of extent) {
-          let group = svg.append("g");
-          group
-            .append("rect")
-            .attr({
-              width: cubeWidth,
-              height: 15,
-              x: i * cubeWidth,
-            })
-            .style("fill", colorScale(value));
+        let groupCategory = svg.selectAll("g").data(extent).enter().append("g");
+        let textShadow = groupCategory
+          .append("text")
+          .style("text-anchor", "middle")
+          .attr("stroke", "white")
+          .attr("stroke-width", "5px")
+          .attr("opacity", 0.75)
+          .text((value) => value)
+          .classed("noselect", true)
 
-          group
-            .append("text")
-            .style("text-anchor", "middle")
-            .attr({
-              x: i * cubeWidth + cubeWidth * 0.5,
-              y: 15 * 0.75,
-            })
-            .attr("stroke", "white")
-            .attr("stroke-width", "5px")
-            .attr("opacity", 0.75)
-            .text(value);
-          group
-            .append("text")
-            .style("text-anchor", "middle")
-            .attr({
-              x: i * cubeWidth + cubeWidth * 0.5,
-              y: 15 * 0.75,
-            })
-            .attr("fill", "black")
-            .text(value)
-            .on("mouseover", () => {
-              div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
-              div
-                .html(`${value}`)
-                .style("left", d3.event.pageX + "px")
-                .style("top", d3.event.pageY - 28 + "px");
-            })
-            .on("mouseout", function (d) {
-              div.transition().duration(500).style("opacity", 0);
-            });
-          i = i + 1;
+          .each(function () {
+            let thisWidth = Math.max(cubeWidth, this.getComputedTextLength() + 10); // Text width + margin
+            textWidth.push(thisWidth);
+          });
+
+        let text = groupCategory
+          .append("text")
+          .style("text-anchor", "middle")
+          .attr("fill", "black")
+          .text((value) => value)
+          .classed("noselect", true)
+          .on("mouseover", (value) => {
+            div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+            div
+              .html(`${value}`)
+              .style("left", d3.event.pageX + "px")
+              .style("top", d3.event.pageY - 28 + "px");
+          })
+          .on("mouseout", function (d) {
+            div.transition().duration(500).style("opacity", 0);
+          });
+
+        const cumulativeSum = ((sum) => (value) => (sum += value))(0);
+        let positions = textWidth.map(cumulativeSum);
+        positions = [0, ...positions];
+        textShadow.attr({
+          x: (d, i) => positions[i] + textWidth[i] * 0.5,
+          y: 15 * 0.75,
+        });
+        text.attr({
+          x: (d, i) => positions[i] + textWidth[i] * 0.5,
+          y: 15 * 0.75,
+        });
+        let rect = groupCategory
+          .insert("rect", ":first-child")
+          .attr({
+            width: (d, i) => Math.max(textWidth[i], cubeWidth),
+            height: 15,
+            x: (d, i) => positions[i],
+          })
+          .style("fill", (value) => colorScale(value));
+        if (_.last(positions) > cellWidth) {
+          let drag = d3.behavior.drag().on("drag", dragmove);
+
+          function dragmove(d) {
+            var x = Math.min(0, Math.max(cellWidth - _.last(positions), d3.event.x));
+            d3.select(this).attr("transform", `translate( ${x}  , 0)`);
+          }
+          svg.style("cursor", "grab").call(drag);
         }
 
         break;
       default:
         break;
     }
+    // let drag = d3.behavior.drag().on("drag", dragmove);
+
+    // function dragmove(d) {
+    //   var x = d3.event.x;
+    //   d3.select(this).attr("transform", `translate( ${Math.max(x)}  , 0)`);
+    // }
+    // svg.style("cursor", "grab").call(drag);
   };
   state = { checked: false };
   header = ["Name", "Color Scale", "Actions"];

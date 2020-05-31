@@ -4,6 +4,7 @@ import * as d3v5 from "d3v5";
 import * as boxplot from "d3-boxplot";
 import * as $ from "jquery";
 import * as _ from "lodash";
+import { text } from "body-parser";
 class Heatmap extends Component {
   isSNP = this.props.isSNP;
   state = {};
@@ -129,12 +130,16 @@ class Heatmap extends Component {
       let ticks = container.select(".y").selectAll(".tick");
 
       container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
-
+      let textWidth = [];
+      ticks.selectAll("text").each(function () {
+        var thisWidth = this.getComputedTextLength();
+        textWidth.push(thisWidth);
+      });
       ticks
 
         .append("line")
         .attr("class", (d) => `guides  ${d}`)
-        .attr("x1", (d) => -1 * d.length * Math.min(cellHeight, 12))
+        .attr("x1", (d, i) => -1 * textWidth[i] - 15)
         .attr("x2", -9000)
         .attr("y1", 0)
         .attr("y2", 0)
@@ -557,13 +562,12 @@ class Heatmap extends Component {
       .orient("top");
 
     let yScale = d3.scale.ordinal().domain(y_elements).rangeBands([0, height]);
-
+    let textWidth = [];
     let yAxis = d3.svg
       .axis()
       .scale(yScale)
       .tickFormat((d) => d)
       .orient("left");
-
     let ticks = container
       .append("g")
       .attr("class", "y axis")
@@ -575,12 +579,17 @@ class Heatmap extends Component {
     ticks
       .selectAll("text")
       .style("font-size", `${Math.min(cellHeight, 12)}px`)
-      .attr("dy", ".35em")
-      .attr("font-weight", "normal");
+      // .attr("dy", ".35em")
+      .attr("font-weight", "normal")
+      .each(function () {
+        var thisWidth = this.getComputedTextLength();
+        textWidth.push(thisWidth);
+      });
+    console.log(textWidth);
     ticks
       .append("line")
       .attr("class", (d) => `guides ${d}`)
-      .attr("x1", (d) => -1 * d.length * Math.min(cellHeight, 12))
+      .attr("x1", (d, i) => -1 * textWidth[i] - 15)
       .attr("x2", -9000)
       .attr("y1", 0)
       .attr("y2", 0)

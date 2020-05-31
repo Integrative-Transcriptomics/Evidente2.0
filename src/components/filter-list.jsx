@@ -63,7 +63,6 @@ class FilterList extends Component {
             ))}
         </List>
         <Grid container spacing={3}>
-          {" "}
           <Grid item xs={6}>
             <Button variant='primary' onClick={this.props.onApplyAllFilters}>
               Apply filters

@@ -65,7 +65,12 @@ class Tools extends Component {
         <h3>{this.props.children}</h3>
         <Accordion id='tools' defaultActiveKey='0'>
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey='0' id='files-card'>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='0'
+              id='files-card'
+              className='noselect header-accordion'
+            >
               Load Files
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
@@ -90,7 +95,12 @@ class Tools extends Component {
             </Accordion.Collapse>
           </Card>
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey='1' id='metadata-card'>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='1'
+              id='metadata-card'
+              className='noselect header-accordion'
+            >
               View Metadata
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='1'>
@@ -129,7 +139,12 @@ class Tools extends Component {
             </Accordion.Collapse>
           </Card>
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey='2' id='filtering-card'>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='2'
+              id='filtering-card'
+              className='noselect header-accordion'
+            >
               Filter Nodes
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='2'>
@@ -155,7 +170,7 @@ class Tools extends Component {
                 <Button
                   variant='primary'
                   onClick={() => {
-                    this.setState({ value: null });
+                    this.setState({ value: null, selectedFeatures: [] });
                     this.props.onOpenFilter(this.state.selectedFeatures);
                   }}
                 >

@@ -47,7 +47,7 @@ class ColorScaleModal extends Component {
           id={"popover"}
           open={Boolean(this.state.anchorEl)}
           anchorEl={this.state.anchorEl}
-          onClose={this.handleClose}
+          onClose={(save) => this.handleClose(save)}
           anchorOrigin={{
             vertical: "bottom",
             horizontal: "center",

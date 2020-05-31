@@ -52,8 +52,8 @@ class FilterModal extends Component {
       <ModalOwn
         id={this.props.ID}
         show={this.props.show}
-        onClose={() => {
-          this.props.handleClose(this.state.filter);
+        onClose={(save) => {
+          this.props.handleClose(save, this.state.filter);
           this.setState({ filter: {} });
         }}
         title={`Select features to filter`}

@@ -4,7 +4,17 @@ import { Accordion, Card } from "react-bootstrap";
 import * as _ from "lodash";
 
 class NodeInformation extends Component {
-  state = {};
+  state = { showSupport: false, showNonSupport: false };
+
+  static getDerivedStateFromProps(props) {
+    const getIfShow = (props, type) =>
+      _.get(props, `SNPTable.${type}.actualNode.length`, 0) > 0 ||
+      _.get(props, `SNPTable.${type}.descendants.length`, 0) > 0;
+    return {
+      showSupport: getIfShow(props, "support"),
+      showNonSupport: getIfShow(props, "notsupport"),
+    };
+  }
 
   render() {
     return (
@@ -15,13 +25,11 @@ class NodeInformation extends Component {
             <Card>
               <Accordion.Toggle
                 as={Card.Header}
-                eventKey={
-                  _.get(this.props.SNPTable, `support.actualNode`, []).length > 0 ||
-                  _.get(this.props.SNPTable, `support.descendants`, []).length > 0
-                    ? "0"
-                    : "-1"
-                }
+                eventKey={this.state.showSupport ? "0" : "-1"}
                 id='supportingSNPs-header'
+                className={`noselect ${
+                  this.state.showSupport ? "header-accordion" : "header-accordion-disabled"
+                }`}
               >
                 Supporting SNPs
               </Accordion.Toggle>
@@ -44,12 +52,10 @@ class NodeInformation extends Component {
             <Card>
               <Accordion.Toggle
                 as={Card.Header}
-                eventKey={
-                  _.get(this.props.SNPTable, `notsupport.actualNode`, []).length > 0 ||
-                  _.get(this.props.SNPTable, `notsupport.descendants`, []).length > 0
-                    ? "1"
-                    : "-1"
-                }
+                eventKey={this.state.showNonSupport ? "1" : "-1"}
+                className={`noselect ${
+                  this.state.showNonSupport ? "header-accordion" : "header-accordion-disabled"
+                }`}
               >
                 Non Supporting SNPs
               </Accordion.Toggle>
