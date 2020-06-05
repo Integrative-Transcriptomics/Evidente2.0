@@ -184,6 +184,7 @@ class Tools extends Component {
                     />
                     <Typography variant='h6'>Active Filters</Typography>
                     <FilterList
+                      availableMDs={this.props.availableMDs}
                       onApplyAllFilters={this.props.onApplyAllFilters}
                       createdFilters={this.props.createdFilters}
                       onDeleteFilter={this.props.onDeleteFilter}

@@ -42,6 +42,7 @@ code {
 .lchild {
   width: 40%;
   flex: 1 1 auto;
+  height: 100%;
 }
 .mchild {
   width: 20%;
@@ -201,4 +202,9 @@ div.tooltip {
 
 .header-accordion-disabled {
   cursor: not-allowed;
+}
+
+.MuiPaper-root.paper-tooltip {
+  background-color: #000 !important;
+  color: #e0e0e0 !important;
 }

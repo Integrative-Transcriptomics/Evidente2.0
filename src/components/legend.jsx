@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import { withStyles } from "@material-ui/core/styles";
+import { makeStyles, withStyles } from "@material-ui/core/styles";
 import * as d3 from "d3";
 
 import {
@@ -50,6 +49,10 @@ class Legend extends Component {
       margin: theme.spacing(1),
     },
   }));
+
+  /**
+   * Creates legend for the given metadata, shows the ColorScale and allows to change it.
+   */
   giveLegend = ({ name, colorScale, extent, type }) => {
     let svg = d3.select(`#svg-legend-${name.replace(/ /g, "-")}`);
     let cellWidth = this.cell.offsetWidth / 3;
@@ -209,11 +212,11 @@ class Legend extends Component {
             x: (d, i) => positions[i],
           })
           .style("fill", (value) => colorScale(value));
-        if (_.last(positions) > cellWidth) {
+        if (_.round(_.last(positions)) > cellWidth) {
           let drag = d3.behavior.drag().on("drag", dragmove);
-
           function dragmove(d) {
-            var x = Math.min(0, Math.max(cellWidth - _.last(positions), d3.event.x));
+            let actualTransform = d3.transform(d3.select(this).attr("transform")).translate[0];
+            let x = _.clamp(d3.event.dx + actualTransform, cellWidth - _.last(positions), 0);
             d3.select(this).attr("transform", `translate( ${x}  , 0)`);
           }
           svg.style("cursor", "grab").call(drag);
@@ -223,13 +226,6 @@ class Legend extends Component {
       default:
         break;
     }
-    // let drag = d3.behavior.drag().on("drag", dragmove);
-
-    // function dragmove(d) {
-    //   var x = d3.event.x;
-    //   d3.select(this).attr("transform", `translate( ${Math.max(x)}  , 0)`);
-    // }
-    // svg.style("cursor", "grab").call(drag);
   };
   state = { checked: false };
   header = ["Name", "Color Scale", "Actions"];

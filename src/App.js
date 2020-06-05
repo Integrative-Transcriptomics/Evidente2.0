@@ -1,23 +1,25 @@
-// import logo from "./logo.svg";
+// Own components or files
 import "./App.css";
 import Phylotree from "./components/phylotree";
 import Heatmap from "./components/heatmap";
-import * as d3 from "d3";
-import * as d3v5 from "d3v5";
-import getValue from "react-select";
-
-// import SNPTable from "./components/table";
 import ColorScaleModal from "./components/color-scale-modal";
 import OrdinalModal from "./components/modal-ordinal-sort";
 import FilterModal from "./components/filter-modal";
+import Toolbox from "./components/toolbox";
 
+// Important libraries
+import React, { Component } from "react";
+
+import * as d3 from "d3";
+import * as d3v5 from "d3v5";
 import * as $ from "jquery";
-// import { observable } from "mobx";
+import * as _ from "lodash";
+
 import "../node_modules/jquery/dist/jquery";
 import "../node_modules/bootstrap/dist/js/bootstrap";
-import React, { Component } from "react";
-import Toolbox from "./components/toolbox";
-import * as _ from "lodash";
+// import { observable } from "mobx";
+
+// Eventhough they are not used, need to be imported
 import bootbox from "bootbox";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import { color } from "d3";
@@ -26,6 +28,7 @@ class App extends Component {
   state = {};
   lr = d3.behavior.drag().on("drag", this.handleLR);
   color_cat = [
+    // Alternative 1
     "#8dd3c7",
     "#ffffb3",
     "#bebada",
@@ -40,6 +43,7 @@ class App extends Component {
     "#ffed6f",
   ];
   color_cat = [
+    // Alternative 2
     "#a6cee3",
     "#1f78b4",
     "#b2df8a",
@@ -54,59 +58,59 @@ class App extends Component {
     "#b15928",
   ];
   chosenMD = "";
+  tree = d3.layout
+    .phylotree()
+    .options({
+      brush: false,
+      zoom: true,
+      "show-scale": false,
+      selectable: true,
+      collapsible: false,
+      hide: false,
+      "left-right-spacing": "fit-to-size",
+      "top-bottom-spacing": "fit-to-size",
+      reroot: false,
+      transitions: true,
+      "internal-names": true,
+      "draw-size-bubbles": true,
+      // "align-tips": true,
+    })
+    .node_span((d) => 2)
+    .branch_name(function () {
+      return "";
+    });
+  // .style_nodes(this.nodeStyler)
+  // tree.branch_length(() => 2);
+  zoom = d3.behavior
+    .zoom()
+    .translate([0, 0])
+    .scale(1)
+    .scaleExtent([1, 15])
+    .on("zoom", this.handleZoom);
+  initialState = {
+    zoom: this.zoom,
+    tree: this.tree,
+    hiddenNodes: [],
+    cladeNumber: 0,
+    collapsedClades: [],
+    selectedNodes: [],
+    visualizedMD: [],
+    visualizedSNPs: [],
+    SNPTable: {},
+    ordinalModalShow: false,
+    createdFilters: [],
+    activeFilters: [],
+  };
   constructor() {
     super();
-    let tree = d3.layout
-      .phylotree()
-      .options({
-        brush: false,
-        zoom: true,
-        "show-scale": false,
-        selectable: true,
-        collapsible: false,
-        hide: false,
-        "left-right-spacing": "fit-to-size",
-        "top-bottom-spacing": "fit-to-size",
-        reroot: false,
-        transitions: true,
-        "internal-names": true,
-        "draw-size-bubbles": true,
-        // "align-tips": true,
-      })
-      .node_span((d) => 2)
-      .branch_name(function () {
-        return "";
-      });
-    // .style_nodes(this.nodeStyler)
-    // tree.branch_length(() => 2);
-    const zoom = d3.behavior
-      .zoom()
-      .translate([0, 0])
-      .scale(1)
-      .scaleExtent([1, 15])
-      .on("zoom", this.handleZoom);
 
-    let cladeNumber = 0;
-    let collapsedClades = [];
-    this.state = {
-      zoom: zoom,
-      tree: tree,
-      hiddenNodes: [],
-      cladeNumber: cladeNumber,
-      collapsedClades: collapsedClades,
-      selectedNodes: [],
-      visualizedMD: [],
-      visualizedSNPs: [],
-      SNPTable: {},
-      ordinalModalShow: false,
-      createdFilters: [],
-      activeFilters: [],
-    };
+    this.state = this.initialState;
 
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleSubmit = async (e) => {
+    this.setState(this.initialState);
     e.preventDefault();
     const formData = new FormData(document.getElementById("fileform"));
     let response = await fetch(`/api/upload`, {
@@ -225,6 +229,8 @@ class App extends Component {
   };
   handleApplyAllFilter = () => {
     // this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    this.setState({ activeFilters: [] });
+
     this.setState({ activeFilters: this.state.createdFilters });
     // this.state.tree.update();
   };
@@ -303,23 +309,10 @@ class App extends Component {
     });
   };
   my_showNodes = (node) => {
-    this.state.tree.modify_selection(
-      this.state.tree.select_all_descendants(node, true, true),
-      "hidden-t",
-      true,
-      true,
-      "false"
-    );
-    this.state.tree
-      .modify_selection(
-        this.state.tree.select_all_descendants(node, true, true),
-        "notshown",
-        true,
-        true,
-        "false"
-      )
-      .update_has_hidden_nodes()
-      .update();
+    let nodes = [node].concat(this.state.tree.select_all_descendants(node, true, true));
+    this.state.tree.modify_selection(nodes, "hidden-t", true, true, "false");
+    this.state.tree.modify_selection(nodes, "notshown", true, true, "false");
+    this.state.tree.update_has_hidden_nodes().update();
     this.handleShow(this.state.tree.descendants(node));
     d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
     this.handleSelection(this.state.tree.get_selection());

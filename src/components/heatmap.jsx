@@ -579,13 +579,11 @@ class Heatmap extends Component {
     ticks
       .selectAll("text")
       .style("font-size", `${Math.min(cellHeight, 12)}px`)
-      // .attr("dy", ".35em")
       .attr("font-weight", "normal")
       .each(function () {
         var thisWidth = this.getComputedTextLength();
         textWidth.push(thisWidth);
       });
-    console.log(textWidth);
     ticks
       .append("line")
       .attr("class", (d) => `guides ${d}`)

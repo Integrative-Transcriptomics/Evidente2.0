@@ -1,6 +1,8 @@
 import * as d3 from "d3";
 import "../../node_modules/phylotree/phylotree";
 // import "../../node_modules/phylotree/src/main";
+import { ResizableBox } from "react-resizable";
+import { Rnd } from "react-rnd";
 
 import * as $ from "jquery";
 import * as _ from "lodash";
@@ -121,43 +123,25 @@ class Phylotree extends Component {
     for (let node of nodeList) {
       if (!node["hidden-t"]) {
         node["hidden-t"] = true;
-        this.props.tree.modify_selection(
-          [node].concat(this.props.tree.select_all_descendants(node, true, true)),
-          "notshown",
-          true,
-          true,
-          "true"
-        );
-        this.props.onHide(this.props.tree.descendants(node));
+        this.props.tree.modify_selection([node], "notshown", true, true, "true");
       }
-      this.props.tree.update_has_hidden_nodes().update();
-
-      d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
-      this.props.onSelection(this.props.tree.get_selection());
     }
+    this.props.onHide(nodeList);
+    // this.props.tree.update();
+    // this.props.tree.placenodes();
+    this.props.tree.update_has_hidden_nodes().update();
+
+    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+    this.props.onSelection(this.props.tree.get_selection());
+    console.log("Refreshed");
   }
 
   my_showNodes(node) {
-    this.props.tree.modify_selection(
-      this.props.tree.select_all_descendants(node, true, true),
-      "hidden-t",
-      true,
-      true,
-      "false"
-    );
-    this.props.tree
-      .modify_selection(
-        this.props.tree.select_all_descendants(node, true, true),
-        "notshown",
-        true,
-        true,
-        "false"
-      )
-      .update_has_hidden_nodes()
-      .update();
+    let nodes = [node].concat(this.props.tree.select_all_descendants(node, true, true));
+    this.props.tree.modify_selection(nodes, "hidden-t", true, true, "false");
+    this.props.tree.modify_selection(nodes, "notshown", true, true, "false");
+
     this.props.onShowNodes(this.props.tree.descendants(node));
-    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
-    this.props.onSelection(this.props.tree.get_selection());
   }
   testForFilters(node, filters, data) {
     let nodeName = node.name;
@@ -191,15 +175,15 @@ class Phylotree extends Component {
     );
   }
   componentDidUpdate(prevProp) {
-    console.log("updating");
     if (prevProp.newick !== this.props.newick) {
       this.renderTree(this.props.newick);
       d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     }
     if (this.props.activeFilters.length > 0) {
-      this.my_showNodes(this.props.tree.get_nodes().filter((n) => n.name === "root")[0]);
-      console.log("activeFilters:", this.props.activeFilters);
-      console.log("running for filters");
+      let root = this.props.tree.get_nodes().filter((n) => n.name === "root")[0];
+      this.my_showNodes(root);
+      // console.log("activeFilters:", this.props.activeFilters);
+      // console.log("running for filters");
       let taxaDataModified = _.keyBy(this.props.taxadata, "Information");
       let resultingNodes = this.props.tree
         .get_nodes()
@@ -208,8 +192,10 @@ class Phylotree extends Component {
           let filterResult = this.testForFilters(node, this.props.activeFilters, taxaDataModified);
           return !filterResult;
         });
+      // console.log("TEST");
       this.my_hideMultiple(resultingNodes);
-      // resultingNodes.forEach((node) => this.my_hide(node));
+      // d3.layout.phylotree.trigger_refresh(this.props.tree);
+      // this.props.tree.update();
     }
   }
   componentDidMount() {

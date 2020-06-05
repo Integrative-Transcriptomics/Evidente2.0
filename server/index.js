@@ -91,7 +91,9 @@ async function extractMetadata(taxaInfo) {
       allValues = allValues.map((d) => parseFloat(d));
       dataDomain = [Math.min(...allValues), Math.max(...allValues)];
     } else {
-      dataDomain = [...new Set(allValues).values()];
+      let countedValues = _.countBy(allValues);
+      let temp = _.sortBy(_.keys(countedValues), (key) => countedValues[key]);
+      dataDomain = _.reverse(temp);
     }
 
     metadataInfo[k] = { type: v.toLowerCase(), extent: dataDomain };

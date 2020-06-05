@@ -7,20 +7,28 @@ import {
   ListItemText,
   IconButton,
   Grid,
+  Paper,
 } from "@material-ui/core";
-import { Button, OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
+import { Button, OverlayTrigger, Popover, Tooltip, Table } from "react-bootstrap";
 
 import * as _ from "lodash";
 
-const popover = (valueFilter) => (
+const popover = (valueFilter, props) => (
   <Tooltip>
-    {/* test */}
     {_.toPairs(valueFilter).map(([key, value]) => {
       return (
-        <div>
-          <span>{key}</span>
-          <span>{value}</span>
-        </div>
+        <Grid container justify='center' spacing={2}>
+          <Grid key={key} item>
+            <Paper className='paper-tooltip'>{key}</Paper>
+          </Grid>
+          <Grid key={value} item>
+            <Paper className='paper-tooltip'>
+              {_.get(props, `availableMDs["${key}"].type`, undefined) === "numerical"
+                ? `From ${value[0].toFixed(3)} To ${value[1].toFixed(3)}`
+                : `Includes: [${value.join(", ")}]`}
+            </Paper>
+          </Grid>
+        </Grid>
       );
     })}
   </Tooltip>
@@ -47,7 +55,7 @@ class FilterList extends Component {
           {this.state.createdFilters &&
             this.state.createdFilters.map((value, it) => (
               <ListItem>
-                <OverlayTrigger placement='left' overlay={popover(value)}>
+                <OverlayTrigger placement='left' overlay={popover(value, this.props)}>
                   <ListItemText primary={`Filter ${it + 1}`} />
                 </OverlayTrigger>
                 <ListItemSecondaryAction>
