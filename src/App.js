@@ -227,13 +227,64 @@ class App extends Component {
   handleFilterOpenModal = (selectedFeatures) => {
     this.setState({ filterModalShow: true, filterFeatures: selectedFeatures });
   };
-  handleApplyAllFilter = () => {
-    // this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
-    this.setState({ activeFilters: [] });
+  testForFilters(node, filters, data) {
+    let nodeName = node.name;
+    let processedFilter = filters.map((filter) => {
+      let keyValuePair = _.toPairs(filter);
+      let resultGroup = keyValuePair.map((el) => {
+        let [key, value] = el;
+        let typeOfMetadata = this.state.mdinfo[key].type;
+        let datum = _.get(data, `[${nodeName}][${key}]`, null);
+        switch (typeOfMetadata.toLowerCase()) {
+          case "numerical":
+            return value[0] <= datum && datum <= value[1];
+            break;
 
-    this.setState({ activeFilters: this.state.createdFilters });
-    // this.state.tree.update();
+          default:
+            return value.includes(datum);
+            break;
+        }
+      });
+      return resultGroup.reduce((acc, now) => acc && now, true);
+    });
+
+    return processedFilter.reduce((acc, now) => acc || now, false);
+  }
+  my_hideMultiple(nodeList) {
+    for (let node of nodeList) {
+      if (!node["hidden-t"]) {
+        node["hidden-t"] = true;
+        this.state.tree.modify_selection([node], "notshown", true, true, "true");
+      }
+    }
+    this.handleHide(nodeList);
+    this.state.tree.update_has_hidden_nodes().update();
+
+    d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
+    this.handleSelection(this.state.tree.get_selection());
+  }
+
+  tempShowNodes(node) {
+    let nodes = [node].concat(this.state.tree.select_all_descendants(node, true, true));
+    this.state.tree.modify_selection(nodes, "hidden-t", true, true, "false");
+    this.state.tree.modify_selection(nodes, "notshown", true, true, "false");
+
+    this.handleShow(this.state.tree.descendants(node));
+  }
+  handleApplyAllFilter = () => {
+    let root = this.state.tree.get_nodes().filter((n) => n.name === "root")[0];
+    this.tempShowNodes(root);
+    let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
+    let resultingNodes = this.state.tree
+      .get_nodes()
+      .filter(this.state.tree.is_leafnode)
+      .filter((node) => {
+        let filterResult = this.testForFilters(node, this.state.createdFilters, taxaDataModified);
+        return !filterResult;
+      });
+    this.my_hideMultiple(resultingNodes);
   };
+
   handleDeleteFilter = (index) => {
     // this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
     let modActiveFilters = _.clone(this.state.createdFilters);
@@ -279,7 +330,7 @@ class App extends Component {
     }
   };
   handleCladeUpdate = (oldName, newName) => {
-    $(`.guides.${oldName}`).removeClass(oldName).addClass(newName);
+    $(`.guides.node-${oldName}`).removeClass(`node-${oldName}`).addClass(`node-${newName}`);
     let clades = this.state.collapsedClades;
     let renamedClade = clades.find((x) => x.showname === oldName);
     renamedClade.showname = newName;
@@ -292,10 +343,10 @@ class App extends Component {
   };
 
   handleDecollapse = (cladeNode) => {
-    this.state.tree.toggle_collapse(cladeNode).update();
     let filteredClades = this.state.collapsedClades.filter((n) => {
       return !Object.is(n.cladeParent, cladeNode);
     });
+    this.state.tree.toggle_collapse(cladeNode).update();
     this.setState({ collapsedClades: filteredClades });
   };
 
@@ -398,7 +449,7 @@ class App extends Component {
             taxadata={this.state.taxamd}
             ids={this.state.ids}
             mdinfo={this.state.mdinfo}
-            activeFilters={this.state.activeFilters}
+            // activeFilters={this.state.activeFilters}
           />
           <Heatmap
             divID={"heatmap_viz"}

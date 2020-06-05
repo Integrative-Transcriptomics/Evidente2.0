@@ -138,7 +138,7 @@ class Heatmap extends Component {
       ticks
 
         .append("line")
-        .attr("class", (d) => `guides  ${d}`)
+        .attr("class", (d) => `guides  node-${d}`)
         .attr("x1", (d, i) => -1 * textWidth[i] - 15)
         .attr("x2", -9000)
         .attr("y1", 0)
@@ -209,7 +209,7 @@ class Heatmap extends Component {
       if (this.isSNP && this.props.visMd.length !== 0) {
         ticks
           .append("line")
-          .attr("class", (d) => `guides  ${d}`)
+          .attr("class", (d) => `guides  node-${d}`)
           .attr("x1", (d) => 5 + x_elements.length * cellWidth)
           .attr("x2", 9000)
           .attr("y1", 0)
@@ -310,7 +310,7 @@ class Heatmap extends Component {
       .data(data)
       .enter()
       .append("svg:rect")
-      .attr("class", ({ Information }) => `cell ${Information} md-${type}`)
+      .attr("class", ({ Information }) => `cell node-${Information} md-${type}`)
       .attr("width", cellSize)
       .attr("height", cellHeight)
       .attr("y", ({ Information }) => yScale(Information))
@@ -323,7 +323,7 @@ class Heatmap extends Component {
         .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
         .enter()
         .append("svg:rect")
-        .attr("class", ({ Information }) => `pattern ${Information} md-${type}`)
+        .attr("class", ({ Information }) => `pattern node-${Information} md-${type}`)
         .attr("width", cellSize)
         .attr("height", cellHeight)
         .attr("y", ({ Information }) => yScale(Information))
@@ -349,7 +349,7 @@ class Heatmap extends Component {
       .data(data)
       .enter()
       .append("g")
-      .attr("class", ({ Information }) => `boxplot ${Information} md-${type}`)
+      .attr("class", ({ Information }) => `boxplot node-${Information} md-${type}`)
       .attr(
         "transform",
         ({ Information }) => `translate(${xScale(type)}, ${center + yScale(Information)})`
@@ -424,7 +424,7 @@ class Heatmap extends Component {
       .data(data)
       .enter()
       .append("g")
-      .attr("class", ({ Information }) => `histo ${Information} md-${type}`)
+      .attr("class", ({ Information }) => `histo node-${Information} md-${type}`)
       .attr("transform", ({ Information }) => `translate(${xScale(type)}, ${yScale(Information)})`);
 
     let bars = heatmapCell
@@ -506,8 +506,10 @@ class Heatmap extends Component {
 
       selection.forEach((t) => {
         let lookFor = t.collapsed ? t["show-name"] : t.name; // Either clade or leaf
-        $(`.${lookFor}`).css("opacity", 1);
-        d3.selectAll(`.${lookFor}.guides`).style("stroke", "red").style("stroke-opacity", 0.75);
+        $(`.node-${lookFor}`).css("opacity", 1);
+        d3.selectAll(`.node-${lookFor}.guides`)
+          .style("stroke", "red")
+          .style("stroke-opacity", 0.75);
       });
     }
   }
@@ -586,7 +588,7 @@ class Heatmap extends Component {
       });
     ticks
       .append("line")
-      .attr("class", (d) => `guides ${d}`)
+      .attr("class", (d) => `guides node-${d}`)
       .attr("x1", (d, i) => -1 * textWidth[i] - 15)
       .attr("x2", -9000)
       .attr("y1", 0)
@@ -616,7 +618,7 @@ class Heatmap extends Component {
       .attr("stroke", "white")
       .attr("stroke-width", 1);
 
-    ticks.selectAll("text").attr("class", (d) => d);
+    ticks.selectAll("text").attr("class", (d) => `node-${d}`);
   }
 
   componentDidMount() {
