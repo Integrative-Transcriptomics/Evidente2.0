@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
+import * as $ from "jquery";
+
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
 import Legend from "./legend";
@@ -47,6 +49,10 @@ class Tools extends Component {
   onChangeFilter = (value) => {
     this.setState({ selectedFeatures: value.map(({ value }) => value), value: value });
   };
+  onFileChange = ({ target }, label) => {
+    let fileName = target.files[0].name;
+    $(target).next(".custom-file-label").html(`${label}: ${fileName}`);
+  };
   /**
    * Creates the labels and values for the correspoinding selecting menu
    * @param {dictionary of metadata} metadata
@@ -83,7 +89,13 @@ class Tools extends Component {
                     { id: "decoding", label: "Decoding files" },
                   ].map(({ id, label }) => (
                     <Form.Group key={id}>
-                      <Form.File id={id} label={label} name={id} custom />
+                      <Form.File
+                        id={id}
+                        label={label}
+                        name={id}
+                        custom
+                        onChange={(el) => this.onFileChange(el, label)}
+                      />
                     </Form.Group>
                   ))}
                   <Button variant='primary' type='submit'>

@@ -141,6 +141,12 @@ class App extends Component {
         snpmd: json.snpInfo || [],
         mdinfo: metadataInfo,
       });
+      // Adds zoom and left/right translation on SVGs
+      let zoom = this.state.zoom;
+      // Adds zoom on all
+      for (let container of ["#tree-display", "#display_heatmap_viz", "#display_md_viz"]) {
+        d3.select(container).call(zoom).call(this.lr);
+      }
       $("#metadata-card").click();
     }
   };
@@ -339,6 +345,7 @@ class App extends Component {
       renamedClade,
     ];
     this.setState({ collapsedClades: jointNodes });
+    this.handleSelection(this.state.tree.get_selection());
   };
 
   handleDecollapse = (cladeNode) => {
@@ -376,6 +383,7 @@ class App extends Component {
   };
 
   handleSelection = (selection) => {
+    console.log("test");
     let filteredSelection = selection.filter((node) => {
       return (
         (d3.layout.phylotree.is_leafnode(node) || node.collapsed) &&
@@ -386,11 +394,6 @@ class App extends Component {
   };
 
   componentDidMount() {
-    let zoom = this.state.zoom;
-    // Adds zoom on all
-    for (let container of ["#tree-display", "#display_heatmap_viz", "#display_md_viz"]) {
-      d3.select(container).call(zoom).call(this.lr);
-    }
     d3.select("body")
       .append("div")
       .attr("class", "tooltip")
