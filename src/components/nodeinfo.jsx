@@ -2,6 +2,24 @@ import React, { Component } from "react";
 import SNPTable from "./table";
 import { Accordion, Card } from "react-bootstrap";
 import * as _ from "lodash";
+import * as $ from "jquery";
+import * as d3 from "d3";
+
+const enterMouse = (event) => {
+  const div = d3.select("#tooltip");
+
+  div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+  div
+    .html(`Select first a node to show the SNPs among the subtree`)
+    .style("left", event.pageX + "px")
+    .style("top", event.pageY - 28 + "px")
+    .style("max-width", "150px");
+};
+
+const outMouse = () => {
+  const div = d3.select("#tooltip");
+  div.transition().duration(500).style("opacity", 0);
+};
 
 class NodeInformation extends Component {
   state = { showSupport: false, showNonSupport: false };
@@ -30,6 +48,8 @@ class NodeInformation extends Component {
                 className={`noselect ${
                   this.state.showSupport ? "header-accordion" : "header-accordion-disabled"
                 }`}
+                onMouseOver={!this.state.showSupport && enterMouse}
+                onMouseOut={!this.state.showSupport && outMouse}
               >
                 Supporting SNPs
               </Accordion.Toggle>
@@ -56,6 +76,8 @@ class NodeInformation extends Component {
                 className={`noselect ${
                   this.state.showNonSupport ? "header-accordion" : "header-accordion-disabled"
                 }`}
+                onMouseOver={!this.state.showSupport && enterMouse}
+                onMouseOut={!this.state.showSupport && outMouse}
               >
                 Non Supporting SNPs
               </Accordion.Toggle>

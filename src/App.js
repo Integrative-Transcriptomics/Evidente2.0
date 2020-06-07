@@ -383,7 +383,6 @@ class App extends Component {
   };
 
   handleSelection = (selection) => {
-    console.log("test");
     let filteredSelection = selection.filter((node) => {
       return (
         (d3.layout.phylotree.is_leafnode(node) || node.collapsed) &&
