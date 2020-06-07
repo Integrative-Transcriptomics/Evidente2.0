@@ -77,7 +77,6 @@ app.post("/api/upload", (req, res, next) => {
 
 async function extractMetadata(taxaInfo) {
   let metadataInfo = _.head(taxaInfo);
-  // metadataInfo = _.mapKeys(metadataInfo, (v, k) => k.replace(/ /g, "-"));
   taxaInfoMod = _.tail(taxaInfo).map((d) =>
     _.update(_.pickBy(d), "Information", (v) => v.replace(/ /g, "_"))
   );

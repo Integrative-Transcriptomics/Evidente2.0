@@ -238,11 +238,11 @@ class App extends Component {
         switch (typeOfMetadata.toLowerCase()) {
           case "numerical":
             return value[0] <= datum && datum <= value[1];
-            break;
+          // break;
 
           default:
             return value.includes(datum);
-            break;
+          // break;
         }
       });
       return resultGroup.reduce((acc, now) => acc && now, true);
@@ -250,7 +250,7 @@ class App extends Component {
 
     return processedFilter.reduce((acc, now) => acc || now, false);
   }
-  my_hideMultiple(nodeList) {
+  handleHideMultipleNodes(nodeList) {
     for (let node of nodeList) {
       if (!node["hidden-t"]) {
         node["hidden-t"] = true;
@@ -269,7 +269,7 @@ class App extends Component {
     this.state.tree.modify_selection(nodes, "hidden-t", true, true, "false");
     this.state.tree.modify_selection(nodes, "notshown", true, true, "false");
 
-    this.handleShow(this.state.tree.descendants(node));
+    this.handleShowOnHeatmap(this.state.tree.descendants(node));
   }
   handleApplyAllFilter = () => {
     let root = this.state.tree.get_nodes().filter((n) => n.name === "root")[0];
@@ -282,20 +282,18 @@ class App extends Component {
         let filterResult = this.testForFilters(node, this.state.createdFilters, taxaDataModified);
         return !filterResult;
       });
-    this.my_hideMultiple(resultingNodes);
+    this.handleHideMultipleNodes(resultingNodes);
   };
 
   handleDeleteFilter = (index) => {
-    // this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
     let modActiveFilters = _.clone(this.state.createdFilters);
     let tmp = _.remove(modActiveFilters, (n, i) => i === index);
     this.setState({ createdFilters: modActiveFilters });
-    // this.state.tree.update();
+    this.handleApplyAllFilter();
   };
   handleDeleteAllFilters = () => {
-    this.my_showNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    this.handleShowNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
     this.setState({ createdFilters: [] });
-    // this.state.tree.update();
   };
   handleFilterCloseModal = (save, filter) => {
     save
@@ -359,16 +357,16 @@ class App extends Component {
       nodes: nodes,
     });
   };
-  my_showNodes = (node) => {
+  handleShowNodes = (node) => {
     let nodes = [node].concat(this.state.tree.select_all_descendants(node, true, true));
     this.state.tree.modify_selection(nodes, "hidden-t", true, true, "false");
     this.state.tree.modify_selection(nodes, "notshown", true, true, "false");
     this.state.tree.update_has_hidden_nodes().update();
-    this.handleShow(this.state.tree.descendants(node));
+    this.handleShowOnHeatmap(this.state.tree.descendants(node));
     d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
     this.handleSelection(this.state.tree.get_selection());
   };
-  handleShow = (showNodes) => {
+  handleShowOnHeatmap = (showNodes) => {
     let namesShowNodes = showNodes.map(({ name }) => name);
     let filteredNodes = this.state.hiddenNodes.filter((n) => {
       return !namesShowNodes.includes(n.name);
@@ -388,9 +386,8 @@ class App extends Component {
 
   componentDidMount() {
     let zoom = this.state.zoom;
-    // Adds zoom on both
+    // Adds zoom on all
     for (let container of ["#tree-display", "#display_heatmap_viz", "#display_md_viz"]) {
-      // for (let container of ["#tree-display", "#display_heatmap_viz"]) {
       d3.select(container).call(zoom).call(this.lr);
     }
     d3.select("body")
@@ -402,7 +399,6 @@ class App extends Component {
 
   handleZoom() {
     for (let id of ["#heatmap-container", "#md-container", ".phylotree-container"]) {
-      // for (let id of ["#heatmap-container", ".phylotree-container"]) {
       let temp = d3.transform(d3.select(id).attr("transform"));
       $(id).attr(
         "transform",
@@ -418,7 +414,6 @@ class App extends Component {
       display_md_viz: "#md-container",
     };
     let container = $(translate[this.id]);
-    // this.id === "tree-display" ? $(".phylotree-container") : $("#heatmap-container");
     let t = d3.transform(container.attr("transform"));
     container.attr(
       "transform",
@@ -434,22 +429,17 @@ class App extends Component {
           <Phylotree
             updateSNPTable={this.updateSNPTable}
             tree={this.state.tree}
-            onShowMyNodes={this.my_showNodes}
+            onShowMyNodes={this.handleShowNodes}
             onZoom={this.state.zoom}
             onCollapse={this.handleCollapse}
             onDecollapse={this.handleDecollapse}
             onUploadTree={this.handleUploadTree}
             onHide={this.handleHide}
-            onShowNodes={this.handleShow}
-            selectedNodes={this.state.selectedNodes}
             onSelection={this.handleSelection}
             onCladeUpdate={this.handleCladeUpdate}
             newick={this.state.newick}
             snpdata={this.state.snpdata}
-            taxadata={this.state.taxamd}
             ids={this.state.ids}
-            mdinfo={this.state.mdinfo}
-            // activeFilters={this.state.activeFilters}
           />
           <Heatmap
             divID={"heatmap_viz"}

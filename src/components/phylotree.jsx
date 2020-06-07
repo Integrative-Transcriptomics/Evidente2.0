@@ -8,10 +8,6 @@ import * as _ from "lodash";
 import * as bootbox from "bootbox";
 import React, { Component } from "react";
 class Phylotree extends Component {
-  state = {};
-  constructor() {
-    super();
-  }
   nodeStyler = (container, node) => {
     let div = d3.select("#tooltip");
     let lookFor = node.collapsed ? node["show-name"] : node.name; // Either clade or leaf
@@ -66,14 +62,22 @@ class Phylotree extends Component {
       title: `Please insert the new name for the clade named "${node["show-name"]}" `,
       centerVertical: true,
       callback: (name) => {
+        let given_names = this.props.tree
+          .get_nodes()
+          .filter((node) => d3.layout.phylotree.is_leafnode(node) || node.collapsed)
+          .map((leaf) => (leaf.collapsed ? leaf["show-name"] : leaf["name"]));
+
         if (name) {
-          // TODO: Catch that the name is not already given!!!!
-          name = name.replace(/ /g, "-");
-          let oldName = node["show-name"];
-          node["show-name"] = name;
-          this.props.onCladeUpdate(oldName, name);
-          this.props.tree.update();
-          d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+          if (given_names.includes(name)) {
+            alert("This name is already given. Try another name.");
+          } else {
+            name = name.replace(/ /g, "-");
+            let oldName = node["show-name"];
+            node["show-name"] = name;
+            this.props.onCladeUpdate(oldName, name);
+            this.props.tree.update();
+            d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+          }
         }
       },
     });
@@ -129,20 +133,13 @@ class Phylotree extends Component {
   }
 
   shouldComponentUpdate(nextProp, nextState) {
-    return (
-      nextProp.newick && nextProp.newick !== this.props.newick
-      // ||
-      // !_.isEqual(nextProp.activeFilters, this.props.activeFilters)
-    );
+    return nextProp.newick && nextProp.newick !== this.props.newick;
   }
   componentDidUpdate(prevProp) {
     if (prevProp.newick !== this.props.newick) {
       this.renderTree(this.props.newick);
       d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     }
-    // if (this.props.activeFilters.length > 0) {
-
-    // }
   }
   componentDidMount() {
     this.props.tree

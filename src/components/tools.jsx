@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
-import * as $ from "jquery";
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
 import Legend from "./legend";
@@ -178,10 +177,7 @@ class Tools extends Component {
                 </Button>
                 {this.props.createdFilters.length > 0 && (
                   <React.Fragment>
-                    <Divider
-                      variant='middle'
-                      style={{ "margin-top": "5px", "margin-bottom": "5px" }}
-                    />
+                    <Divider variant='middle' style={{ marginTop: "5px", marginBottom: "5px" }} />
                     <Typography variant='h6'>Active Filters</Typography>
                     <FilterList
                       availableMDs={this.props.availableMDs}

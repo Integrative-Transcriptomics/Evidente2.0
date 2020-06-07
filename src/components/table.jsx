@@ -9,7 +9,6 @@ import {
   Paper,
   Button,
 } from "@material-ui/core";
-import * as $ from "jquery";
 
 class SNPTable extends Component {
   state = {};

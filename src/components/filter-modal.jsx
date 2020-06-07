@@ -4,7 +4,7 @@ import * as _ from "lodash";
 import Select, { components } from "react-select";
 import OwnSlider from "./own-slider";
 
-const { ValueContainer, Placeholder, Menu, MenuList } = components;
+const { ValueContainer, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
   return (
@@ -64,12 +64,12 @@ class FilterModal extends Component {
           if (this.props.filterFeatures.includes(k)) {
             let type = v.type.toLowerCase();
             if (type === "numerical") {
-              return <OwnSlider onChange={this.onChange} name={k} initValue={v.extent} />;
+              return <OwnSlider key={k} onChange={this.onChange} name={k} initValue={v.extent} />;
             } else if (["categorical", "ordinal"].includes(type)) {
               return (
                 <Select
+                  key={k}
                   onChange={(e) => {
-                    // console.log(e);
                     this.onChange(
                       k,
                       e.map((v) => v.value)

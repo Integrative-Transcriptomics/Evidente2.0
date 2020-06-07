@@ -4,7 +4,6 @@ import * as d3v5 from "d3v5";
 import * as boxplot from "d3-boxplot";
 import * as $ from "jquery";
 import * as _ from "lodash";
-import { text } from "body-parser";
 class Heatmap extends Component {
   isSNP = this.props.isSNP;
   state = {};
@@ -189,22 +188,6 @@ class Heatmap extends Component {
             this.isSNP
           );
         }
-
-        // if (x_elem === `${this.SNPprefix}${_.last(props.visSNPs)}`) {
-        //   container
-        //     .append("line")
-        //     .attr("class", "division-line")
-        //     .attr({
-        //       x1: cellWidth * props.visSNPs.length,
-        //       x2: cellWidth * props.visSNPs.length,
-        //       y1: 0,
-        //       y2: state.height,
-        //     })
-        //     .style("stroke", "black")
-        //     .style("stroke-width", "1.5px")
-        //     .style("stroke-dasharray", "10,3")
-        //     .style("stroke-opacity", 1);
-        // }
       });
       if (this.isSNP && this.props.visMd.length !== 0) {
         ticks

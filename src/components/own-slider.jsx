@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Slider, Typography } from "@material-ui/core";
-import * as _ from "lodash";
 
 class OwnSlider extends Component {
   onChange = (ev, newValue, name) => {
@@ -14,16 +13,6 @@ class OwnSlider extends Component {
       step: (this.props.initValue[1] - this.props.initValue[0]) / 1000,
     };
   }
-  //   componentDidUpdate(prevProp, prevState) {
-  //     if (!_.isEqual(prevProp.initValue, this.props.initValue)) {
-  //       console.log("test");
-  //       console.log(this.props.initValue);
-  //       this.setState({ value: this.props.initValue });
-  //     }
-  //   }
-  //   componentDidMount() {
-  //     this.setState({ value: this.props.initValue });
-  //   }
   render() {
     return (
       <div key={this.props.name}>

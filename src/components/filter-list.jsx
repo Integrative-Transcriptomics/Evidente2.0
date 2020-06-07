@@ -9,7 +9,7 @@ import {
   Grid,
   Paper,
 } from "@material-ui/core";
-import { Button, OverlayTrigger, Popover, Tooltip, Table } from "react-bootstrap";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 
 import * as _ from "lodash";
 
@@ -17,7 +17,7 @@ const popover = (valueFilter, props) => (
   <Tooltip>
     {_.toPairs(valueFilter).map(([key, value]) => {
       return (
-        <Grid container justify='center' spacing={2}>
+        <Grid key={`container-${key}`} container justify='center' spacing={2}>
           <Grid key={key} item>
             <Paper className='paper-tooltip'>{key}</Paper>
           </Grid>
@@ -36,9 +36,6 @@ const popover = (valueFilter, props) => (
 
 class FilterList extends Component {
   state = { createdFilters: this.props.createdFilters };
-  //   componentDidUpdate() {
-  //     this.setState({ activeFilters: this.props.activeFilters });
-  //   }
 
   static getDerivedStateFromProps(props, state) {
     if (!_.isEqual(props.createdFilters, state.createdFilters)) {
@@ -54,7 +51,7 @@ class FilterList extends Component {
         <List dense={false}>
           {this.state.createdFilters &&
             this.state.createdFilters.map((value, it) => (
-              <ListItem>
+              <ListItem key={`filter-${it}`}>
                 <OverlayTrigger placement='left' overlay={popover(value, this.props)}>
                   <ListItemText primary={`Filter ${it + 1}`} />
                 </OverlayTrigger>
