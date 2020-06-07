@@ -13,65 +13,74 @@ app.use(pino);
 app.post("/api/upload", (req, res, next) => {
   const form = formidable({ multiple: true });
   form.parse(req, async (err, fields, files) => {
-    if (err) {
-      next(err);
-      return;
-    }
-    // Execute Processing Tool
-    let result = await executeJava(files.snp.path, files.nwk.path);
-    // Read all files
-    let newick = fs.readFileSync(files.nwk.path, "utf8");
-    let taxaInfo = await readCSV(files.taxainfo.path, {
-      separator: pathparser.extname(files.taxainfo.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
-    });
-    let { metadataInfo, taxaInfoMod } = await extractMetadata(taxaInfo); // extract line with metadata information
-    metadataInfo = _.assign(
-      { SNP: { type: "SNP", extent: ["A", "C", "T", "G", "N"] } },
-      metadataInfo
-    );
-    let snpInfo = await readCSV(files.SNPinfo.path, {
-      separator: pathparser.extname(files.SNPinfo.name) === ".tsv" ? "\t" : ",",
-    });
-    let noHeaders = { separator: "\t", headers: false };
-    let ids = await readCSV("./server/Ergebnis/IDzuordnung.txt", noHeaders);
-    let { numToLabel, labToNum } = zippedIds(ids);
-
-    let support = await readCSV(
-      "./server/Ergebnis/supportSplitKeys.txt",
-      noHeaders,
-
-      true
-    );
-    let notSupport = await readCSV("./server/Ergebnis/notSupportSplitKeys.txt", noHeaders);
-
-    // Delete files after they are read
-    _.keys(files).forEach((d) => {
-      fs.unlink(files[d].path, function (err) {
-        if (err) {
-          console.log(err);
-        }
+    try {
+      if (err) {
+        next(err);
+        return;
+      }
+      // Execute Processing Tool
+      let result = await executeJava(files.snp.path, files.nwk.path).catch((err) => {
+        console.log(err);
+        throw err;
       });
-    });
+      console.log("test", result);
+      // Read all files
+      let newick = fs.readFileSync(files.nwk.path, "utf8");
+      let taxaInfo = await readCSV(files.taxainfo.path, {
+        separator: pathparser.extname(files.taxainfo.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
+      });
+      let { metadataInfo, taxaInfoMod } = await extractMetadata(taxaInfo); // extract line with metadata information
+      metadataInfo = _.assign(
+        { SNP: { type: "SNP", extent: ["A", "C", "T", "G", "N"] } },
+        metadataInfo
+      );
+      let snpInfo = await readCSV(files.SNPinfo.path, {
+        separator: pathparser.extname(files.SNPinfo.name) === ".tsv" ? "\t" : ",",
+      });
+      let noHeaders = { separator: "\t", headers: false };
+      let ids = await readCSV("./server/Ergebnis/IDzuordnung.txt", noHeaders);
+      let { numToLabel, labToNum } = zippedIds(ids);
 
-    let resultTransformation = transformKeys(support, numToLabel);
-    let transformedSupportKeys = resultTransformation[0];
-    let resultTransformationNonSupport = transformKeys(
-      notSupport,
-      numToLabel,
-      resultTransformation[1]
-    );
-    let transformedNonSupportKeys = resultTransformationNonSupport[0];
-    let setOfSnps = _.sortBy([...resultTransformationNonSupport[1].values()], (d) => parseInt(d));
-    res.json({
-      newick: newick,
-      taxaInfo: taxaInfoMod,
-      snpInfo: snpInfo,
-      ids: { numToLabel, labToNum },
-      availableSNPs: setOfSnps,
-      support: transformedSupportKeys,
-      notSupport: transformedNonSupportKeys,
-      metadataInfo: metadataInfo,
-    });
+      let support = await readCSV(
+        "./server/Ergebnis/supportSplitKeys.txt",
+        noHeaders,
+
+        true
+      );
+      let notSupport = await readCSV("./server/Ergebnis/notSupportSplitKeys.txt", noHeaders);
+
+      // Delete files after they are read
+      _.keys(files).forEach((d) => {
+        fs.unlink(files[d].path, function (err) {
+          if (err) {
+            console.log(err);
+          }
+        });
+      });
+
+      let resultTransformation = transformKeys(support, numToLabel);
+      let transformedSupportKeys = resultTransformation[0];
+      let resultTransformationNonSupport = transformKeys(
+        notSupport,
+        numToLabel,
+        resultTransformation[1]
+      );
+      let transformedNonSupportKeys = resultTransformationNonSupport[0];
+      let setOfSnps = _.sortBy([...resultTransformationNonSupport[1].values()], (d) => parseInt(d));
+      res.status(200).json({
+        newick: newick,
+        taxaInfo: taxaInfoMod,
+        snpInfo: snpInfo,
+        ids: { numToLabel, labToNum },
+        availableSNPs: setOfSnps,
+        support: transformedSupportKeys,
+        notSupport: transformedNonSupportKeys,
+        metadataInfo: metadataInfo,
+      });
+    } catch (error) {
+      console.log("last before send", error);
+      res.status(400).send({ message: new Error(error).message });
+    }
   });
 });
 
@@ -138,12 +147,12 @@ const executeJava = async (snp, nwk) => {
       stdout,
       stderr
     ) {
-      console.log(stdout);
-      resolve(stdout);
       if (error !== null) {
         console.log(`exec error: ${error}`);
         reject(error);
       }
+      console.log(stdout);
+      resolve(true);
     });
   });
 };

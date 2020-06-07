@@ -73,14 +73,11 @@ class App extends Component {
       transitions: true,
       "internal-names": true,
       "draw-size-bubbles": true,
-      // "align-tips": true,
     })
     .node_span((d) => 2)
     .branch_name(function () {
       return "";
     });
-  // .style_nodes(this.nodeStyler)
-  // tree.branch_length(() => 2);
   zoom = d3.behavior
     .zoom()
     .translate([0, 0])
@@ -119,29 +116,33 @@ class App extends Component {
     });
 
     let json = await response.json();
+    if (response.status === 400) {
+      console.error(json.message);
+      alert("Error by processing files. Please revise the files uploaded. Details in console.");
+    } else {
+      let metadataInfo = json.metadataInfo || {};
+      let ordinalValues = _.toPairs(metadataInfo).filter(
+        (d) => d[1].type.toLowerCase() === "ordinal"
+      );
+      if (ordinalValues.length !== 0) {
+        this.setState({
+          ordinalModalShow: true,
+          ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
+        });
+      }
+      metadataInfo = this.createColorScales(metadataInfo);
 
-    let metadataInfo = json.metadataInfo || {};
-    let ordinalValues = _.toPairs(metadataInfo).filter(
-      (d) => d[1].type.toLowerCase() === "ordinal"
-    );
-    if (ordinalValues.length !== 0) {
       this.setState({
-        ordinalModalShow: true,
-        ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
+        newick: json.newick,
+        snpdata: { support: json.support, notsupport: json.notSupport },
+        availableSNPs: json.availableSNPs,
+        ids: json.ids,
+        taxamd: json.taxaInfo || [],
+        snpmd: json.snpInfo || [],
+        mdinfo: metadataInfo,
       });
+      $("#metadata-card").click();
     }
-    metadataInfo = this.createColorScales(metadataInfo);
-
-    this.setState({
-      newick: json.newick,
-      snpdata: { support: json.support, notsupport: json.notSupport },
-      availableSNPs: json.availableSNPs,
-      ids: json.ids,
-      taxamd: json.taxaInfo || [],
-      snpmd: json.snpInfo || [],
-      mdinfo: metadataInfo,
-    });
-    $("#metadata-card").click();
   };
 
   updateSNPTable = (supportSNPTable, nonSupportSNPTable) => {
