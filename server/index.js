@@ -7,7 +7,10 @@ const fs = require("fs");
 const csv = require("neat-csv");
 const _ = require("lodash");
 const pathparser = require("path");
-app.use(bodyParser.urlencoded({ extended: false }));
+const wkhtmltopdf = require("wkhtmltopdf");
+app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
+
 app.use(pino);
 
 app.post("/api/upload", (req, res, next) => {
@@ -23,7 +26,6 @@ app.post("/api/upload", (req, res, next) => {
         console.log(err);
         throw err;
       });
-      console.log("test", result);
       // Read all files
       let newick = fs.readFileSync(files.nwk.path, "utf8");
       let taxaInfo = await readCSV(files.taxainfo.path, {
@@ -78,10 +80,25 @@ app.post("/api/upload", (req, res, next) => {
         metadataInfo: metadataInfo,
       });
     } catch (error) {
-      console.log("last before send", error);
       res.status(400).send({ message: new Error(error).message });
     }
   });
+});
+
+app.post("/api/pdf", (req, res) => {
+  res.set("Content-Disposition", "attachment;filename=pdffile.pdf");
+  res.set("Content-Type", "application/pdf");
+  wkhtmltopdf.command = "./server/wkhtmltopdf/bin/wkhtmltopdf";
+  wkhtmltopdf(
+    req.body.data,
+    {
+      orientation: "landscape",
+      pageHeight: 1000,
+    },
+    (err, stream) => {
+      stream.pipe(res);
+    }
+  );
 });
 
 async function extractMetadata(taxaInfo) {

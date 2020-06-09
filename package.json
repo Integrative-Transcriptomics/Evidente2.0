@@ -14,7 +14,9 @@
     "d3": "^3.5.17",
     "d3-boxplot": "^0.7.5",
     "d3v5": "npm:d3@^5.15.1",
+    "html2canvas": "^1.0.0-rc.5",
     "jquery": "^3.5.1",
+    "jspdf": "^1.5.3",
     "lodash": "^4.17.15",
     "mobx": "^5.15.4",
     "mobx-react": "^6.1.8",
@@ -28,7 +30,8 @@
     "react-select": "^2.4.4",
     "react-sortable-hoc": "^1.11.0",
     "styled-components": "^5.1.0",
-    "underscore": "^1.9.2"
+    "underscore": "^1.9.2",
+    "wkhtmltopdf": "^0.3.4"
   },
   "scripts": {
     "server": "node-env-run server --exec nodemon | pino-colada",

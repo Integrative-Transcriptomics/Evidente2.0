@@ -3,9 +3,9 @@ import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
-
-import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { Typography, Divider, Grid } from "@material-ui/core";
 import Legend from "./legend";
 import FilterList from "./filter-list";
 
@@ -45,6 +45,57 @@ const selectStates = {
 };
 class Tools extends Component {
   state = { value: [] };
+
+  async onPDFExport() {
+    // let data = document.getElementById("parent-svg");
+    // console.log(data.outerHTML);
+    // let response = await fetch("/api/pdf", {
+    //   method: "post",
+    //   body: `data=${data.outerHTML}`,
+    //   headers: {
+    //     "Content-Type": "application/x-www-form-urlencoded",
+    //     // Accept: "application/json, text/plain, */*",
+    //   },
+    // });
+
+    // let pdfBlob = await response.blob();
+
+    // const url = window.URL.createObjectURL(pdfBlob);
+    // let link = document.createElement("a");
+    // link.href = url;
+    // link.download = "download.pdf";
+    // link.click();
+
+    let element = document.getElementById("parent-svg");
+    html2canvas(element, {
+      x: -15,
+      y: -15,
+      width: element.getBoundingClientRect().width + 30,
+      height: 1500,
+    }).then((viz) => {
+      const imgData = viz.toDataURL("image/png");
+      const pdf = new jsPDF("l", "px", [viz.width * 1.33, viz.height * 1.33]);
+
+      pdf.addImage(imgData, "PNG", 0, 0, viz.width, viz.height);
+      pdf.save("download.pdf");
+    });
+  }
+
+  onExportPNG() {
+    let element = document.getElementById("parent-svg");
+
+    html2canvas(element, {
+      x: -15,
+      y: -15,
+      width: element.getBoundingClientRect().width + 30,
+      height: 1000,
+    }).then((viz) => {
+      let link = document.createElement("a");
+      link.href = viz.toDataURL("image/png");
+      link.download = "download.png";
+      link.click();
+    });
+  }
 
   onChangeFilter = (value) => {
     this.setState({ selectedFeatures: value.map(({ value }) => value), value: value });
@@ -200,6 +251,33 @@ class Tools extends Component {
                     />
                   </React.Fragment>
                 )}
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+          <Card>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='3'
+              id='export-card'
+              className='noselect header-accordion'
+            >
+              Export visualization{" "}
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='3'>
+              <Card.Body>
+                <Typography variant='h6'>Export visualizations</Typography>
+                <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
+                  <Grid item>
+                    <Button variant='primary' onClick={this.onPDFExport}>
+                      As PDF
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button variant='primary' onClick={this.onExportPNG}>
+                      As PNG
+                    </Button>
+                  </Grid>
+                </Grid>
               </Card.Body>
             </Accordion.Collapse>
           </Card>

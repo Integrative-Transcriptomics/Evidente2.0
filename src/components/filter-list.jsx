@@ -67,13 +67,13 @@ class FilterList extends Component {
               </ListItem>
             ))}
         </List>
-        <Grid container spacing={3}>
-          <Grid item xs={6}>
+        <Grid container spacing={4} direction='row' alignItems='center' justify='center'>
+          <Grid item>
             <Button variant='primary' onClick={this.props.onApplyAllFilters}>
               Apply filters
             </Button>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item>
             <Button variant='warning' onClick={this.props.onDeleteAllFilters}>
               Remove filters
             </Button>

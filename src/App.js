@@ -1,5 +1,4 @@
 // Own components or files
-import "./App.css";
 import Phylotree from "./components/phylotree";
 import Heatmap from "./components/heatmap";
 import ColorScaleModal from "./components/color-scale-modal";
@@ -429,57 +428,59 @@ class App extends Component {
       <div id='outer'>
         <header id='inner_fixed'>Evidente</header>
         <div id='div-container-all' className='parent-div'>
-          <Phylotree
-            updateSNPTable={this.updateSNPTable}
-            tree={this.state.tree}
-            onShowMyNodes={this.handleShowNodes}
-            onZoom={this.state.zoom}
-            onCollapse={this.handleCollapse}
-            onDecollapse={this.handleDecollapse}
-            onUploadTree={this.handleUploadTree}
-            onHide={this.handleHide}
-            onSelection={this.handleSelection}
-            onCladeUpdate={this.handleCladeUpdate}
-            newick={this.state.newick}
-            snpdata={this.state.snpdata}
-            ids={this.state.ids}
-          />
-          <Heatmap
-            divID={"heatmap_viz"}
-            containerID={"heatmap-container"}
-            margin={{ top: 0, right: 20, bottom: 0, left: 100 }}
-            tree={this.state.tree}
-            nodes={this.state.nodes}
-            hiddenNodes={this.state.hiddenNodes}
-            collapsedClades={this.state.collapsedClades}
-            selectedNodes={this.state.selectedNodes}
-            ids={this.state.ids}
-            visMd={this.state.visualizedMD}
-            visSNPs={this.state.visualizedSNPs}
-            SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
-            taxadata={[]}
-            snpdata={this.state.snpdata}
-            mdinfo={[]}
-            isSNP={true}
-          />
-          <Heatmap
-            divID={"md_viz"}
-            containerID={"md-container"}
-            margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
-            tree={this.state.tree}
-            nodes={this.state.nodes}
-            hiddenNodes={this.state.hiddenNodes}
-            collapsedClades={this.state.collapsedClades}
-            selectedNodes={this.state.selectedNodes}
-            ids={this.state.ids}
-            visMd={this.state.visualizedMD}
-            visSNPs={[]}
-            taxadata={this.state.taxamd}
-            snpdata={[]}
-            mdinfo={this.state.mdinfo}
-            isSNP={false}
-            createdFilters={this.state.createdFilters}
-          />
+          <div id='parent-svg' className='parent-svgs'>
+            <Phylotree
+              updateSNPTable={this.updateSNPTable}
+              tree={this.state.tree}
+              onShowMyNodes={this.handleShowNodes}
+              onZoom={this.state.zoom}
+              onCollapse={this.handleCollapse}
+              onDecollapse={this.handleDecollapse}
+              onUploadTree={this.handleUploadTree}
+              onHide={this.handleHide}
+              onSelection={this.handleSelection}
+              onCladeUpdate={this.handleCladeUpdate}
+              newick={this.state.newick}
+              snpdata={this.state.snpdata}
+              ids={this.state.ids}
+            />
+            <Heatmap
+              divID={"heatmap_viz"}
+              containerID={"heatmap-container"}
+              margin={{ top: 0, right: 20, bottom: 0, left: 100 }}
+              tree={this.state.tree}
+              nodes={this.state.nodes}
+              hiddenNodes={this.state.hiddenNodes}
+              collapsedClades={this.state.collapsedClades}
+              selectedNodes={this.state.selectedNodes}
+              ids={this.state.ids}
+              visMd={this.state.visualizedMD}
+              visSNPs={this.state.visualizedSNPs}
+              SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+              taxadata={[]}
+              snpdata={this.state.snpdata}
+              mdinfo={[]}
+              isSNP={true}
+            />
+            <Heatmap
+              divID={"md_viz"}
+              containerID={"md-container"}
+              margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
+              tree={this.state.tree}
+              nodes={this.state.nodes}
+              hiddenNodes={this.state.hiddenNodes}
+              collapsedClades={this.state.collapsedClades}
+              selectedNodes={this.state.selectedNodes}
+              ids={this.state.ids}
+              visMd={this.state.visualizedMD}
+              visSNPs={[]}
+              taxadata={this.state.taxamd}
+              snpdata={[]}
+              mdinfo={this.state.mdinfo}
+              isSNP={false}
+              createdFilters={this.state.createdFilters}
+            />
+          </div>
           <Toolbox
             onApplyAllFilters={this.handleApplyAllFilter}
             onSNPaddition={this.handleSNPaddition}

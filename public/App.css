@@ -1,0 +1,306 @@
+html,
+body,
+#root {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  width: 100%;
+}
+
+header {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5em;
+  color: black;
+  border-bottom: 1pt solid grey;
+  display: flex;
+}
+
+#outer {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+.parent-div {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+}
+.parent-svgs {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  width: 80%;
+  page-break-inside: avoid;
+}
+.lchild {
+  width: 40%;
+  flex: 1 1 auto;
+  height: 100%;
+}
+.mchild {
+  width: 20%;
+  flex: 1 1 auto;
+}
+.rchild {
+  width: 20%;
+  flex: 1 1 auto;
+}
+
+#inner_fixed {
+  height: 5%;
+  flex: 0 1 auto;
+  background-color: #f7f7f7;
+}
+div.tooltip {
+  position: absolute;
+  text-align: center;
+  width: auto;
+  height: auto;
+  padding: 5px;
+  font: 12px sans-serif;
+  background: lightsteelblue;
+  border: 0px;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.guides {
+  stroke: "grey";
+  stroke-dasharray: "10,3";
+  stroke-opacity: 0.25;
+}
+
+.guides-selected,
+.guides-hovered {
+  stroke: "red" !important;
+}
+
+.x.axis line {
+  stroke: #fff;
+}
+
+.x.axis .minor {
+  stroke-opacity: 0.5;
+}
+
+.x.axis path {
+  fill: gray;
+}
+
+.modal-header {
+  display: block;
+}
+
+.ModalHeaderBody {
+  display: flex;
+}
+
+.Modal.Body > .SortableList {
+  position: relative;
+  z-index: 0;
+  background-color: #f3f3f3;
+  border: 1px solid #efefef;
+  border-radius: 3px;
+  outline: none;
+
+  width: 400px;
+  height: 600px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e0e0e0;
+  list-style: none;
+  padding: 0;
+}
+.SortableItem {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  width: 100%;
+  height: 60px;
+  padding: 0 20px;
+  background-color: #fff;
+  border-bottom: 1px solid #efefef;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  color: #333;
+  font-weight: 500;
+}
+.SortableHelper {
+  position: relative;
+  top: 1px;
+  display: block;
+  width: 18px;
+  height: 11px;
+  opacity: 0.25;
+  margin-right: 20px;
+  cursor: row-resize;
+  background: -webkit-linear-gradient(
+    top,
+    #000,
+    #000 20%,
+    #fff 0,
+    #fff 40%,
+    #000 0,
+    #000 60%,
+    #fff 0,
+    #fff 80%,
+    #000 0,
+    #000
+  );
+  background: linear-gradient(
+    180deg,
+    #000,
+    #000 20%,
+    #fff 0,
+    #fff 40%,
+    #000 0,
+    #000 60%,
+    #fff 0,
+    #fff 80%,
+    #000 0,
+    #000
+  );
+
+  /* box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.2), 0 -5px 5px -5px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 255, 255, 0.8);
+  cursor: row-resize; */
+}
+
+.ModalLimited {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.header-accordion {
+  cursor: pointer;
+}
+
+.header-accordion-disabled {
+  cursor: not-allowed;
+}
+
+.MuiPaper-root.paper-tooltip {
+  background-color: #000 !important;
+  color: #e0e0e0 !important;
+}
+
+.tree-selection-brush .extent {
+  fill-opacity: 0.05;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.tree-scale-bar text {
+  font: sans-serif;
+}
+
+.tree-scale-bar line,
+.tree-scale-bar path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.node circle,
+.node ellipse,
+.node rect {
+  fill: steelblue;
+  stroke: black;
+  stroke-width: 0.5px;
+}
+
+.internal-node circle,
+.internal-node ellipse,
+.internal-node rect {
+  fill: #ccc;
+  stroke: black;
+  stroke-width: 0.5px;
+}
+
+.node {
+  font: 10px sans-serif;
+}
+
+.node-selected {
+  fill: #f00 !important;
+}
+
+.node-collapsed circle,
+.node-collapsed ellipse,
+.node-collapsed rect {
+  fill: black !important;
+}
+
+.node-tagged {
+  fill: #00f;
+}
+
+.branch {
+  fill: none;
+  stroke: #999;
+  stroke-width: 2px;
+}
+
+.clade {
+  fill: #1f77b4;
+  stroke: #444;
+  stroke-width: 2px;
+  opacity: 0.5;
+}
+
+.branch-selected {
+  stroke: #f00 !important;
+  stroke-width: 3px;
+}
+
+.branch-tagged {
+  stroke: #00f;
+  stroke-dasharray: 10, 5;
+  stroke-width: 2px;
+}
+
+.branch-tracer {
+  stroke: #bbb;
+  stroke-dasharray: 3, 4;
+  stroke-width: 1px;
+}
+
+.branch-multiple {
+  stroke-dasharray: 5, 5, 1, 5;
+  stroke-width: 3px;
+}
+
+.branch:hover {
+  stroke-width: 10px;
+}
+
+.internal-node circle:hover,
+.internal-node ellipse:hover,
+.internal-node rect:hover {
+  fill: black;
+  stroke: #ccc;
+}
+
+.tree-widget {
+}
