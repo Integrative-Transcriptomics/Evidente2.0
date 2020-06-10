@@ -630,7 +630,14 @@ class Heatmap extends Component {
   }
 
   render() {
-    return <div id={this.props.divID} className='mchild' ref={(el) => (this.container = el)}></div>;
+    return (
+      <div
+        id={this.props.divID}
+        className='mchild'
+        // style={{ width: "20%", flex: " 1 1 auto" }}
+        ref={(el) => (this.container = el)}
+      ></div>
+    );
   }
 }
 

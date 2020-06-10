@@ -200,7 +200,11 @@ class Phylotree extends Component {
 
   render() {
     return (
-      <div className='lchild' ref={(el) => (this.container = el)}>
+      <div
+        className='lchild'
+        ref={(el) => (this.container = el)}
+        // style={{ width: "40%", flex: "1 1 auto", height: "100%" }}
+      >
         <svg id='tree-display'></svg>
       </div>
     );

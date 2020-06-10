@@ -8,7 +8,9 @@ const csv = require("neat-csv");
 const _ = require("lodash");
 const pathparser = require("path");
 const wkhtmltopdf = require("wkhtmltopdf");
-app.use(bodyParser.urlencoded({ extended: true }));
+const puppeteer = require("puppeteer");
+
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 // app.use(bodyParser.json());
 
 app.use(pino);
@@ -85,21 +87,106 @@ app.post("/api/upload", (req, res, next) => {
   });
 });
 
-app.post("/api/pdf", (req, res) => {
-  res.set("Content-Disposition", "attachment;filename=pdffile.pdf");
-  res.set("Content-Type", "application/pdf");
-  wkhtmltopdf.command = "./server/wkhtmltopdf/bin/wkhtmltopdf";
-  wkhtmltopdf(
-    req.body.data,
-    {
-      orientation: "landscape",
-      pageHeight: 1000,
-    },
-    (err, stream) => {
-      stream.pipe(res);
-    }
-  );
+// const exportConfigs = {
+//   orientation: "landscape",
+//   // pageHeight: 1000,
+//   // pageWidth: 1000,
+//   // disableSmartShrinking: true,
+//   // output: "test.jpg",
+//   userStyleSheet: "./src/index.css",
+//   // noStopSlowScripts: true,
+//   pageSize: "letter",
+// };
+// app.post("/api/pdf", (req, res) => {
+//   res.set("Content-Disposition", "attachment;filename=pdffile.pdf");
+//   res.set("Content-Type", "application/pdf");
+//   wkhtmltopdf.command = "./server/wkhtmltopdf/bin/wkhtmltopdf";
+//   wkhtmltopdf(req.body.data, exportConfigs, (err, stream) => {
+//     stream.pipe(res);
+//   });
+// });
+
+app.post("/api/export", async function (req, res, next) {
+  const content = req.body.data;
+  const type = req.body.type;
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.setContent(content);
+  await page.addStyleTag({ path: "./src/print.css" });
+  let buffer;
+  switch (type) {
+    case "pdf":
+      buffer = await page.pdf({
+        printBackground: true,
+        width: "40cm",
+        margin: {
+          left: "0px",
+          top: "0px",
+          right: "0px",
+          bottom: "0px",
+        },
+      });
+      break;
+    case "jpeg":
+      buffer = await page.screenshot({ fullPage: true, type: "jpeg", quality: 98 });
+      break;
+    default:
+      buffer = await page.screenshot({ fullPage: true });
+      break;
+  }
+
+  await browser.close();
+  res.end(buffer);
 });
+// app.post("/api/pdf", async function (req, res, next) {
+//   const content = req.body.data;
+//   const browser = await puppeteer.launch({ headless: true });
+//   const page = await browser.newPage();
+//   await page.setContent(content);
+//   await page.addStyleTag({ path: "./src/print.css" });
+//   const buffer = await page.pdf({
+//     printBackground: true,
+//     width: "40cm",
+//     margin: {
+//       left: "0px",
+//       top: "0px",
+//       right: "0px",
+//       bottom: "0px",
+//     },
+//   });
+//   await browser.close();
+//   res.end(buffer);
+// });
+
+// app.post("/api/jpg", async function (req, res, next) {
+//   const content = req.body.data;
+//   const browser = await puppeteer.launch({ headless: true });
+//   const page = await browser.newPage();
+//   await page.setContent(content);
+//   await page.addStyleTag({ path: "./src/print.css" });
+//   const buffer = await page.screenshot({ fullPage: true });
+//   await browser.close();
+//   res.end(buffer);
+// });
+// app.post("/api/jpg", (req, res) => {
+//   // res.set("Content-Disposition", "attachment;filename=jpgfile.jpg");
+//   // res.set("Content-Type", "image/jpg");
+//   wkhtmltoimage.command = "./server/wkhtmltopdf/bin/wkhtmltoimage";
+//   wkhtmltoimage.generate(req.body.data, {
+//     O: "landscape",
+//     // pageHeight: 1000,
+//     // pageWidth: 1000,
+//     // disableSmartShrinking: true,
+//     output: "test.jpg",
+//     // format: "jpg",
+
+//     "user style sheet": "./src/index.css",
+//     // noStopSlowScripts: true,
+//     // "page-size": "letter",
+//   });
+//   // .pipe(res);
+//   console.log("test");
+// });
 
 async function extractMetadata(taxaInfo) {
   let metadataInfo = _.head(taxaInfo);

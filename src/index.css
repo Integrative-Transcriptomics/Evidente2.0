@@ -26,12 +26,24 @@ header {
   height: 100%;
 }
 .parent-div {
+  -webkit-display: -webkit-box;
+  -webkit-display: -webkit-flex;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
 }
 .parent-svgs {
+  -webkit-box: 1 1 auto;
+  -webkit-flex: 1 1 auto;
   flex: 1 1 auto;
+  -webkit-display: -webkit-box;
+  -webkit-display: -webkit-flex;
+  display: -webkit-flex;
+  display: -webkit-box;
+  display: -ms-flexbox;
   display: flex;
   flex-direction: row;
   width: 80%;
@@ -39,16 +51,28 @@ header {
 }
 .lchild {
   width: 40%;
-  flex: 1 1 auto;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flexbox: 1;
+  flex: 1;
   height: 100%;
 }
 .mchild {
-  width: 20%;
-  flex: 1 1 auto;
+  width: 30%;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flexbox: 1;
+  flex: 1;
 }
 .rchild {
+  -webkit-box: 1 1 auto;
+  -webkit-flex: 1 1 auto;
+  -ms-flexbox: 1;
+
   width: 20%;
   flex: 1 1 auto;
+  margin: 0;
+  padding: 0;
 }
 
 #inner_fixed {
@@ -172,10 +196,6 @@ div.tooltip {
     #000 0,
     #000
   );
-
-  /* box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.2), 0 -5px 5px -5px rgba(0, 0, 0, 0.2);
-  background-color: rgba(255, 255, 255, 0.8);
-  cursor: row-resize; */
 }
 
 .ModalLimited {

@@ -428,7 +428,17 @@ class App extends Component {
       <div id='outer'>
         <header id='inner_fixed'>Evidente</header>
         <div id='div-container-all' className='parent-div'>
-          <div id='parent-svg' className='parent-svgs'>
+          <div
+            id='parent-svg'
+            className='parent-svgs'
+            // style={{
+            //   flex: "1 1 auto",
+            //   display: "flex",
+            //   "flex-direction": " row",
+            //   width: "80%",
+            //   "page-break-inside": "avoid",
+            // }}
+          >
             <Phylotree
               updateSNPTable={this.updateSNPTable}
               tree={this.state.tree}

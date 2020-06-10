@@ -3,8 +3,8 @@ import { Accordion, Card, Button, Form } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+// import html2canvas from "html2canvas";
+// import jsPDF from "jspdf";
 import { Typography, Divider, Grid } from "@material-ui/core";
 import Legend from "./legend";
 import FilterList from "./filter-list";
@@ -46,56 +46,93 @@ const selectStates = {
 class Tools extends Component {
   state = { value: [] };
 
-  async onPDFExport() {
-    // let data = document.getElementById("parent-svg");
-    // console.log(data.outerHTML);
-    // let response = await fetch("/api/pdf", {
-    //   method: "post",
-    //   body: `data=${data.outerHTML}`,
-    //   headers: {
-    //     "Content-Type": "application/x-www-form-urlencoded",
-    //     // Accept: "application/json, text/plain, */*",
-    //   },
-    // });
+  async onExport(type) {
+    let data = document.getElementById("parent-svg");
+    console.log(data.outerHTML);
+    let response = await fetch("/api/export", {
+      method: "post",
+      body: `data=${data.outerHTML}&type=${type}`,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }).catch((e) => alert(e));
 
-    // let pdfBlob = await response.blob();
-
-    // const url = window.URL.createObjectURL(pdfBlob);
-    // let link = document.createElement("a");
-    // link.href = url;
-    // link.download = "download.pdf";
-    // link.click();
-
-    let element = document.getElementById("parent-svg");
-    html2canvas(element, {
-      x: -15,
-      y: -15,
-      width: element.getBoundingClientRect().width + 30,
-      height: 1500,
-    }).then((viz) => {
-      const imgData = viz.toDataURL("image/png");
-      const pdf = new jsPDF("l", "px", [viz.width * 1.33, viz.height * 1.33]);
-
-      pdf.addImage(imgData, "PNG", 0, 0, viz.width, viz.height);
-      pdf.save("download.pdf");
-    });
+    let responseBlob = await response.blob();
+    const url = window.URL.createObjectURL(responseBlob);
+    let link = document.createElement("a");
+    link.href = url;
+    link.download = `export_evidente.${type}`;
+    link.click();
   }
 
-  onExportPNG() {
-    let element = document.getElementById("parent-svg");
+  // async onPDFExport() {
+  //   let data = document.getElementById("parent-svg");
+  //   console.log(data.outerHTML);
+  //   let response = await fetch("/api/pdf", {
+  //     method: "post",
+  //     body: `data=${data.outerHTML}`,
+  //     headers: {
+  //       "Content-Type": "application/x-www-form-urlencoded",
+  //       // Accept: "application/json, text/plain, */*",
+  //     },
+  //   }).catch((e) => alert(e));
 
-    html2canvas(element, {
-      x: -15,
-      y: -15,
-      width: element.getBoundingClientRect().width + 30,
-      height: 1000,
-    }).then((viz) => {
-      let link = document.createElement("a");
-      link.href = viz.toDataURL("image/png");
-      link.download = "download.png";
-      link.click();
-    });
-  }
+  //   let responseBlob = await response.blob();
+  //   const url = window.URL.createObjectURL(responseBlob);
+  //   let link = document.createElement("a");
+  //   link.href = url;
+  //   link.download = "download.pdf";
+  //   link.click();
+
+  // let element = document.getElementById("parent-svg");
+  // html2canvas(element, {
+  //   x: -15,
+  //   y: -15,
+  //   width: element.getBoundingClientRect().width + 30,
+  //   height: 1500,
+  // }).then((viz) => {
+  //   const imgData = viz.toDataURL("image/png");
+  //   const pdf = new jsPDF("l", "px", [viz.width * 1.33, viz.height * 1.33]);
+
+  //   pdf.addImage(imgData, "PNG", 0, 0, viz.width, viz.height);
+  //   pdf.save("download.pdf");
+  // });
+  // }
+  // async onExportPNG() {
+  //   let data = document.getElementById("parent-svg");
+  //   console.log(data.outerHTML);
+  //   let response = await fetch("/api/jpg", {
+  //     method: "post",
+  //     body: `data=${data.outerHTML}`,
+  //     headers: {
+  //       "Content-Type": "application/x-www-form-urlencoded",
+  //       // Accept: "application/json, text/plain, */*",
+  //     },
+  //   });
+
+  //   let pdfBlob = await response.blob();
+
+  //   const url = window.URL.createObjectURL(pdfBlob);
+  //   let link = document.createElement("a");
+  //   link.href = url;
+  //   link.download = "download.png";
+  //   link.click();
+  // }
+  // onExportPNG() {
+  //   let element = document.getElementById("parent-svg");
+
+  //   html2canvas(element, {
+  //     x: -15,
+  //     y: -15,
+  //     width: element.getBoundingClientRect().width + 30,
+  //     height: 1000,
+  //   }).then((viz) => {
+  //     let link = document.createElement("a");
+  //     link.href = viz.toDataURL("image/png");
+  //     link.download = "download.png";
+  //     link.click();
+  //   });
+  // }
 
   onChangeFilter = (value) => {
     this.setState({ selectedFeatures: value.map(({ value }) => value), value: value });
@@ -268,13 +305,18 @@ class Tools extends Component {
                 <Typography variant='h6'>Export visualizations</Typography>
                 <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
                   <Grid item>
-                    <Button variant='primary' onClick={this.onPDFExport}>
+                    <Button variant='primary' onClick={() => this.onExport("pdf")}>
                       As PDF
                     </Button>
                   </Grid>
                   <Grid item>
-                    <Button variant='primary' onClick={this.onExportPNG}>
+                    <Button variant='primary' onClick={() => this.onExport("png")}>
                       As PNG
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button variant='primary' onClick={() => this.onExport("jpeg")}>
+                      As JPEG
                     </Button>
                   </Grid>
                 </Grid>
