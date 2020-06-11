@@ -344,7 +344,6 @@ class App extends Component {
       renamedClade,
     ];
     this.setState({ collapsedClades: jointNodes });
-    this.handleSelection(this.state.tree.get_selection());
   };
 
   handleDecollapse = (cladeNode) => {

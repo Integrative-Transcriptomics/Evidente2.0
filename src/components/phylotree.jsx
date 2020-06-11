@@ -76,6 +76,7 @@ class Phylotree extends Component {
             node["show-name"] = name;
             this.props.onCladeUpdate(oldName, name);
             this.props.tree.update();
+            this.props.onSelection(this.props.tree.get_selection());
             d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
           }
         }
