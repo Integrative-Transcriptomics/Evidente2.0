@@ -55,7 +55,7 @@ class Legend extends Component {
    */
   giveLegend = ({ name, colorScale, extent, type }) => {
     let svg = d3.select(`#svg-legend-${name.replace(/ /g, "-")}`);
-    let cellWidth = this.cell.offsetWidth / 3;
+    let cellWidth = document.getElementById("metadata-card").offsetWidth / 4;
     svg.style("width", cellWidth + "px").style("height", "15px");
     svg.selectAll("*").remove();
     svg = svg.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
@@ -253,9 +253,9 @@ class Legend extends Component {
         />
         <div className={this.classes.container}>
           <Collapse in={this.state.checked}>
-            <Paper elevation={4} className={this.classes.paper}>
+            <Paper elevation={4} className={this.classes.paper} ref={(el) => (this.cell = el)}>
               <TableContainer>
-                <Table size='small' aria-label='sticky table' ref={(el) => (this.cell = el)}>
+                <Table size='small' aria-label='sticky table'>
                   <TableHead>
                     <TableRow>
                       {this.header.map((title) => (

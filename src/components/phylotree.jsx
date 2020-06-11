@@ -133,7 +133,7 @@ class Phylotree extends Component {
   }
 
   shouldComponentUpdate(nextProp, nextState) {
-    return nextProp.newick && nextProp.newick !== this.props.newick;
+    return nextProp.newick !== undefined && nextProp.newick !== this.props.newick;
   }
   componentDidUpdate(prevProp) {
     if (prevProp.newick !== this.props.newick) {
