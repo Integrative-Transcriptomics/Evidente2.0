@@ -118,7 +118,7 @@ app.post("/api/export", async function (req, res, next) {
     case "pdf":
       buffer = await page.pdf({
         printBackground: true,
-        width: "40cm",
+        landscape: true,
         margin: {
           left: "0px",
           top: "0px",
@@ -128,7 +128,7 @@ app.post("/api/export", async function (req, res, next) {
       });
       break;
     case "jpeg":
-      buffer = await page.screenshot({ fullPage: true, type: "jpeg", quality: 98 });
+      buffer = await page.screenshot({ fullPage: true, type: "jpeg", quality: 100 });
       break;
     default:
       buffer = await page.screenshot({ fullPage: true });
