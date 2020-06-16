@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-!/node_modules/phylotree/src/phylotree.js
+!/node_modules/phylotree/src/**
 /.pnp
 .pnp.js
 
