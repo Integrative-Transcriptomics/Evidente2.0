@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import "phylotree";
+import "../../node_modules/phylotree/src/phylotree";
 // import "../../node_modules/phylotree/src/main";
 
 import * as $ from "jquery";
