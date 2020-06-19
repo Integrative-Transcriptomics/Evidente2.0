@@ -138,8 +138,10 @@ class Tools extends Component {
     this.setState({ selectedFeatures: value.map(({ value }) => value), value: value });
   };
   onFileChange = ({ target }, label) => {
-    let fileName = target.files[0].name;
-    $(target).next(".custom-file-label").html(`${label}: ${fileName}`);
+    if (target.files[0] !== undefined) {
+      let fileName = target.files[0].name;
+      $(target).next(".custom-file-label").html(`${label}: ${fileName}`);
+    }
   };
   /**
    * Creates the labels and values for the correspoinding selecting menu
