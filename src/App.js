@@ -150,8 +150,11 @@ class App extends Component {
     }
   };
 
-  updateSNPTable = (supportSNPTable, nonSupportSNPTable) => {
-    this.setState({ SNPTable: { support: supportSNPTable, notsupport: nonSupportSNPTable } });
+  updateSNPTable = (nodeID, supportSNPTable, nonSupportSNPTable) => {
+    this.setState({
+      selectedNodeID: nodeID,
+      SNPTable: { support: supportSNPTable, notsupport: nonSupportSNPTable },
+    });
   };
 
   createColorScales = (metadata) => {
@@ -218,6 +221,7 @@ class App extends Component {
     this.setState({ collapsedClades: jointNodes });
     return clade.name;
   };
+
   handleOrdinalCloseModal = (save, extents) => {
     if (!save) {
       this.setState({ ordinalModalShow: false });
@@ -427,18 +431,9 @@ class App extends Component {
       <div id='outer'>
         <header id='inner_fixed'>Evidente</header>
         <div id='div-container-all' className='parent-div'>
-          <div
-            id='parent-svg'
-            className='parent-svgs'
-            // style={{
-            //   flex: "1 1 auto",
-            //   display: "flex",
-            //   "flex-direction": " row",
-            //   width: "80%",
-            //   "page-break-inside": "avoid",
-            // }}
-          >
+          <div id='parent-svg' className='parent-svgs'>
             <Phylotree
+              selectedNodeID={this.state.selectedNodeID}
               updateSNPTable={this.updateSNPTable}
               tree={this.state.tree}
               onShowMyNodes={this.handleShowNodes}

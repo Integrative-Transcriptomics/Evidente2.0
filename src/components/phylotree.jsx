@@ -11,6 +11,7 @@ class Phylotree extends Component {
   nodeStyler = (container, node) => {
     let div = d3.select("#tooltip");
     let lookFor = node.collapsed ? node["show-name"] : node.name; // Either clade or leaf
+
     if (d3.layout.phylotree.is_leafnode(node) || node.collapsed) {
       container
         .selectAll("circle")
@@ -41,6 +42,13 @@ class Phylotree extends Component {
         .style("fill", "lightgray")
         .on("mouseout", null)
         .on("mouseover", null);
+    }
+    // console.log(this.props.selectedNodeID);
+    if (
+      this.props.selectedNodeID &&
+      this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
+    ) {
+      container.selectAll("circle").style("fill", "red");
     }
   };
   my_collapse(node) {
@@ -85,7 +93,7 @@ class Phylotree extends Component {
   }
 
   show_node_snps(node) {
-    let node_name = [this.props.ids.numToLabel[node.tempid]];
+    let node_name = this.props.ids.numToLabel[node.tempid];
     let descendants = this.props.tree
       .descendants(node)
       .filter((d) => d.tempid !== node.tempid)
@@ -101,16 +109,21 @@ class Phylotree extends Component {
         _.isEqual
       );
     let supportSNPTable = {
-      actualNode: modifyListOfSNPs(supportSNPs, node_name),
+      actualNode: modifyListOfSNPs(supportSNPs, [node_name]),
       descendants: modifyListOfSNPs(supportSNPs, descendants),
     };
 
     let nonSupportSNPTable = {
-      actualNode: modifyListOfSNPs(notSupportSNPs, node_name),
+      actualNode: modifyListOfSNPs(notSupportSNPs, [node_name]),
       descendants: modifyListOfSNPs(notSupportSNPs, descendants),
     };
-    this.props.updateSNPTable(supportSNPTable, nonSupportSNPTable);
-    $("#supportingSNPs-header").click();
+    this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable);
+    this.props.tree.update();
+    this.props.onSelection(this.props.tree.get_selection());
+    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+    if (!$("#supportingSNPs-card").hasClass("show")) {
+      $("#supportingSNPs-header").click();
+    }
   }
 
   my_hide(node) {

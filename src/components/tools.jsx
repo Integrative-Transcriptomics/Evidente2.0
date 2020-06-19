@@ -300,11 +300,13 @@ class Tools extends Component {
               id='export-card'
               className='noselect header-accordion'
             >
-              Export visualization{" "}
+              Export visualization
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='3'>
               <Card.Body>
-                <Typography variant='h6'>Export visualizations</Typography>
+                <Typography variant='h6' gutterBottom={true}>
+                  Export visualizations
+                </Typography>
                 <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
                   <Grid item>
                     <Button variant='primary' onClick={() => this.onExport("pdf")}>

@@ -8,14 +8,15 @@ import {
   TableRow,
   Paper,
   Button,
+  Typography,
 } from "@material-ui/core";
 
 class SNPTable extends Component {
   state = {};
   header = ["Position", "Allele", "Actions"];
   render() {
-    return (
-      this.props.rows.length > 0 && (
+    if (this.props.rows.length > 0) {
+      return (
         <Paper>
           <TableContainer>
             <Table size='small' stickyHeader aria-label='sticky table'>
@@ -23,7 +24,7 @@ class SNPTable extends Component {
                 <TableRow>
                   {
                     <TableCell align='center' colSpan={3}>
-                      {this.props.title}
+                      SNPs within the actual {this.props.type}
                     </TableCell>
                   }
                 </TableRow>
@@ -58,8 +59,14 @@ class SNPTable extends Component {
             </Table>
           </TableContainer>
         </Paper>
-      )
-    );
+      );
+    } else {
+      return (
+        <Typography align='center' gutterBottom={true}>
+          No SNPs within the actual {this.props.type}
+        </Typography>
+      );
+    }
   }
 }
 

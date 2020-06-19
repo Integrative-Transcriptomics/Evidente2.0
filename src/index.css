@@ -324,3 +324,11 @@ div.tooltip {
 
 .tree-widget {
 }
+
+.MuiTableCell-root {
+  font-size: 1.15rem !important;
+}
+
+.MuiTypography-body1 {
+  font-size: 1.15rem !important;
+}

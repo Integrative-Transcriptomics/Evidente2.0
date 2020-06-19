@@ -53,17 +53,19 @@ class NodeInformation extends Component {
               >
                 Supporting SNPs
               </Accordion.Toggle>
-              <Accordion.Collapse eventKey='0'>
+              <Accordion.Collapse eventKey='0' id='supportingSNPs-card'>
                 <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `support.actualNode`, [])}
                     title={"SNPs among the actual node"}
+                    type={"node"}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
 
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `support.descendants`, [])}
                     title={"SNPs among the actual subtree"}
+                    type={"subtree"}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
                 </Card.Body>
@@ -86,12 +88,14 @@ class NodeInformation extends Component {
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `notsupport.actualNode`, [])}
                     title={"SNPs among the actual node"}
+                    type={"node"}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
 
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `notsupport.descendants`, [])}
                     title={"SNPs among the actual subtree"}
+                    type={"subtree"}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
                 </Card.Body>
