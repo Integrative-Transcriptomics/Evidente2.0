@@ -59,6 +59,7 @@ class NodeInformation extends Component {
                     rows={_.get(this.props.SNPTable, `support.actualNode`, [])}
                     title={"SNPs among the actual node"}
                     type={"node"}
+                    onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
 
@@ -66,6 +67,7 @@ class NodeInformation extends Component {
                     rows={_.get(this.props.SNPTable, `support.descendants`, [])}
                     title={"SNPs among the actual subtree"}
                     type={"subtree"}
+                    onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
                 </Card.Body>
@@ -89,6 +91,7 @@ class NodeInformation extends Component {
                     rows={_.get(this.props.SNPTable, `notsupport.actualNode`, [])}
                     title={"SNPs among the actual node"}
                     type={"node"}
+                    onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
 
@@ -96,6 +99,7 @@ class NodeInformation extends Component {
                     rows={_.get(this.props.SNPTable, `notsupport.descendants`, [])}
                     title={"SNPs among the actual subtree"}
                     type={"subtree"}
+                    onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
                   ></SNPTable>
                 </Card.Body>

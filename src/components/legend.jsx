@@ -99,7 +99,7 @@ class Legend extends Component {
           .attr("opacity", 0.75)
           .classed("noselect", true)
 
-          .text(extent[0].toFixed(2));
+          .text(parseFloat(extent[0].toFixed(2)));
         group
           .append("text")
           .style("text-anchor", "start")
@@ -110,11 +110,11 @@ class Legend extends Component {
           .attr("fill", "black")
           .classed("noselect", true)
 
-          .text(extent[0].toFixed(2))
+          .text(parseFloat(extent[0].toFixed(2)))
           .on("mouseover", () => {
             div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
             div
-              .html(`${extent[0].toFixed(2)}`)
+              .html(`${parseFloat(extent[0].toFixed(2))}`)
               .style("left", d3.event.pageX + "px")
               .style("top", d3.event.pageY - 28 + "px");
           })
@@ -133,7 +133,7 @@ class Legend extends Component {
 
           .attr("stroke-width", "5px")
           .attr("opacity", 0.75)
-          .text(extent[1].toFixed(2));
+          .text(parseFloat(extent[1].toFixed(2)));
         group
           .append("text")
           .style("text-anchor", "end")
@@ -144,11 +144,11 @@ class Legend extends Component {
             y: 15 * 0.75,
           })
           .attr("fill", "black")
-          .text(extent[1].toFixed(2))
+          .text(parseFloat(extent[1].toFixed(2)))
           .on("mouseover", () => {
             div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
             div
-              .html(`${extent[1].toFixed(2)}`)
+              .html(`${parseFloat(extent[1].toFixed(2))}`)
               .style("left", d3.event.pageX + "px")
               .style("top", d3.event.pageY - 28 + "px");
           })

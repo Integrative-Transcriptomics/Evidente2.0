@@ -10,6 +10,7 @@ import {
   Button,
   Typography,
 } from "@material-ui/core";
+import * as _ from "lodash";
 
 class SNPTable extends Component {
   state = {};
@@ -22,11 +23,23 @@ class SNPTable extends Component {
             <Table size='small' stickyHeader aria-label='sticky table'>
               <TableHead>
                 <TableRow>
-                  {
-                    <TableCell align='center' colSpan={3}>
-                      SNPs within the actual {this.props.type}
-                    </TableCell>
-                  }
+                  <TableCell align='center' colSpan={2}>
+                    SNPs within the actual {this.props.type}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size='small'
+                      variant='outlined'
+                      style={{ color: "black" }}
+                      onClick={() => {
+                        this.props.onMultipleSNPaddition(
+                          _.uniq(this.props.rows.map((row) => row.pos))
+                        );
+                      }}
+                    >
+                      Show all
+                    </Button>
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   {this.header.map((title) => (
@@ -36,7 +49,7 @@ class SNPTable extends Component {
               </TableHead>
               <TableBody>
                 {this.props.rows.map((row) => (
-                  <TableRow key={row.pos}>
+                  <TableRow key={`${row.pos}-${row.allele}`}>
                     <TableCell component='th' scope='row'>
                       {row.pos}
                     </TableCell>

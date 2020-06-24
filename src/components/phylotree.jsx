@@ -16,6 +16,7 @@ class Phylotree extends Component {
       container
         .selectAll("circle")
         .style("fill", "black")
+        .attr({ r: 2 })
         .on("mouseover", () => {
           if (!node.selected) {
             d3.selectAll(`.node-${lookFor}.guides`)
@@ -40,15 +41,15 @@ class Phylotree extends Component {
       container
         .selectAll("circle")
         .style("fill", "lightgray")
+        .attr({ r: 3 })
         .on("mouseout", null)
         .on("mouseover", null);
     }
-    // console.log(this.props.selectedNodeID);
     if (
       this.props.selectedNodeID &&
       this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
     ) {
-      container.selectAll("circle").style("fill", "red");
+      container.selectAll("circle").style({ fill: "red" }).attr({ r: 5 });
     }
   };
   my_collapse(node) {

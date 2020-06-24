@@ -24,7 +24,7 @@ const popover = (valueFilter, props) => (
           <Grid key={value} item>
             <Paper className='paper-tooltip'>
               {_.get(props, `availableMDs["${key}"].type`, undefined) === "numerical"
-                ? `From ${value[0].toFixed(3)} To ${value[1].toFixed(3)}`
+                ? `from ${parseFloat(value[0].toFixed(3))} to ${parseFloat(value[1].toFixed(3))}`
                 : `Includes: [${value.join(", ")}]`}
             </Paper>
           </Grid>
@@ -53,7 +53,7 @@ class FilterList extends Component {
             this.state.createdFilters.map((value, it) => (
               <ListItem key={`filter-${it}`}>
                 <OverlayTrigger placement='left' overlay={popover(value, this.props)}>
-                  <ListItemText primary={`Filter ${it + 1}`} />
+                  <ListItemText primary={`Filter group ${it + 1}`} />
                 </OverlayTrigger>
                 <ListItemSecondaryAction>
                   <IconButton

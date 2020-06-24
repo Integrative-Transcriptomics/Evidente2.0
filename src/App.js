@@ -194,6 +194,11 @@ class App extends Component {
       visualizedSNPs: _.uniq(this.state.visualizedSNPs.concat([snp])),
     });
   };
+  handleMultipleSNPaddition = (listOfSnps) => {
+    this.setState({
+      visualizedSNPs: _.uniq(this.state.visualizedSNPs.concat(listOfSnps)),
+    });
+  };
 
   handleCladeCreation = () => {
     let actualNumber = this.state.cladeNumber;
@@ -488,6 +493,7 @@ class App extends Component {
           <Toolbox
             onApplyAllFilters={this.handleApplyAllFilter}
             onSNPaddition={this.handleSNPaddition}
+            onMultipleSNPaddition={this.handleMultipleSNPaddition}
             onFileUpload={this.handleSubmit}
             onMDChange={this.handleMDChange}
             onSNPChange={this.handleSNPChange}

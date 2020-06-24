@@ -8,7 +8,11 @@ class Toolbox extends Component {
   render() {
     return (
       <div className='rchild'>
-        <NodeInformation SNPTable={this.props.SNPTable} onSNPaddition={this.props.onSNPaddition}>
+        <NodeInformation
+          SNPTable={this.props.SNPTable}
+          onSNPaddition={this.props.onSNPaddition}
+          onMultipleSNPaddition={this.props.onMultipleSNPaddition}
+        >
           Node Information
         </NodeInformation>
         <Tools

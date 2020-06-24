@@ -332,3 +332,25 @@ div.tooltip {
 .MuiTypography-body1 {
   font-size: 1.15rem !important;
 }
+
+.MuiSlider-valueLabel {
+  font-size: 1rem !important;
+}
+
+circle.MuiSlider-valueLabel {
+  width: 5rem !important;
+  height: 5rem !important;
+}
+
+.MuiTypography-subtitle1 {
+  font-size: 1rem !important;
+  color: rgb(75, 73, 73);
+  font-style: italic;
+}
+
+@media screen {
+  @page {
+    margin: 0;
+    /* size: 1280px 800px; */
+  }
+}

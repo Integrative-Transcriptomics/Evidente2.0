@@ -1,14 +1,24 @@
 import React, { Component } from "react";
-import { Accordion, Card, Button, Form } from "react-bootstrap";
+import { Accordion, Card, Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
 // import html2canvas from "html2canvas";
 // import jsPDF from "jspdf";
 import { Typography, Divider, Grid } from "@material-ui/core";
+
+import HelpIcon from "@material-ui/icons/Help";
 import Legend from "./legend";
 import FilterList from "./filter-list";
 
+const helpTooltip = (props) => {
+  return (
+    <Tooltip id='help-filter-tooltip' {...props}>
+      A filter group defines all the characteristics a certain node should contain in order to be
+      shown. Within filter groups, the nodes need to belong to at least one group to be shown.
+    </Tooltip>
+  );
+};
 const { ValueContainer, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
@@ -65,75 +75,6 @@ class Tools extends Component {
     link.click();
   }
 
-  // async onPDFExport() {
-  //   let data = document.getElementById("parent-svg");
-  //   console.log(data.outerHTML);
-  //   let response = await fetch("/api/pdf", {
-  //     method: "post",
-  //     body: `data=${data.outerHTML}`,
-  //     headers: {
-  //       "Content-Type": "application/x-www-form-urlencoded",
-  //       // Accept: "application/json, text/plain, */*",
-  //     },
-  //   }).catch((e) => alert(e));
-
-  //   let responseBlob = await response.blob();
-  //   const url = window.URL.createObjectURL(responseBlob);
-  //   let link = document.createElement("a");
-  //   link.href = url;
-  //   link.download = "download.pdf";
-  //   link.click();
-
-  // let element = document.getElementById("parent-svg");
-  // html2canvas(element, {
-  //   x: -15,
-  //   y: -15,
-  //   width: element.getBoundingClientRect().width + 30,
-  //   height: 1500,
-  // }).then((viz) => {
-  //   const imgData = viz.toDataURL("image/png");
-  //   const pdf = new jsPDF("l", "px", [viz.width * 1.33, viz.height * 1.33]);
-
-  //   pdf.addImage(imgData, "PNG", 0, 0, viz.width, viz.height);
-  //   pdf.save("download.pdf");
-  // });
-  // }
-  // async onExportPNG() {
-  //   let data = document.getElementById("parent-svg");
-  //   console.log(data.outerHTML);
-  //   let response = await fetch("/api/jpg", {
-  //     method: "post",
-  //     body: `data=${data.outerHTML}`,
-  //     headers: {
-  //       "Content-Type": "application/x-www-form-urlencoded",
-  //       // Accept: "application/json, text/plain, */*",
-  //     },
-  //   });
-
-  //   let pdfBlob = await response.blob();
-
-  //   const url = window.URL.createObjectURL(pdfBlob);
-  //   let link = document.createElement("a");
-  //   link.href = url;
-  //   link.download = "download.png";
-  //   link.click();
-  // }
-  // onExportPNG() {
-  //   let element = document.getElementById("parent-svg");
-
-  //   html2canvas(element, {
-  //     x: -15,
-  //     y: -15,
-  //     width: element.getBoundingClientRect().width + 30,
-  //     height: 1000,
-  //   }).then((viz) => {
-  //     let link = document.createElement("a");
-  //     link.href = viz.toDataURL("image/png");
-  //     link.download = "download.png";
-  //     link.click();
-  //   });
-  // }
-
   onChangeFilter = (value) => {
     this.setState({ selectedFeatures: value.map(({ value }) => value), value: value });
   };
@@ -166,7 +107,7 @@ class Tools extends Component {
               id='files-card'
               className='noselect header-accordion'
             >
-              Load Files
+              Load files
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
@@ -202,7 +143,7 @@ class Tools extends Component {
               id='metadata-card'
               className='noselect header-accordion'
             >
-              View Metadata
+              Visualize data
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='1'>
               <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
@@ -225,7 +166,7 @@ class Tools extends Component {
                   options={this.getMetadata(this.props.availableMDs || [])}
                   onChange={this.props.onMDChange}
                   isMulti
-                  placeholder={"Visualize Taxa Metadata"}
+                  placeholder={"Visualize metadata"}
                   components={{
                     ValueContainer: CustomValueContainer,
                   }}
@@ -246,11 +187,20 @@ class Tools extends Component {
               id='filtering-card'
               className='noselect header-accordion'
             >
-              Filter Nodes
+              Filter nodes
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='2'>
               <Card.Body>
-                <Typography variant='h6'>Filter nodes by metadata</Typography>
+                <Grid container spacing={2} direction='row' alignItems='center'>
+                  <Grid item>
+                    <Typography variant='h6'>Create a filter group with metadata</Typography>
+                  </Grid>
+                  <Grid item>
+                    <OverlayTrigger placement='top' overlay={helpTooltip}>
+                      <HelpIcon />
+                    </OverlayTrigger>
+                  </Grid>
+                </Grid>
 
                 <Form.Group key='metadatafilter'>
                   <Select
@@ -259,7 +209,7 @@ class Tools extends Component {
                     isMulti
                     value={this.state.value}
                     onChange={this.onChangeFilter}
-                    placeholder={"Select Metadata for Filter"}
+                    placeholder={"Select metadata for filter group"}
                     components={{
                       ValueContainer: CustomValueContainer,
                     }}
@@ -267,7 +217,6 @@ class Tools extends Component {
                     styles={selectStates}
                   ></Select>
                 </Form.Group>
-
                 <Button
                   variant='primary'
                   onClick={() => {
@@ -275,12 +224,12 @@ class Tools extends Component {
                     this.props.onOpenFilter(this.state.selectedFeatures);
                   }}
                 >
-                  Create filter
+                  Create filter group
                 </Button>
                 {this.props.createdFilters.length > 0 && (
                   <React.Fragment>
                     <Divider variant='middle' style={{ marginTop: "5px", marginBottom: "5px" }} />
-                    <Typography variant='h6'>Active Filters</Typography>
+                    <Typography variant='h6'>Active filter groups</Typography>
                     <FilterList
                       availableMDs={this.props.availableMDs}
                       onApplyAllFilters={this.props.onApplyAllFilters}

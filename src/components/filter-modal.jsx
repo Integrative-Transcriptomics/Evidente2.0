@@ -3,6 +3,7 @@ import ModalOwn from "./ModalOwn";
 import * as _ from "lodash";
 import Select, { components } from "react-select";
 import OwnSlider from "./own-slider";
+import { Typography, Divider } from "@material-ui/core";
 
 const { ValueContainer, Placeholder } = components;
 
@@ -56,8 +57,15 @@ class FilterModal extends Component {
           this.props.handleClose(save, this.state.filter);
           this.setState({ filter: {} });
         }}
-        title={`Select features to filter`}
+        title={`Select features of filter group`}
       >
+        <Typography variant='subtitle1'>
+          A filter group defines all the characteristics a certain node should contain in order to
+          be shown (AND-junction). Within filter groups, the nodes need to belong to at least one
+          group to be shown (OR-junction).
+        </Typography>
+        <Divider variant='middle' style={{ marginTop: "10px", marginBottom: "10px" }} />
+
         {_.toPairs(this.props.mdinfo).map((arr) => {
           let k = arr[0],
             v = arr[1];

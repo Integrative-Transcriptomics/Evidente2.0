@@ -235,7 +235,15 @@ class Heatmap extends Component {
 
     return flattenSNPs;
   };
-
+  /**
+   *
+   * Help function to aggregate the inforamtion of a clade
+   *
+   * @param {*} data
+   * @param {*} actualClades
+   * @param {*} clusterMethod
+   * @param {*} mdinfo
+   */
   clusterData(data, actualClades, clusterMethod, mdinfo = {}) {
     let allAggregatedData = [];
     let hiddenLeaves = [];
@@ -267,14 +275,26 @@ class Heatmap extends Component {
 
     return [...allAggregatedData, ...data];
   }
-
+  /**
+   * Updates the cell of the heatmap
+   *
+   * @param {*} data
+   * @param {Float32Array} cellHeight
+   * @param {*} xScale
+   * @param {*} yScale
+   * @param {*} colorScale
+   * @param {Float32Array} cellSize
+   * @param {string} type - name of the column
+   * @param {boolean} isSNP
+   * @param {boolean} isNumerical
+   */
   updateCells(data, cellHeight, xScale, yScale, colorScale, cellSize, type, isSNP, isNumerical) {
     const onMouseOverCell = function (d) {
       div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
       div
         .html(
           isNumerical
-            ? `${type} <br/>${(+d[type]).toFixed(3)}`
+            ? `${type} <br/>${parseFloat((+d[type]).toFixed(3))}`
             : `${isSNP ? `SNP:${subtype}` : type}<br/>${_.get(
                 d,
                 isSNP ? `${subtype}.allele` : type
@@ -352,7 +372,7 @@ class Heatmap extends Component {
       .on("mouseover", function (d) {
         div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
         div
-          .html(`${type} <br/>Mean: ${d.boxes[0].end.toFixed(3)}`)
+          .html(`${type} <br/>Median: ${parseFloat(d.boxes[0].end.toFixed(3))}`)
           .style("left", d3v5.event.pageX + "px")
           .style("top", d3v5.event.pageY - 28 + "px");
       })
@@ -593,13 +613,14 @@ class Heatmap extends Component {
       .append("defs")
       .append("pattern")
       .attr("id", "diagonalHatch")
-      .attr("patternUnits", "userSpaceOnUse")
-      .attr("width", 4)
-      .attr("height", 4)
-      .append("path")
-      .attr("d", "M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
-      .attr("stroke", "white")
-      .attr("stroke-width", 1);
+      .attr({
+        width: "8",
+        height: "8",
+        patternUnits: "userSpaceOnUse",
+        patternTransform: "rotate(60)",
+      })
+      .append("rect")
+      .attr({ width: "4", height: "8", transform: "translate(0,0)", fill: "white" });
 
     ticks.selectAll("text").attr("class", (d) => `node-${d}`);
   }

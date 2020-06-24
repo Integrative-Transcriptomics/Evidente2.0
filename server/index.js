@@ -7,11 +7,9 @@ const fs = require("fs");
 const csv = require("neat-csv");
 const _ = require("lodash");
 const pathparser = require("path");
-const wkhtmltopdf = require("wkhtmltopdf");
 const puppeteer = require("puppeteer");
 
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
-// app.use(bodyParser.json());
 
 app.use(pino);
 
@@ -87,25 +85,6 @@ app.post("/api/upload", (req, res, next) => {
   });
 });
 
-// const exportConfigs = {
-//   orientation: "landscape",
-//   // pageHeight: 1000,
-//   // pageWidth: 1000,
-//   // disableSmartShrinking: true,
-//   // output: "test.jpg",
-//   userStyleSheet: "./src/index.css",
-//   // noStopSlowScripts: true,
-//   pageSize: "letter",
-// };
-// app.post("/api/pdf", (req, res) => {
-//   res.set("Content-Disposition", "attachment;filename=pdffile.pdf");
-//   res.set("Content-Type", "application/pdf");
-//   wkhtmltopdf.command = "./server/wkhtmltopdf/bin/wkhtmltopdf";
-//   wkhtmltopdf(req.body.data, exportConfigs, (err, stream) => {
-//     stream.pipe(res);
-//   });
-// });
-
 app.post("/api/export", async function (req, res, next) {
   const content = req.body.data;
   const type = req.body.type;
@@ -138,55 +117,6 @@ app.post("/api/export", async function (req, res, next) {
   await browser.close();
   res.end(buffer);
 });
-// app.post("/api/pdf", async function (req, res, next) {
-//   const content = req.body.data;
-//   const browser = await puppeteer.launch({ headless: true });
-//   const page = await browser.newPage();
-//   await page.setContent(content);
-//   await page.addStyleTag({ path: "./src/print.css" });
-//   const buffer = await page.pdf({
-//     printBackground: true,
-//     width: "40cm",
-//     margin: {
-//       left: "0px",
-//       top: "0px",
-//       right: "0px",
-//       bottom: "0px",
-//     },
-//   });
-//   await browser.close();
-//   res.end(buffer);
-// });
-
-// app.post("/api/jpg", async function (req, res, next) {
-//   const content = req.body.data;
-//   const browser = await puppeteer.launch({ headless: true });
-//   const page = await browser.newPage();
-//   await page.setContent(content);
-//   await page.addStyleTag({ path: "./src/print.css" });
-//   const buffer = await page.screenshot({ fullPage: true });
-//   await browser.close();
-//   res.end(buffer);
-// });
-// app.post("/api/jpg", (req, res) => {
-//   // res.set("Content-Disposition", "attachment;filename=jpgfile.jpg");
-//   // res.set("Content-Type", "image/jpg");
-//   wkhtmltoimage.command = "./server/wkhtmltopdf/bin/wkhtmltoimage";
-//   wkhtmltoimage.generate(req.body.data, {
-//     O: "landscape",
-//     // pageHeight: 1000,
-//     // pageWidth: 1000,
-//     // disableSmartShrinking: true,
-//     output: "test.jpg",
-//     // format: "jpg",
-
-//     "user style sheet": "./src/index.css",
-//     // noStopSlowScripts: true,
-//     // "page-size": "letter",
-//   });
-//   // .pipe(res);
-//   console.log("test");
-// });
 
 async function extractMetadata(taxaInfo) {
   let metadataInfo = _.head(taxaInfo);
@@ -202,6 +132,8 @@ async function extractMetadata(taxaInfo) {
     if (v.toLowerCase() === "numerical") {
       allValues = allValues.map((d) => parseFloat(d));
       dataDomain = [Math.min(...allValues), Math.max(...allValues)];
+    } else if (v.toLowerCase() === "ordinal") {
+      dataDomain = _.sortBy(_.uniq(allValues));
     } else {
       let countedValues = _.countBy(allValues);
       let temp = _.sortBy(_.keys(countedValues), (key) => countedValues[key]);

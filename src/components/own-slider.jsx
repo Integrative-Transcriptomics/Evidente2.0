@@ -10,7 +10,7 @@ class OwnSlider extends Component {
     super(props);
     this.state = {
       value: this.props.initValue,
-      step: (this.props.initValue[1] - this.props.initValue[0]) / 1000,
+      step: parseFloat(((this.props.initValue[1] - this.props.initValue[0]) / 1000).toFixed(3)),
     };
   }
   render() {
@@ -24,7 +24,7 @@ class OwnSlider extends Component {
           min={this.props.initValue[0]}
           max={this.props.initValue[1]}
           value={this.state.value}
-          scale={(x) => x.toFixed(3)}
+          scale={(x) => parseFloat(x.toFixed(2))}
           valueLabelDisplay='auto'
           onChange={(ev, newValue) => this.onChange(ev, newValue, this.props.name)}
           aria-labelledby='range-slider'
