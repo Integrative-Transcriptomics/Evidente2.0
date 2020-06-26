@@ -325,11 +325,10 @@ div.tooltip {
 .tree-widget {
 }
 
+.MuiTypography-body1,
+.MuiFormLabel-root,
+.MuiInputBase-root,
 .MuiTableCell-root {
-  font-size: 1.15rem !important;
-}
-
-.MuiTypography-body1 {
   font-size: 1.15rem !important;
 }
 
@@ -346,6 +345,10 @@ circle.MuiSlider-valueLabel {
   font-size: 1rem !important;
   color: rgb(75, 73, 73);
   font-style: italic;
+}
+.select-custom-class-filter {
+  width: 100%;
+  margin-top: 5px;
 }
 
 @media screen {

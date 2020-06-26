@@ -36,9 +36,9 @@ app.post("/api/upload", (req, res, next) => {
         { SNP: { type: "SNP", extent: ["A", "C", "T", "G", "N"] } },
         metadataInfo
       );
-      let snpInfo = await readCSV(files.SNPinfo.path, {
-        separator: pathparser.extname(files.SNPinfo.name) === ".tsv" ? "\t" : ",",
-      });
+      // let snpInfo = await readCSV(files.SNPinfo.path, {
+      //   separator: pathparser.extname(files.SNPinfo.name) === ".tsv" ? "\t" : ",",
+      // });
       let noHeaders = { separator: "\t", headers: false };
       let ids = await readCSV("./server/Ergebnis/IDzuordnung.txt", noHeaders);
       let { numToLabel, labToNum } = zippedIds(ids);
@@ -72,7 +72,7 @@ app.post("/api/upload", (req, res, next) => {
       res.status(200).json({
         newick: newick,
         taxaInfo: taxaInfoMod,
-        snpInfo: snpInfo,
+        // snpInfo: snpInfo,
         ids: { numToLabel, labToNum },
         availableSNPs: setOfSnps,
         support: transformedSupportKeys,

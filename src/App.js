@@ -95,6 +95,7 @@ class App extends Component {
     SNPTable: {},
     ordinalModalShow: false,
     createdFilters: [],
+    nameOfFilters: [],
     activeFilters: [],
   };
   constructor() {
@@ -242,6 +243,41 @@ class App extends Component {
   handleFilterOpenModal = (selectedFeatures) => {
     this.setState({ filterModalShow: true, filterFeatures: selectedFeatures });
   };
+
+  handleDeleteFilter = (index) => {
+    let modActiveFilters = _.clone(this.state.createdFilters);
+    _.remove(modActiveFilters, (n, i) => i === index);
+    let modNamefilters = _.clone(this.state.nameOfFilters);
+    _.remove(modNamefilters, (n, i) => i === index);
+    this.setState({ createdFilters: modActiveFilters /*nameOfFilters: modNamefilters*/ });
+    // this.handleApplyAllFilter();
+  };
+  handleDeleteAllFilters = () => {
+    this.handleShowNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    this.setState({ createdFilters: [], nameOfFilters: [] });
+  };
+  handleFilterCloseModal = (save, filter, name) => {
+    let newFilters = [...this.state.createdFilters, filter];
+    let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
+
+    let resultingNodes = this.state.tree
+      .get_nodes()
+      .filter(this.state.tree.is_leafnode)
+      .filter((node) => {
+        let filterResult = this.testForFilters(node, newFilters, taxaDataModified);
+        return filterResult;
+      });
+    save
+      ? this.setState({
+          remainingNodesAfterFilter: resultingNodes.length,
+          filterModalShow: false,
+          createdFilters: newFilters,
+          nameOfFilters: [...this.state.nameOfFilters, name],
+        })
+      : this.setState({
+          filterModalShow: false,
+        });
+  };
   testForFilters(node, filters, data) {
     let nodeName = node.name;
     let processedFilter = filters.map((filter) => {
@@ -253,11 +289,9 @@ class App extends Component {
         switch (typeOfMetadata.toLowerCase()) {
           case "numerical":
             return value[0] <= datum && datum <= value[1];
-          // break;
 
           default:
             return value.includes(datum);
-          // break;
         }
       });
       return resultGroup.reduce((acc, now) => acc && now, true);
@@ -300,26 +334,6 @@ class App extends Component {
     this.handleHideMultipleNodes(resultingNodes);
   };
 
-  handleDeleteFilter = (index) => {
-    let modActiveFilters = _.clone(this.state.createdFilters);
-    let tmp = _.remove(modActiveFilters, (n, i) => i === index);
-    this.setState({ createdFilters: modActiveFilters });
-    this.handleApplyAllFilter();
-  };
-  handleDeleteAllFilters = () => {
-    this.handleShowNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
-    this.setState({ createdFilters: [] });
-  };
-  handleFilterCloseModal = (save, filter) => {
-    save
-      ? this.setState({
-          filterModalShow: false,
-          createdFilters: [...this.state.createdFilters, filter],
-        })
-      : this.setState({
-          filterModalShow: false,
-        });
-  };
   handleColorScaleCloseModal = (save, extents) => {
     if (!save) {
       this.setState({ colorScaleModalShow: false });
@@ -504,11 +518,14 @@ class App extends Component {
             availableSNPs={this.state.availableSNPs}
             visMd={this.state.visualizedMD}
             visSNPs={this.state.visualizedSNPs}
+            remainingNodes={this.state.remainingNodesAfterFilter}
             createdFilters={this.state.createdFilters}
+            nameOfFilters={this.state.nameOfFilters}
             onDeleteFilter={this.handleDeleteFilter}
             onDeleteAllFilters={this.handleDeleteAllFilters}
           ></Toolbox>
         </div>
+
         <OrdinalModal
           ID='ordinal-modal'
           show={this.state.ordinalModalShow}
@@ -522,13 +539,15 @@ class App extends Component {
           show={this.state.colorScaleModalShow}
           handleClose={this.handleColorScaleCloseModal}
         ></ColorScaleModal>
-        <FilterModal
-          ID='filter-modal'
-          mdinfo={this.state.mdinfo}
-          show={this.state.filterModalShow}
-          filterFeatures={this.state.filterFeatures || []}
-          handleClose={this.handleFilterCloseModal}
-        ></FilterModal>
+        {this.state.filterModalShow && (
+          <FilterModal
+            ID='filter-modal'
+            mdinfo={this.state.mdinfo}
+            show={this.state.filterModalShow}
+            filterFeatures={this.state.filterFeatures || []}
+            handleClose={this.handleFilterCloseModal}
+          ></FilterModal>
+        )}
       </div>
     );
   }

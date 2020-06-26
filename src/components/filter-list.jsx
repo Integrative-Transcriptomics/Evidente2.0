@@ -53,7 +53,7 @@ class FilterList extends Component {
             this.state.createdFilters.map((value, it) => (
               <ListItem key={`filter-${it}`}>
                 <OverlayTrigger placement='left' overlay={popover(value, this.props)}>
-                  <ListItemText primary={`Filter group ${it + 1}`} />
+                  <ListItemText primary={this.props.nameOfFilters[it]} />
                 </OverlayTrigger>
                 <ListItemSecondaryAction>
                   <IconButton
@@ -69,7 +69,11 @@ class FilterList extends Component {
         </List>
         <Grid container spacing={4} direction='row' alignItems='center' justify='center'>
           <Grid item>
-            <Button variant='primary' onClick={this.props.onApplyAllFilters}>
+            <Button
+              variant='primary'
+              onClick={this.props.onApplyAllFilters}
+              disabled={this.props.remainingNodes === 0}
+            >
               Apply filters
             </Button>
           </Grid>

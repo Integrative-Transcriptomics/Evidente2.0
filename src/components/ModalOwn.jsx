@@ -3,6 +3,7 @@ import { Modal, Button } from "react-bootstrap";
 
 class ModalOwn extends Component {
   state = {};
+
   render() {
     return (
       <Modal

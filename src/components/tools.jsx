@@ -3,8 +3,6 @@ import { Accordion, Card, Button, Form, OverlayTrigger, Tooltip } from "react-bo
 import Select, { components } from "react-select";
 import * as _ from "lodash";
 import * as $ from "jquery";
-// import html2canvas from "html2canvas";
-// import jsPDF from "jspdf";
 import { Typography, Divider, Grid } from "@material-ui/core";
 
 import HelpIcon from "@material-ui/icons/Help";
@@ -116,8 +114,8 @@ class Tools extends Component {
                     { id: "nwk", label: "Newick Tree" },
                     { id: "snp", label: "SNP Table" },
                     { id: "taxainfo", label: "Taxa metadata" },
-                    { id: "SNPinfo", label: "SNP metadata" },
-                    { id: "decoding", label: "Decoding files" },
+                    // { id: "SNPinfo", label: "SNP metadata" },
+                    // { id: "decoding", label: "Decoding files" },
                   ].map(({ id, label }) => (
                     <Form.Group key={id}>
                       <Form.File
@@ -197,7 +195,7 @@ class Tools extends Component {
                   </Grid>
                   <Grid item>
                     <OverlayTrigger placement='top' overlay={helpTooltip}>
-                      <HelpIcon />
+                      <HelpIcon style={{ display: "flex" }} />
                     </OverlayTrigger>
                   </Grid>
                 </Grid>
@@ -229,10 +227,19 @@ class Tools extends Component {
                 {this.props.createdFilters.length > 0 && (
                   <React.Fragment>
                     <Divider variant='middle' style={{ marginTop: "5px", marginBottom: "5px" }} />
-                    <Typography variant='h6'>Active filter groups</Typography>
+                    <Typography variant='h6'>Created filter groups</Typography>
+                    <Typography variant='h6' style={{ fontWeight: "normal" }}>
+                      Applying following filter would result in {this.props.remainingNodes}{" "}
+                      {this.props.remainingNodes > 1 || this.props.remainingNodes === 0
+                        ? "nodes"
+                        : "node"}
+                    </Typography>
+
                     <FilterList
+                      remainingNodes={this.props.remainingNodes}
                       availableMDs={this.props.availableMDs}
                       onApplyAllFilters={this.props.onApplyAllFilters}
+                      nameOfFilters={this.props.nameOfFilters}
                       createdFilters={this.props.createdFilters}
                       onDeleteFilter={this.props.onDeleteFilter}
                       onDeleteAllFilters={this.props.onDeleteAllFilters}

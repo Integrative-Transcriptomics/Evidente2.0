@@ -3,7 +3,7 @@ import ModalOwn from "./ModalOwn";
 import * as _ from "lodash";
 import Select, { components } from "react-select";
 import OwnSlider from "./own-slider";
-import { Typography, Divider } from "@material-ui/core";
+import { Typography, Divider, TextField, FormLabel } from "@material-ui/core";
 
 const { ValueContainer, Placeholder } = components;
 
@@ -22,7 +22,7 @@ const CustomValueContainer = ({ children, ...props }) => {
 const selectStates = {
   container: (provided, state) => ({
     ...provided,
-    marginTop: 20,
+    marginTop: 15,
     height: "auto",
   }),
   valueContainer: (provided, state) => ({
@@ -48,16 +48,26 @@ class FilterModal extends Component {
   onChange = (key, value) => {
     this.setState({ filter: { ...this.state.filter, [key]: value } });
   };
+  onChangeName = (event) => {
+    this.setState({ name: event.target.value });
+  };
+
+  componentDidMount() {
+    let features = this.props.filterFeatures;
+    let initName = `${features.length > 1 ? "Group" : features[0]} filter`;
+    this.nameInput.value = initName;
+    this.setState({ name: initName });
+  }
   render() {
     return (
       <ModalOwn
         id={this.props.ID}
         show={this.props.show}
         onClose={(save) => {
-          this.props.handleClose(save, this.state.filter);
+          this.props.handleClose(save, this.state.filter, this.state.name);
           this.setState({ filter: {} });
         }}
-        title={`Select features of filter group`}
+        title={`Select features for the filter`}
       >
         <Typography variant='subtitle1'>
           A filter group defines all the characteristics a certain node should contain in order to
@@ -65,6 +75,21 @@ class FilterModal extends Component {
           group to be shown (OR-junction).
         </Typography>
         <Divider variant='middle' style={{ marginTop: "10px", marginBottom: "10px" }} />
+        {/* <FormLabel component='legend'>Filter name</FormLabel>
+        <input type='text' value={this.state.name} onChange={this.onChangeName} /> */}
+
+        <TextField
+          id='standard-error-helper-text'
+          label='Name of filter'
+          defaultValue={this.state.name}
+          onChange={this.onChangeName}
+          // helperText='Incorrect entry.'
+          margin='dense'
+          variant='outlined'
+          inputRef={(el) => (this.nameInput = el)}
+        />
+
+        <Typography variant='h6'>Data for filter: </Typography>
 
         {_.toPairs(this.props.mdinfo).map((arr) => {
           let k = arr[0],

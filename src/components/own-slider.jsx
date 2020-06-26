@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Slider, Typography } from "@material-ui/core";
+import { Slider, Typography, Grid } from "@material-ui/core";
 
 class OwnSlider extends Component {
   onChange = (ev, newValue, name) => {
@@ -15,21 +15,56 @@ class OwnSlider extends Component {
   }
   render() {
     return (
-      <div key={this.props.name}>
-        <Typography id='range-slider' gutterBottom>
-          {this.props.name}
-        </Typography>
-        <Slider
-          step={this.state.step}
-          min={this.props.initValue[0]}
-          max={this.props.initValue[1]}
-          value={this.state.value}
-          scale={(x) => parseFloat(x.toFixed(2))}
-          valueLabelDisplay='auto'
-          onChange={(ev, newValue) => this.onChange(ev, newValue, this.props.name)}
-          aria-labelledby='range-slider'
-        />
-      </div>
+      <Grid
+        key={`container-slider-${this.props.name}`}
+        container
+        justify='center'
+        alignContent='center'
+        spacing={2}
+        wrap='nowrap'
+      >
+        <Grid
+          key={`range-slider-title-grid-${this.props.name}`}
+          alignItems='center'
+          style={{ display: "flex" }}
+          item
+        >
+          <Typography id={`range-slider-${this.props.name}`}>{this.props.name}</Typography>
+        </Grid>
+        <Grid
+          key={`range-slider-slider-grid-${this.props.name}`}
+          style={{ display: "flex", width: "80%" }}
+          item
+        >
+          <Slider
+            step={this.state.step}
+            min={this.props.initValue[0]}
+            max={this.props.initValue[1]}
+            value={this.state.value}
+            scale={(x) => parseFloat(x.toFixed(2))}
+            valueLabelDisplay='auto'
+            onChange={(ev, newValue) => this.onChange(ev, newValue, this.props.name)}
+            aria-labelledby='range-slider'
+          />
+        </Grid>
+      </Grid>
+
+      // <div key={this.props.name}>
+      //   <Typography id='range-slider' gutterBottom>
+      //     {this.props.name}
+      //   </Typography>
+      //   <Slider
+      //     width='75%'
+      //     step={this.state.step}
+      //     min={this.props.initValue[0]}
+      //     max={this.props.initValue[1]}
+      //     value={this.state.value}
+      //     scale={(x) => parseFloat(x.toFixed(2))}
+      //     valueLabelDisplay='auto'
+      //     onChange={(ev, newValue) => this.onChange(ev, newValue, this.props.name)}
+      //     aria-labelledby='range-slider'
+      //   />
+      // </div>
     );
   }
 }
