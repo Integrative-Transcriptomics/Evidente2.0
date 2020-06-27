@@ -18,11 +18,7 @@ class Phylotree extends Component {
         .style("fill", "black")
         .attr({ r: 2 })
         .on("mouseover", () => {
-          if (!node.selected) {
-            d3.selectAll(`.node-${lookFor}.guides`)
-              .style("stroke", "red")
-              .style("stroke-opacity", 0.75);
-          }
+          d3.selectAll(`.node-${lookFor}.guides`).classed("highlighted-guide", true);
           div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
           div
             .html(lookFor)
@@ -30,11 +26,7 @@ class Phylotree extends Component {
             .style("top", d3.event.pageY - 28 + "px");
         })
         .on("mouseout", () => {
-          if (!node.selected) {
-            d3.selectAll(`.node-${lookFor}.guides`)
-              .style("stroke", "gray")
-              .style("stroke-opacity", 0.25);
-          }
+          d3.selectAll(`.node-${lookFor}.guides`).classed("highlighted-guide", false);
           div.transition().duration(500).style("opacity", 0);
         });
     } else if (node) {
@@ -162,8 +154,8 @@ class Phylotree extends Component {
       .svg(d3.select("#tree-display"));
   }
 
-  renderTree(example_tree) {
-    this.props.tree(example_tree).style_nodes(this.nodeStyler).layout();
+  renderTree(input_tree) {
+    this.props.tree(input_tree).style_nodes(this.nodeStyler).layout();
     this.props.onUploadTree(this.props.tree.get_nodes());
     let count = 1;
     this.props.tree.traverse_and_compute((d) => {

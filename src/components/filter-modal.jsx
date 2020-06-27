@@ -3,7 +3,7 @@ import ModalOwn from "./ModalOwn";
 import * as _ from "lodash";
 import Select, { components } from "react-select";
 import OwnSlider from "./own-slider";
-import { Typography, Divider, TextField, FormLabel } from "@material-ui/core";
+import { Typography, Divider, TextField } from "@material-ui/core";
 
 const { ValueContainer, Placeholder } = components;
 

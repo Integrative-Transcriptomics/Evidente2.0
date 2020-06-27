@@ -5,7 +5,7 @@ import ColorScaleModal from "./components/color-scale-modal";
 import OrdinalModal from "./components/modal-ordinal-sort";
 import FilterModal from "./components/filter-modal";
 import Toolbox from "./components/toolbox";
-
+import Labels from "./components/labels";
 // Important libraries
 import React, { Component } from "react";
 
@@ -144,9 +144,15 @@ class App extends Component {
       // Adds zoom and left/right translation on SVGs
       let zoom = this.state.zoom;
       // Adds zoom on all
-      for (let container of ["#tree-display", "#display_heatmap_viz", "#display_md_viz"]) {
+      for (let container of [
+        "#tree-display",
+        "#display_heatmap_viz",
+        "#display_md_viz",
+        "#display_labels_viz",
+      ]) {
         d3.select(container).call(zoom).call(this.lr);
       }
+
       $("#metadata-card").click();
     }
   };
@@ -422,7 +428,12 @@ class App extends Component {
   }
 
   handleZoom() {
-    for (let id of ["#heatmap-container", "#md-container", ".phylotree-container"]) {
+    for (let id of [
+      "#heatmap-container",
+      "#md-container",
+      ".phylotree-container",
+      "#container-labels",
+    ]) {
       let temp = d3.transform(d3.select(id).attr("transform"));
       $(id).attr(
         "transform",
@@ -436,12 +447,21 @@ class App extends Component {
       "tree-display": ".phylotree-container",
       display_heatmap_viz: "#heatmap-container",
       display_md_viz: "#md-container",
+      display_labels_viz: "#container-labels",
     };
+    console.log($(translate[this.id]));
     let container = $(translate[this.id]);
     let t = d3.transform(container.attr("transform"));
+    console.log(t);
     container.attr(
       "transform",
-      `translate( ${t.translate[0] + d3.event.dx}, ${t.translate[1]})scale(${t.scale})`
+      `translate( ${Math.max(
+        Math.min(
+          t.translate[0] + d3.event.dx,
+          t.scale[0] * this.getBoundingClientRect().width * 0.95
+        ),
+        -t.scale[0] * this.getBoundingClientRect().width * 0.95
+      )}, ${t.translate[1]})scale(${t.scale})`
     );
   }
 
@@ -467,10 +487,11 @@ class App extends Component {
               snpdata={this.state.snpdata}
               ids={this.state.ids}
             />
+            <Labels divID={"labels_viz"} tree={this.state.tree} />
             <Heatmap
               divID={"heatmap_viz"}
               containerID={"heatmap-container"}
-              margin={{ top: 0, right: 20, bottom: 0, left: 100 }}
+              margin={{ top: 0, right: 20, bottom: 0, left: 5 }}
               tree={this.state.tree}
               nodes={this.state.nodes}
               hiddenNodes={this.state.hiddenNodes}
@@ -525,28 +546,32 @@ class App extends Component {
             onDeleteAllFilters={this.handleDeleteAllFilters}
           ></Toolbox>
         </div>
+        {this.state.ordinalModalShow && (
+          <OrdinalModal
+            ID='ordinal-modal'
+            show={this.state.ordinalModalShow}
+            ordinalValues={this.state.ordinalValues}
+            handleClose={this.handleOrdinalCloseModal}
+          />
+        )}
+        {this.state.colorScaleModalShow && (
+          <ColorScaleModal
+            ID='color-scale-modal'
+            mdinfo={this.state.mdinfo}
+            chosenMD={this.chosenMD}
+            show={this.state.colorScaleModalShow}
+            handleClose={this.handleColorScaleCloseModal}
+          />
+        )}
 
-        <OrdinalModal
-          ID='ordinal-modal'
-          show={this.state.ordinalModalShow}
-          ordinalValues={this.state.ordinalValues}
-          handleClose={this.handleOrdinalCloseModal}
-        ></OrdinalModal>
-        <ColorScaleModal
-          ID='color-scale-modal'
-          mdinfo={this.state.mdinfo}
-          chosenMD={this.chosenMD}
-          show={this.state.colorScaleModalShow}
-          handleClose={this.handleColorScaleCloseModal}
-        ></ColorScaleModal>
         {this.state.filterModalShow && (
           <FilterModal
             ID='filter-modal'
             mdinfo={this.state.mdinfo}
             show={this.state.filterModalShow}
-            filterFeatures={this.state.filterFeatures || []}
+            filterFeatures={this.state.filterFeatures}
             handleClose={this.handleFilterCloseModal}
-          ></FilterModal>
+          />
         )}
       </div>
     );

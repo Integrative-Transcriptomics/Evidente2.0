@@ -203,6 +203,11 @@ div.tooltip {
   overflow: auto;
 }
 
+.highlighted-guide {
+  stroke: red !important;
+  stroke-opacity: 0.75 !important;
+}
+
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;

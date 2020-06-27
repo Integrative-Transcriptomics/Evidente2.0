@@ -50,10 +50,8 @@ class OrdinalModal extends Component {
     this.setState({ collections: newCollections });
   };
 
-  componentDidUpdate(prevProp, prevState) {
-    if (!_.isEqual(prevProp.ordinalValues, this.props.ordinalValues)) {
-      this.setState({ collections: this.props.ordinalValues });
-    }
+  componentDidMount() {
+    this.setState({ collections: this.props.ordinalValues });
   }
 
   render() {

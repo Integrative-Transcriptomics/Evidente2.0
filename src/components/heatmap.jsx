@@ -46,17 +46,23 @@ class Heatmap extends Component {
     let state = this.state;
     let props = this.props;
     this.SNPcolorScale = this.props.SNPcolorScale;
-
-    let cellWidth = state.cellWidth;
-    let cellSize = cellWidth - 0.5;
-
-    let container = d3.select(`#${this.props.containerID}`);
-    if (props.activeFilters && props.activeFilters.length > 0) {
-    }
     let shownNodes = props.tree
       .get_nodes()
       .filter((node) => this.isVisibleEndNode(node))
       .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
+    let x_elements = this.isSNP
+        ? this.props.visSNPs.map((d) => `${this.SNPprefix}${d}`)
+        : this.props.visMd,
+      y_elements = shownNodes;
+    let cellWidthMin =
+      props.collapsedClades.length > 0 ? 40 : this.container.offsetHeight / shownNodes.length;
+    let cellWidthMax = this.container.offsetWidth * (props.collapsedClades.length > 0 ? 0.35 : 0.2);
+    let cellWidth = Math.max(
+      Math.min(this.container.offsetWidth / x_elements.length, cellWidthMax),
+      cellWidthMin
+    );
+
+    let container = d3.select(`#${this.props.containerID}`);
 
     if (props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
@@ -72,8 +78,6 @@ class Heatmap extends Component {
 
       // Cluster the data
       if (props.collapsedClades.length !== 0 || false) {
-        cellWidth = 40;
-        cellSize = cellWidth - 0.5;
         processedData = this.clusterData(
           processedData,
           props.collapsedClades,
@@ -81,12 +85,9 @@ class Heatmap extends Component {
           props.mdinfo
         );
       }
-      let finalData = processedData.filter(({ Information }) => shownNodes.includes(Information));
+      let cellSize = cellWidth - 0.5;
 
-      let x_elements = this.isSNP
-          ? this.props.visSNPs.map((d) => `${this.SNPprefix}${d}`)
-          : this.props.visMd,
-        y_elements = shownNodes;
+      let finalData = processedData.filter(({ Information }) => shownNodes.includes(Information));
 
       let xScale = d3.scale
         .ordinal()
@@ -114,8 +115,9 @@ class Heatmap extends Component {
         .call(yAxis)
         .call((g) => g.select(".domain").remove())
         .selectAll("text")
-        .style("font-size", `${Math.min(cellHeight, 12)}px`)
-        .attr("dy", ".35em");
+        .remove();
+      // .style("font-size", `${Math.min(cellHeight, 12)}px`)
+      // .attr("dy", ".35em");
 
       container
         .selectAll("g.x.axis")
@@ -129,66 +131,69 @@ class Heatmap extends Component {
       let ticks = container.select(".y").selectAll(".tick");
 
       container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
-      let textWidth = [];
-      ticks.selectAll("text").each(function () {
-        var thisWidth = this.getComputedTextLength();
-        textWidth.push(thisWidth);
-      });
-      ticks
+      // let textWidth = [];
+      // ticks.selectAll("text").each(function () {
+      //   var thisWidth = this.getComputedTextLength();
+      //   textWidth.push(thisWidth);
+      // });
 
-        .append("line")
-        .attr("class", (d) => `guides  node-${d}`)
-        .attr("x1", (d, i) => -1 * textWidth[i] - 15)
-        .attr("x2", -9000)
-        .attr("y1", 0)
-        .attr("y2", 0)
-        .style("stroke", "grey")
-        .style("stroke-dasharray", "10,3")
-        .style("stroke-opacity", 0.25); // colour the line;
+      if (x_elements.length > 0) {
+        ticks
+          .append("line")
+          .attr("class", (d) => `guides  node-${d}`)
+          .attr("x1", (d, i) => -5)
+          .attr("x2", -9000)
+          .attr("y1", 0)
+          .attr("y2", 0)
+          .style("stroke", "grey")
+          .style("stroke-dasharray", "10,3")
+          .style("stroke-opacity", 0.25); // colour the line;
 
-      x_elements.forEach((x_elem) => {
-        let typeOfMD = _.get(props.mdinfo, `${x_elem}.type`, "").toLowerCase();
-        let singleData = finalData.filter((d) => !_.get(d, "clade", false));
-        let actualColorScale = _.get(props.mdinfo, `${x_elem}.colorScale`, this.SNPcolorScale);
-        this.updateCells(
-          singleData,
-          cellHeight,
-          xScale,
-          yScale,
-          actualColorScale,
-          cellSize,
-          x_elem,
-          this.isSNP,
-          typeOfMD === "numerical"
-        );
-        let dataDomain = _.get(props.mdinfo, `${x_elem}.extent`, ["A", "C", "T", "G", "N"]);
-        let onlyClusteredData = finalData.filter(({ clade }) => clade);
-        if (typeOfMD === "numerical") {
-          let centering = cellHeight / 4;
-          this.createBoxplots(
-            onlyClusteredData,
+        x_elements.forEach((x_elem) => {
+          let typeOfMD = _.get(props.mdinfo, `${x_elem}.type`, "").toLowerCase();
+          let singleData = finalData.filter((d) => !_.get(d, "clade", false));
+          let actualColorScale = _.get(props.mdinfo, `${x_elem}.colorScale`, this.SNPcolorScale);
+          this.updateCells(
+            singleData,
+            cellHeight,
             xScale,
             yScale,
-            cellHeight,
-            centering,
-            dataDomain,
-            x_elem,
-            cellWidth
-          );
-        } else {
-          this.createHistogram(
-            onlyClusteredData,
-            xScale,
-            yScale,
-            cellHeight,
-            dataDomain,
-            x_elem,
-            cellWidth,
             actualColorScale,
-            this.isSNP
+            cellSize,
+            x_elem,
+            this.isSNP,
+            typeOfMD === "numerical"
           );
-        }
-      });
+          let dataDomain = _.get(props.mdinfo, `${x_elem}.extent`, ["A", "C", "T", "G", "N"]);
+          let onlyClusteredData = finalData.filter(({ clade }) => clade);
+          if (typeOfMD === "numerical") {
+            let centering = cellHeight / 4;
+            this.createBoxplots(
+              onlyClusteredData,
+              xScale,
+              yScale,
+              cellHeight,
+              centering,
+              dataDomain,
+              x_elem,
+              cellWidth
+            );
+          } else {
+            this.createHistogram(
+              onlyClusteredData,
+              xScale,
+              yScale,
+              cellHeight,
+              dataDomain,
+              x_elem,
+              cellWidth,
+              actualColorScale,
+              this.isSNP
+            );
+          }
+        });
+      }
+
       if (this.isSNP && this.props.visMd.length !== 0) {
         ticks
           .append("line")
@@ -581,24 +586,23 @@ class Heatmap extends Component {
         g.select(".domain").remove();
       })
       .selectAll(".tick");
-    ticks
-      .selectAll("text")
-      .style("font-size", `${Math.min(cellHeight, 12)}px`)
-      .attr("font-weight", "normal")
-      .each(function () {
-        var thisWidth = this.getComputedTextLength();
-        textWidth.push(thisWidth);
-      });
-    ticks
-      .append("line")
-      .attr("class", (d) => `guides node-${d}`)
-      .attr("x1", (d, i) => -1 * textWidth[i] - 15)
-      .attr("x2", -9000)
-      .attr("y1", 0)
-      .attr("y2", 0)
-      .style("stroke", "grey")
-      .style("stroke-dasharray", "10,3")
-      .style("stroke-opacity", 0.25);
+    ticks.selectAll("text").remove();
+    // .style("font-size", `${Math.min(cellHeight, 12)}px`)
+    // .attr("font-weight", "normal")
+    // .each(function () {
+    //   var thisWidth = this.getComputedTextLength();
+    //   textWidth.push(thisWidth);
+    // });
+    // ticks
+    //   .append("line")
+    //   .attr("class", (d) => `guides node-${d}`)
+    //   .attr("x1", (d, i) => -5)
+    //   .attr("x2", -9000)
+    //   .attr("y1", 0)
+    //   .attr("y2", 0)
+    //   .style("stroke", "grey")
+    //   .style("stroke-dasharray", "10,3")
+    //   .style("stroke-opacity", 0.25);
 
     let xAxe = container.append("g").attr("class", "x axis").call(xAxis);
     xAxe
