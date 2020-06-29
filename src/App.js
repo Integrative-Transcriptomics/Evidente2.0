@@ -449,10 +449,8 @@ class App extends Component {
       display_md_viz: "#md-container",
       display_labels_viz: "#container-labels",
     };
-    console.log($(translate[this.id]));
     let container = $(translate[this.id]);
     let t = d3.transform(container.attr("transform"));
-    console.log(t);
     container.attr(
       "transform",
       `translate( ${Math.max(

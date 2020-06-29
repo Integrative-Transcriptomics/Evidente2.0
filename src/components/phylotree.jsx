@@ -72,7 +72,7 @@ class Phylotree extends Component {
           if (given_names.includes(name)) {
             alert("This name is already given. Try another name.");
           } else {
-            name = name.replace(/ /g, "-");
+            name = name.replace(/[^a-zA-Z0-9_-]/g, "_");
             let oldName = node["show-name"];
             node["show-name"] = name;
             this.props.onCladeUpdate(oldName, name);
@@ -145,7 +145,11 @@ class Phylotree extends Component {
   componentDidUpdate(prevProp) {
     if (prevProp.newick !== this.props.newick) {
       this.renderTree(this.props.newick);
-      d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+      // d3.selectAll(".phylotree-container").attr(
+      //   "transform",
+      //   `translate(0,${this.container.offsetHeight * 0.05})`
+      // );
+      // d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     }
   }
   componentDidMount() {

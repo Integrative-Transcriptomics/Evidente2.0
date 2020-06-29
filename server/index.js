@@ -19,6 +19,7 @@ app.post("/api/upload", (req, res, next) => {
     try {
       if (err) {
         next(err);
+        console.log(err);
         return;
       }
       // Execute Processing Tool
@@ -27,7 +28,8 @@ app.post("/api/upload", (req, res, next) => {
         throw err;
       });
       // Read all files
-      let newick = fs.readFileSync(files.nwk.path, "utf8");
+      let newick = fs.readFileSync(files.nwk.path, "utf8").replace(/[^a-zA-Z0-9.:,()_-]/g, "_"); // TODO: change invalid characters
+      // console.log(newick);
       let taxaInfo = await readCSV(files.taxainfo.path, {
         separator: pathparser.extname(files.taxainfo.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
       });
@@ -80,6 +82,7 @@ app.post("/api/upload", (req, res, next) => {
         metadataInfo: metadataInfo,
       });
     } catch (error) {
+      console.log(error);
       res.status(400).send({ message: new Error(error).message });
     }
   });
@@ -121,7 +124,7 @@ app.post("/api/export", async function (req, res, next) {
 async function extractMetadata(taxaInfo) {
   let metadataInfo = _.head(taxaInfo);
   taxaInfoMod = _.tail(taxaInfo).map((d) =>
-    _.update(_.pickBy(d), "Information", (v) => v.replace(/ /g, "_"))
+    _.update(_.pickBy(d), "Information", (v) => v.replace(/[^a-zA-Z0-9_-]/g, "_"))
   );
 
   _.toPairs(metadataInfo).forEach((entry) => {
@@ -134,6 +137,8 @@ async function extractMetadata(taxaInfo) {
       dataDomain = [Math.min(...allValues), Math.max(...allValues)];
     } else if (v.toLowerCase() === "ordinal") {
       dataDomain = _.sortBy(_.uniq(allValues));
+    } else if (v.toLowerCase() === "type") {
+      dataDomain = allValues.map((v) => v.replace(/[^a-zA-Z0-9_-]/g, "_"));
     } else {
       let countedValues = _.countBy(allValues);
       let temp = _.sortBy(_.keys(countedValues), (key) => countedValues[key]);
@@ -142,12 +147,13 @@ async function extractMetadata(taxaInfo) {
 
     metadataInfo[k] = { type: v.toLowerCase(), extent: dataDomain };
   });
+
   return { metadataInfo, taxaInfoMod };
 }
 
 const zippedIds = (ids) => {
   let idsNum = ids.map((d) => d[0]);
-  let idsLabel = ids.map((d) => d[1]);
+  let idsLabel = ids.map((d) => d[1].replace(/[^a-zA-Z0-9_-]/g, "_"));
   let numToLabel = _.zipObject(idsNum, idsLabel);
   let labToNum = _.invert(numToLabel);
 

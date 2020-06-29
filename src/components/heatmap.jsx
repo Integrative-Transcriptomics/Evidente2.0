@@ -63,7 +63,22 @@ class Heatmap extends Component {
     );
 
     let container = d3.select(`#${this.props.containerID}`);
+    let expectedVizWidth = cellWidth * x_elements.length;
+    console.log(expectedVizWidth);
 
+    const modLR = d3.behavior.drag().on("drag", () => {
+      let t = d3.transform(container.attr("transform"));
+      container.attr(
+        "transform",
+        `translate( ${Math.max(
+          Math.min(t.translate[0] + d3.event.dx, t.scale[0] * this.container.offsetWidth * 0.95),
+          -t.scale[0] * expectedVizWidth * 0.95
+        )}, ${t.translate[1]})scale(${t.scale})`
+      );
+    });
+
+    d3.select(`#display_${this.props.divID}`).call(modLR);
+    // }
     if (props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
     } else if (shownNodes.length !== this.props.nodes.length) {
@@ -123,6 +138,7 @@ class Heatmap extends Component {
         .selectAll("g.x.axis")
         .call(xAxis)
         .selectAll("text")
+        .style("font-size", `${Math.min(cellWidth, 12)}px`)
         .style("text-anchor", "start")
         .attr("dx", ".8em")
         .attr("dy", ".5em")
@@ -142,7 +158,7 @@ class Heatmap extends Component {
           .append("line")
           .attr("class", (d) => `guides  node-${d}`)
           .attr("x1", (d, i) => -5)
-          .attr("x2", -9000)
+          .attr("x2", -this.container.offsetWidth * 2)
           .attr("y1", 0)
           .attr("y2", 0)
           .style("stroke", "grey")
@@ -199,7 +215,7 @@ class Heatmap extends Component {
           .append("line")
           .attr("class", (d) => `guides  node-${d}`)
           .attr("x1", (d) => 5 + x_elements.length * cellWidth)
-          .attr("x2", 9000)
+          .attr("x2", Math.max(expectedVizWidth, this.container.offsetWidth) * 1.95)
           .attr("y1", 0)
           .attr("y2", 0)
           .style("stroke", "grey")
@@ -295,6 +311,7 @@ class Heatmap extends Component {
    */
   updateCells(data, cellHeight, xScale, yScale, colorScale, cellSize, type, isSNP, isNumerical) {
     const onMouseOverCell = function (d) {
+      d3.selectAll(`.node-${d.Information}.guides`).classed("highlighted-guide", true);
       div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
       div
         .html(
@@ -314,7 +331,7 @@ class Heatmap extends Component {
     let div = d3.select("#tooltip");
     let cells = d3
       .select(`#${this.props.containerID}`)
-      .selectAll(`.cell.md-${type.replace(/ /g, "_")}`)
+      .selectAll(`.cell.md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
       .data(data)
       .enter()
       .append("svg:rect")
@@ -327,7 +344,7 @@ class Heatmap extends Component {
 
     if (isSNP) {
       d3.select(`#${this.props.containerID}`)
-        .selectAll(`.pattern.md-${type.replace(/ /g, "_")}`)
+        .selectAll(`.pattern.md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
         .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
         .enter()
         .append("svg:rect")
@@ -339,10 +356,13 @@ class Heatmap extends Component {
         .attr("fill", "url(#diagonalHatch)")
         .on("mouseover", onMouseOverCell)
         .on("mouseout", function (d) {
+          d3.selectAll(`.node-${d.Information}.guides`).classed("highlighted-guide", false);
           div.transition().duration(500).style("opacity", 0);
         });
     }
-    cells.on("mouseover", onMouseOverCell).on("mouseout", function (d) {
+    cells.on("mouseover", onMouseOverCell).on("mouseout", function ({ Information }) {
+      d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
+
       div.transition().duration(500).style("opacity", 0);
     });
   }
@@ -353,7 +373,7 @@ class Heatmap extends Component {
 
     d3v5
       .select(`#${this.props.containerID}`)
-      .selectAll(`.boxplot.md-${type.replace(/ /g, "_")}`)
+      .selectAll(`.boxplot.md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
       .data(data)
       .enter()
       .append("g")
@@ -362,7 +382,7 @@ class Heatmap extends Component {
         "transform",
         ({ Information }) => `translate(${xScale(type)}, ${center + yScale(Information)})`
       )
-      .datum((d) => d[type])
+      .datum((d) => ({ ...d[type], nodeName: d["Information"] }))
       .call(
         boxplot
           .boxplot()
@@ -375,6 +395,8 @@ class Heatmap extends Component {
           .opacity(1)
       )
       .on("mouseover", function (d) {
+        d3.selectAll(`.node-${d.nodeName}.guides`).classed("highlighted-guide", true);
+
         div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
         div
           .html(`${type} <br/>Median: ${parseFloat(d.boxes[0].end.toFixed(3))}`)
@@ -382,6 +404,8 @@ class Heatmap extends Component {
           .style("top", d3v5.event.pageY - 28 + "px");
       })
       .on("mouseout", function (d) {
+        d3.selectAll(`.node-${d.nodeName}.guides`).classed("highlighted-guide", false);
+
         div.transition().duration(500).style("opacity", 0);
       });
   }
@@ -428,19 +452,25 @@ class Heatmap extends Component {
     );
     let heatmapCell = d3
       .select(`#${this.props.containerID}`)
-      .selectAll(`.histo.md-${type.replace(/ /g, "_")}`)
+      .selectAll(`.histo.md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
       .data(data)
       .enter()
       .append("g")
       .attr("class", ({ Information }) => `histo node-${Information} md-${type}`)
       .attr("transform", ({ Information }) => `translate(${xScale(type)}, ${yScale(Information)})`);
-
+    heatmapCell
+      .on("mouseover", ({ Information }) => {
+        d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", true);
+      })
+      .on("mouseout", ({ Information }) => {
+        d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
+      });
     let bars = heatmapCell
-      .selectAll(`.bars.md-${type.replace(/ /g, "_")}`)
+      .selectAll(`.bars.md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
       .data((d) => Object.entries(_.get(d, isSNP ? subtype : type, {})))
       .enter()
       .append("rect")
-      .attr("class", `.bars.md-${type.replace(/ /g, "_")}`)
+      .attr("class", `.bars.md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
       .attr("fill", (d) => colorScale(isSNP ? d[0][0] : d[0]));
     let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([0, cellWidth]);
 
@@ -467,7 +497,7 @@ class Heatmap extends Component {
 
     if (isSNP) {
       let patterns = heatmapCell
-        .selectAll(`.pattern.md-${type.replace(/ /g, "_")}`)
+        .selectAll(`.pattern.md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
         .data((d) =>
           Object.entries(_.get(d, isSNP ? subtype : type, {})).filter(
             (datum) => datum[0][1] === "-"
@@ -475,7 +505,7 @@ class Heatmap extends Component {
         )
         .enter()
         .append("svg:rect")
-        .attr("class", `pattern md-${type.replace(/ /g, "_")}`)
+        .attr("class", `pattern md-${type.replace(/[^a-zA-Z0-9_-]/g, "_")}`)
         .attr("width", barWidth)
         .attr("height", (d) => Math.abs(cellHeight / 2 - yScaleBar(d[1])))
         .attr("y", (d) =>
@@ -587,22 +617,6 @@ class Heatmap extends Component {
       })
       .selectAll(".tick");
     ticks.selectAll("text").remove();
-    // .style("font-size", `${Math.min(cellHeight, 12)}px`)
-    // .attr("font-weight", "normal")
-    // .each(function () {
-    //   var thisWidth = this.getComputedTextLength();
-    //   textWidth.push(thisWidth);
-    // });
-    // ticks
-    //   .append("line")
-    //   .attr("class", (d) => `guides node-${d}`)
-    //   .attr("x1", (d, i) => -5)
-    //   .attr("x2", -9000)
-    //   .attr("y1", 0)
-    //   .attr("y2", 0)
-    //   .style("stroke", "grey")
-    //   .style("stroke-dasharray", "10,3")
-    //   .style("stroke-opacity", 0.25);
 
     let xAxe = container.append("g").attr("class", "x axis").call(xAxis);
     xAxe
@@ -631,7 +645,7 @@ class Heatmap extends Component {
 
   componentDidMount() {
     let margin = this.props.margin;
-
+    // margin.top = 0.05 * this.container.offsetHeight;
     let width = this.container.offsetWidth - margin.right - margin.left,
       height = this.container.offsetHeight - margin.top - margin.bottom;
 

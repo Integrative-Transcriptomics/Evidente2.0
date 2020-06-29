@@ -6,9 +6,13 @@
 !/node_modules/phylotree/src/
 !/node_modules/phylotree/src/phylotree*
 
-!/src/**
-!/public/**
-!/server/**
+!/src/
+!/src/*
+!/src/components/*
+!/public/
+!/public/*
+!/server/
+!/server/*
 
 !.babelrc
 !.env
