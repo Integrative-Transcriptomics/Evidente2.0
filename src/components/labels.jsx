@@ -33,6 +33,7 @@ class Labels extends Component {
       .style("cursor", "default")
       .attr("dy", ".35em")
       .selectAll(".tick");
+
     ticks
       .selectAll("text")
       .classed("noselect", true)

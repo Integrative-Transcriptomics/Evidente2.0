@@ -7,12 +7,12 @@
 !/node_modules/phylotree/src/phylotree*
 
 !/src/
-!/src/*
-!/src/components/*
+!/src/**
+# !/src/components/*
 !/public/
-!/public/*
+!/public/**
 !/server/
-!/server/*
+!/server/**
 
 !.babelrc
 !.env
