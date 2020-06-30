@@ -4,13 +4,14 @@ import * as d3v5 from "d3v5";
 import * as boxplot from "d3-boxplot";
 import * as $ from "jquery";
 import * as _ from "lodash";
+
 class Heatmap extends Component {
   isSNP = this.props.isSNP;
   state = {};
   SNPcolorScale = this.props.SNPcolorScale;
-
-  SNPprefix = "SNP_Pos_";
-
+  heightGlobal = 0;
+  widthGlobal = 0;
+  SNPprefix = "Pos";
   shouldComponentUpdate(nextProp, nextState) {
     let actualProp = this.props;
     let actualState = this.state;
@@ -55,30 +56,27 @@ class Heatmap extends Component {
         : this.props.visMd,
       y_elements = shownNodes;
     let cellWidthMin =
-      props.collapsedClades.length > 0 ? 40 : this.container.offsetHeight / shownNodes.length;
-    let cellWidthMax = this.container.offsetWidth * (props.collapsedClades.length > 0 ? 0.35 : 0.2);
+      props.collapsedClades.length > 0 ? 40 : Math.min(5, this.widthGlobal / shownNodes.length);
+    let cellWidthMax = this.widthGlobal * (props.collapsedClades.length > 0 ? 0.35 : 0.2);
     let cellWidth = Math.max(
-      Math.min(this.container.offsetWidth / x_elements.length, cellWidthMax),
+      Math.min(this.widthGlobal / x_elements.length, cellWidthMax),
       cellWidthMin
     );
-
     let container = d3.select(`#${this.props.containerID}`);
     let expectedVizWidth = cellWidth * x_elements.length;
-    console.log(expectedVizWidth);
 
     const modLR = d3.behavior.drag().on("drag", () => {
       let t = d3.transform(container.attr("transform"));
       container.attr(
         "transform",
         `translate( ${Math.max(
-          Math.min(t.translate[0] + d3.event.dx, t.scale[0] * this.container.offsetWidth * 0.95),
+          Math.min(t.translate[0] + d3.event.dx, t.scale[0] * this.widthGlobal * 0.95),
           -t.scale[0] * expectedVizWidth * 0.95
         )}, ${t.translate[1]})scale(${t.scale})`
       );
     });
 
     d3.select(`#display_${this.props.divID}`).call(modLR);
-    // }
     if (props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
     } else if (shownNodes.length !== this.props.nodes.length) {
@@ -115,7 +113,7 @@ class Heatmap extends Component {
         .tickFormat((d) => d)
         .orient("top");
 
-      let yScale = d3.scale.ordinal().domain(y_elements).rangeBands([0, state.height]);
+      let yScale = d3.scale.ordinal().domain(y_elements).rangeBands([0, this.heightGlobal]);
 
       let yAxis = d3.svg
         .axis()
@@ -123,16 +121,14 @@ class Heatmap extends Component {
         .tickFormat((d) => d)
         .orient("left");
 
-      let cellHeight = state.height / y_elements.length - 1;
+      let cellHeight = this.heightGlobal / y_elements.length - 1;
 
       container
-        .selectAll("g.y.axis")
+        .selectAll(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
         .call(yAxis)
         .call((g) => g.select(".domain").remove())
         .selectAll("text")
         .remove();
-      // .style("font-size", `${Math.min(cellHeight, 12)}px`)
-      // .attr("dy", ".35em");
 
       container
         .selectAll("g.x.axis")
@@ -142,23 +138,20 @@ class Heatmap extends Component {
         .style("text-anchor", "start")
         .attr("dx", ".8em")
         .attr("dy", ".5em")
-        .attr("transform", (d) => "rotate(-65)");
+        .attr("transform", (d) => "rotate(-25)");
 
-      let ticks = container.select(".y").selectAll(".tick");
+      let ticks = container
+        .select(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
+        .selectAll(".tick");
 
       container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
-      // let textWidth = [];
-      // ticks.selectAll("text").each(function () {
-      //   var thisWidth = this.getComputedTextLength();
-      //   textWidth.push(thisWidth);
-      // });
 
       if (x_elements.length > 0) {
         ticks
           .append("line")
           .attr("class", (d) => `guides  node-${d}`)
           .attr("x1", (d, i) => -5)
-          .attr("x2", -this.container.offsetWidth * 2)
+          .attr("x2", -this.widthGlobal * 2)
           .attr("y1", 0)
           .attr("y2", 0)
           .style("stroke", "grey")
@@ -166,6 +159,7 @@ class Heatmap extends Component {
           .style("stroke-opacity", 0.25); // colour the line;
 
         x_elements.forEach((x_elem) => {
+          console.log(x_elem);
           let typeOfMD = _.get(props.mdinfo, `${x_elem}.type`, "").toLowerCase();
           let singleData = finalData.filter((d) => !_.get(d, "clade", false));
           let actualColorScale = _.get(props.mdinfo, `${x_elem}.colorScale`, this.SNPcolorScale);
@@ -215,7 +209,7 @@ class Heatmap extends Component {
           .append("line")
           .attr("class", (d) => `guides  node-${d}`)
           .attr("x1", (d) => 5 + x_elements.length * cellWidth)
-          .attr("x2", Math.max(expectedVizWidth, this.container.offsetWidth) * 1.95)
+          .attr("x2", Math.max(expectedVizWidth, this.widthGlobal) * 1.95)
           .attr("y1", 0)
           .attr("y2", 0)
           .style("stroke", "grey")
@@ -326,7 +320,7 @@ class Heatmap extends Component {
         .style("top", d3.event.pageY - 28 + "px");
     };
 
-    let subtype = isSNP ? type.split("_")[2] : "";
+    let subtype = isSNP ? type.split(this.SNPprefix)[1] : "";
     data = data.filter((d) => _.keys(d).includes(isSNP ? subtype : type));
     let div = d3.select("#tooltip");
     let cells = d3
@@ -441,7 +435,7 @@ class Heatmap extends Component {
         .style("left", d3.event.pageX + "px")
         .style("top", d3.event.pageY - 28 + "px");
     };
-    let subtype = isSNP ? type.split("_")[2] : "";
+    let subtype = isSNP ? type.split(this.SNPprefix)[1] : "";
     let div = d3.select("#tooltip");
 
     let max = d3.max(
@@ -582,13 +576,12 @@ class Heatmap extends Component {
 
   initHeatmap(container) {
     let leaf_nodes = (this.props.nodes || []).filter(d3.layout.phylotree.is_leafnode);
-    let height = this.state.height;
-    let cellWidth = this.state.cellWidth;
+
     let x_elements = d3v5
         .set(this.props.visMd.concat(this.props.visSNPs.map((d) => `${this.SNPprefix}${d}`)))
         .values(),
       y_elements = leaf_nodes.map(({ name }) => `${String(name)}`);
-    let cellHeight = height / y_elements.length - 1;
+    let cellWidth = this.widthGlobal / x_elements.length;
 
     let xScale = d3.scale
       .ordinal()
@@ -601,8 +594,7 @@ class Heatmap extends Component {
       .tickFormat((d) => d)
       .orient("top");
 
-    let yScale = d3.scale.ordinal().domain(y_elements).rangeBands([0, height]);
-    let textWidth = [];
+    let yScale = d3.scale.ordinal().domain(y_elements).rangeBands([0, this.heightGlobal]);
     let yAxis = d3.svg
       .axis()
       .scale(yScale)
@@ -610,7 +602,7 @@ class Heatmap extends Component {
       .orient("left");
     let ticks = container
       .append("g")
-      .attr("class", "y axis")
+      .attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`)
       .call(yAxis)
       .call((g) => {
         g.select(".domain").remove();
@@ -641,15 +633,16 @@ class Heatmap extends Component {
       .attr({ width: "4", height: "8", transform: "translate(0,0)", fill: "white" });
 
     ticks.selectAll("text").attr("class", (d) => `node-${d}`);
+    d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(this.props.onDrag);
   }
 
   componentDidMount() {
     let margin = this.props.margin;
-    // margin.top = 0.05 * this.container.offsetHeight;
+    margin.top = 0.05 * this.container.offsetHeight;
     let width = this.container.offsetWidth - margin.right - margin.left,
       height = this.container.offsetHeight - margin.top - margin.bottom;
 
-    let cellWidth = 10;
+    // let cellWidth = 10;
 
     let svg = d3
       .select(`#${this.props.divID}`)
@@ -662,10 +655,13 @@ class Heatmap extends Component {
 
     svg.append("g").attr("id", this.props.containerID);
 
-    this.setState({
-      height: height,
-      cellWidth: cellWidth,
-    });
+    this.heightGlobal = height;
+    this.widthGlobal = width;
+    // this.setState({
+    //   height: height,
+    //   width:
+    //   cellWidth: cellWidth,
+    // });
   }
 
   render() {

@@ -145,17 +145,20 @@ class Phylotree extends Component {
   componentDidUpdate(prevProp) {
     if (prevProp.newick !== this.props.newick) {
       this.renderTree(this.props.newick);
-      // d3.selectAll(".phylotree-container").attr(
-      //   "transform",
-      //   `translate(0,${this.container.offsetHeight * 0.05})`
-      // );
-      // d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     }
   }
   componentDidMount() {
-    this.props.tree
-      .size([this.container.offsetHeight, this.container.offsetWidth])
-      .svg(d3.select("#tree-display"));
+    let margin_top = this.container.offsetHeight * 0.05;
+    this.props.tree.size([this.container.offsetHeight, this.container.offsetWidth]).svg(
+      d3
+        .select(this.container)
+        .append("svg")
+        .attr("id", "tree-display")
+        .attr({ height: this.container.offsetHeight, width: this.container.offsetWidth })
+        .append("g")
+        .attr("id", "transform-group")
+        .attr("transform", `translate(${[0, margin_top]})`)
+    );
   }
 
   renderTree(input_tree) {
@@ -200,6 +203,8 @@ class Phylotree extends Component {
         (node) => node["own-collapse"] || false
       );
     });
+    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onDrag);
+
     this.runSelection();
   }
 
@@ -210,15 +215,7 @@ class Phylotree extends Component {
   };
 
   render() {
-    return (
-      <div
-        className='lchild'
-        ref={(el) => (this.container = el)}
-        // style={{ width: "40%", flex: "1 1 auto", height: "100%" }}
-      >
-        <svg id='tree-display'></svg>
-      </div>
-    );
+    return <div className='lchild' ref={(el) => (this.container = el)}></div>;
   }
 }
 

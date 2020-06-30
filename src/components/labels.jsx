@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import * as d3 from "d3";
 class Labels extends Component {
   state = {};
+  globalHeight = 0;
+  globalWidth = 0;
   isVisibleEndNode = (node) => {
     return (
       (this.props.tree.is_leafnode(node) || node["own-collapse"]) &&
@@ -10,14 +12,18 @@ class Labels extends Component {
   };
   componentDidUpdate(prevProps, prevState) {
     let div = d3.select("#tooltip");
-
+    let height = this.globalHeight;
+    let margin_top = height * 0.05;
     let props = this.props;
     let shownNodes = props.tree
       .get_nodes()
       .filter((node) => this.isVisibleEndNode(node))
       .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
-    let yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, this.container.offsetHeight]);
-    let cellHeight = this.container.offsetHeight / shownNodes.length;
+    let yScale = d3.scale
+      .ordinal()
+      .domain(shownNodes)
+      .rangeBands([0, height - margin_top]);
+    let cellHeight = (height - margin_top) / shownNodes.length;
     let yAxis = d3.svg
       .axis()
       .scale(yScale)
@@ -25,13 +31,12 @@ class Labels extends Component {
       .orient("left");
     let svg = d3.select("#container-labels");
     let ticks = svg
-      .select(".y.axis")
-      // .attr("height", this.container.offsetHeight * 0.95)
+      .select(".own-label.y.axis")
       .call(yAxis)
       .call((g) => g.select(".domain").remove())
       .style("font-size", `${Math.min(cellHeight, 12)}px`)
       .style("cursor", "default")
-      .attr("dy", ".35em")
+      // .attr("dy", ".35em")
       .selectAll(".tick");
 
     ticks
@@ -65,7 +70,7 @@ class Labels extends Component {
       .append("line")
       .attr("class", (d) => `guides node-${d}`)
       .attr("x1", (d, i) => -1 * textWidth[i] - 15)
-      .attr("x2", -2 * this.container.offsetWidth)
+      .attr("x2", -2 * this.globalWidth)
       .attr("y1", 0)
       .attr("y2", 0)
       .style(guideStyle);
@@ -73,19 +78,34 @@ class Labels extends Component {
       .append("line")
       .attr("class", (d) => `guides node-${d}`)
       .attr("x1", 0)
-      .attr("x2", 2 * this.container.offsetWidth)
+      .attr("x2", 2 * this.globalWidth)
       .attr("y1", 0)
       .attr("y2", 0)
       .style(guideStyle);
   }
 
   componentDidMount() {
-    let svg = d3.select(this.SVGLabels).append("g").attr("id", "container-labels");
+    let margin_top = this.container.offsetHeight * 0.05;
+    let svg = d3
+      .select(`#${this.props.divID}`)
+      .append("svg")
+      .attr("width", this.container.offsetWidth)
+      .attr("height", this.container.offsetHeight)
+      .attr("id", `display_${this.props.divID}`)
+      .append("g")
+      .attr("transform", `translate(${[0, margin_top]})`)
+      .append("g")
+      .attr("id", "container-labels");
+
     svg
       .append("g")
-      .attr("class", "y axis")
-      .attr("height", this.container.offsetHeight)
+      .attr("class", " own-label y axis")
       .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
+    // .attr("height", this.container.offsetHeight)
+    this.globalHeight = this.container.offsetHeight;
+    this.globalWidth = this.container.offsetWidth;
+
+    d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(this.props.onDrag);
   }
   render() {
     return (
@@ -94,13 +114,7 @@ class Labels extends Component {
         id={this.props.divID}
         className='labels-child'
         ref={(el) => (this.container = el)}
-      >
-        <svg
-          style={{ width: "100%", height: "100%" }}
-          id={`display_${this.props.divID}`}
-          ref={(el) => (this.SVGLabels = el)}
-        />
-      </div>
+      ></div>
     );
   }
 }

@@ -141,17 +141,6 @@ class App extends Component {
         snpmd: json.snpInfo || [],
         mdinfo: metadataInfo,
       });
-      // Adds zoom and left/right translation on SVGs
-      let zoom = this.state.zoom;
-      // Adds zoom on all
-      for (let container of [
-        "#tree-display",
-        "#display_heatmap_viz",
-        "#display_md_viz",
-        "#display_labels_viz",
-      ]) {
-        d3.select(container).call(zoom).call(this.lr);
-      }
 
       $("#metadata-card").click();
     }
@@ -255,11 +244,23 @@ class App extends Component {
     _.remove(modActiveFilters, (n, i) => i === index);
     let modNamefilters = _.clone(this.state.nameOfFilters);
     _.remove(modNamefilters, (n, i) => i === index);
-    this.setState({ createdFilters: modActiveFilters /*nameOfFilters: modNamefilters*/ });
-    // this.handleApplyAllFilter();
+
+    let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
+
+    let resultingNodes = this.state.tree
+      .get_nodes()
+      .filter(this.state.tree.is_leafnode)
+      .filter((node) => {
+        let filterResult = this.testForFilters(node, modActiveFilters, taxaDataModified);
+        return filterResult;
+      });
+    this.setState({
+      createdFilters: modActiveFilters,
+      remainingNodesAfterFilter: resultingNodes.length,
+    });
   };
   handleDeleteAllFilters = () => {
-    this.handleShowNodes(this.state.tree.get_nodes().filter((n) => n.name === "root")[0]);
+    this.handleShowNodes(this.state.tree.get_nodes()[0]);
     this.setState({ createdFilters: [], nameOfFilters: [] });
   };
   handleFilterCloseModal = (save, filter, name) => {
@@ -327,7 +328,7 @@ class App extends Component {
     this.handleShowOnHeatmap(this.state.tree.descendants(node));
   }
   handleApplyAllFilter = () => {
-    let root = this.state.tree.get_nodes().filter((n) => n.name === "root")[0];
+    let root = this.state.tree.get_nodes()[0];
     this.tempShowNodes(root);
     let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
     let resultingNodes = this.state.tree
@@ -475,6 +476,7 @@ class App extends Component {
               tree={this.state.tree}
               onShowMyNodes={this.handleShowNodes}
               onZoom={this.state.zoom}
+              onDrag={this.lr}
               onCollapse={this.handleCollapse}
               onDecollapse={this.handleDecollapse}
               onUploadTree={this.handleUploadTree}
@@ -485,8 +487,15 @@ class App extends Component {
               snpdata={this.state.snpdata}
               ids={this.state.ids}
             />
-            <Labels divID={"labels_viz"} tree={this.state.tree} />
+            <Labels
+              divID={"labels_viz"}
+              tree={this.state.tree}
+              onZoom={this.state.zoom}
+              onDrag={this.lr}
+            />
             <Heatmap
+              onZoom={this.state.zoom}
+              onDrag={this.lr}
               divID={"heatmap_viz"}
               containerID={"heatmap-container"}
               margin={{ top: 0, right: 20, bottom: 0, left: 5 }}
@@ -505,6 +514,8 @@ class App extends Component {
               isSNP={true}
             />
             <Heatmap
+              onZoom={this.state.zoom}
+              onDrag={this.lr}
               divID={"md_viz"}
               containerID={"md-container"}
               margin={{ top: 0, right: 20, bottom: 0, left: 0 }}

@@ -34,6 +34,7 @@ header {
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
+  max-height: 95%;
 }
 .parent-svgs {
   -webkit-box: 1 1 auto;
@@ -66,6 +67,8 @@ header {
   -ms-flexbox: 1;
   flex: 1;
   height: 100%;
+  min-height: 100%;
+  max-height: 100%;
 }
 .mchild {
   width: 25%;
@@ -83,6 +86,7 @@ header {
   flex: 1 1 auto;
   margin: 0;
   padding: 0;
+  overflow: auto;
 }
 
 #inner_fixed {
