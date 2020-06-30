@@ -34,16 +34,20 @@ header {
   flex: 1 1 auto;
   display: flex;
   flex-direction: row;
-  /* width: 80%; */
   page-break-inside: avoid;
 }
+.labels-child {
+  min-width: 10%;
+  max-width: 10%;
+
+  flex: 1 1 auto;
+  height: 100%;
+}
 .lchild {
-  /* width: 40%; */
   flex: 1 1 auto;
   height: 100%;
 }
 .mchild {
-  /* width: 20%; */
   flex: 1 1 auto;
 }
 .rchild {

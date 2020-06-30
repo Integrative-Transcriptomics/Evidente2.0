@@ -50,7 +50,17 @@ header {
   page-break-inside: avoid;
 }
 .lchild {
-  width: 40%;
+  width: 35%;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  -ms-flexbox: 1;
+  flex: 1;
+  height: 100%;
+}
+.labels-child {
+  min-width: 10%;
+  max-width: 10%;
+
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flexbox: 1;
@@ -58,7 +68,7 @@ header {
   height: 100%;
 }
 .mchild {
-  width: 30%;
+  width: 25%;
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flexbox: 1;

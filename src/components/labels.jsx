@@ -85,14 +85,14 @@ class Labels extends Component {
       .append("g")
       .attr("class", "y axis")
       .attr("height", this.container.offsetHeight)
-
       .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
   }
   render() {
     return (
       <div
-        style={{ width: "10%", height: "100%" }}
+        // style={{ width: "10%", height: "100%" }}
         id={this.props.divID}
+        className='labels-child'
         ref={(el) => (this.container = el)}
       >
         <svg
