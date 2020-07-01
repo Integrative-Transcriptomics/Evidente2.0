@@ -36,7 +36,6 @@ class Labels extends Component {
       .call((g) => g.select(".domain").remove())
       .style("font-size", `${Math.min(cellHeight, 12)}px`)
       .style("cursor", "default")
-      // .attr("dy", ".35em")
       .selectAll(".tick");
 
     ticks

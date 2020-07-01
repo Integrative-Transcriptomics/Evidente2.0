@@ -44,6 +44,7 @@ class Phylotree extends Component {
       container.selectAll("circle").style({ fill: "red" }).attr({ r: 5 });
     }
   };
+
   my_collapse(node) {
     if (!node["own-collapse"]) {
       node["own-collapse"] = true;
@@ -51,7 +52,6 @@ class Phylotree extends Component {
     } else {
       node["show-name"] = "";
       node["own-collapse"] = false;
-
       this.props.onDecollapse(node);
     }
     this.props.onSelection(this.props.tree.get_selection());
@@ -203,6 +203,7 @@ class Phylotree extends Component {
         (node) => node["own-collapse"] || false
       );
     });
+
     d3.select("#tree-display").call(this.props.onZoom).call(this.props.onDrag);
 
     this.runSelection();

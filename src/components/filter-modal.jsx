@@ -75,8 +75,6 @@ class FilterModal extends Component {
           group to be shown (OR-junction).
         </Typography>
         <Divider variant='middle' style={{ marginTop: "10px", marginBottom: "10px" }} />
-        {/* <FormLabel component='legend'>Filter name</FormLabel>
-        <input type='text' value={this.state.name} onChange={this.onChangeName} /> */}
 
         <TextField
           id='standard-error-helper-text'

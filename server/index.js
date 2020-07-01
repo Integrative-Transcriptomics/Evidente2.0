@@ -132,17 +132,25 @@ async function extractMetadata(taxaInfo) {
       v = entry[1];
     let allValues = _.compact(taxaInfoMod.map((info) => info[k]));
     let dataDomain = [];
-    if (v.toLowerCase() === "numerical") {
-      allValues = allValues.map((d) => parseFloat(d));
-      dataDomain = [Math.min(...allValues), Math.max(...allValues)];
-    } else if (v.toLowerCase() === "ordinal") {
-      dataDomain = _.sortBy(_.uniq(allValues));
-    } else if (v.toLowerCase() === "type") {
-      dataDomain = allValues.map((v) => v.replace(/[^a-zA-Z0-9_-]/g, "_"));
-    } else {
-      let countedValues = _.countBy(allValues);
-      let temp = _.sortBy(_.keys(countedValues), (key) => countedValues[key]);
-      dataDomain = _.reverse(temp);
+    switch (v.toLowerCase()) {
+      case "numerical":
+        allValues = allValues.map((d) => parseFloat(d));
+        dataDomain = [Math.min(...allValues), Math.max(...allValues)];
+        break;
+
+      case "ordinal":
+        dataDomain = _.sortBy(_.uniq(allValues));
+        break;
+
+      case "type":
+        dataDomain = allValues.map((v) => v.replace(/[^a-zA-Z0-9_-]/g, "_"));
+        break;
+
+      default:
+        let countedValues = _.countBy(allValues);
+        let temp = _.sortBy(_.keys(countedValues), (key) => countedValues[key]);
+        dataDomain = _.reverse(temp);
+        break;
     }
 
     metadataInfo[k] = { type: v.toLowerCase(), extent: dataDomain };

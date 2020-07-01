@@ -88,6 +88,8 @@ class App extends Component {
     tree: this.tree,
     hiddenNodes: [],
     cladeNumber: 0,
+    mdinfo: [],
+    availableSNPs: [],
     collapsedClades: [],
     selectedNodes: [],
     visualizedMD: [],
@@ -100,9 +102,7 @@ class App extends Component {
   };
   constructor() {
     super();
-
     this.state = this.initialState;
-
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
@@ -120,7 +120,7 @@ class App extends Component {
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {
-      let metadataInfo = json.metadataInfo || {};
+      let { metadataInfo = {} } = json;
       let ordinalValues = _.toPairs(metadataInfo).filter(
         (d) => d[1].type.toLowerCase() === "ordinal"
       );
@@ -177,12 +177,12 @@ class App extends Component {
   };
   handleMDChange = (ev) => {
     this.setState({
-      visualizedMD: (ev || []).map(({ value }) => value),
+      visualizedMD: ev.map(({ value }) => value),
     });
   };
   handleSNPChange = (ev) => {
     this.setState({
-      visualizedSNPs: (ev || []).map(({ value }) => value),
+      visualizedSNPs: ev.map(({ value }) => value),
     });
   };
   handleSNPaddition = (snp) => {
@@ -235,7 +235,7 @@ class App extends Component {
       this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
     }
   };
-  handleFilterOpenModal = (selectedFeatures) => {
+  handleFilterOpenModal = (selectedFeatures = []) => {
     this.setState({ filterModalShow: true, filterFeatures: selectedFeatures });
   };
 

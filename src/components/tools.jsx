@@ -52,7 +52,7 @@ const selectStates = {
   }),
 };
 class Tools extends Component {
-  state = { value: [] };
+  state = { filterValue: [], selectedFeatures: [] };
 
   async onExport(type) {
     let data = document.getElementById("parent-svg");
@@ -74,7 +74,7 @@ class Tools extends Component {
   }
 
   onChangeFilter = (value) => {
-    this.setState({ selectedFeatures: value.map(({ value }) => value), value: value });
+    this.setState({ selectedFeatures: value.map(({ value }) => value), filterValue: value });
   };
   onFileChange = ({ target }, label) => {
     if (target.files[0] !== undefined) {
@@ -134,7 +134,6 @@ class Tools extends Component {
                         label={label}
                         name={id}
                         custom
-                        // style={}
                         onChange={(el) => this.onFileChange(el, label)}
                       />
                     </Form.Group>
@@ -160,8 +159,8 @@ class Tools extends Component {
                 <Typography variant='h6'>Select to visualize</Typography>
                 <Select
                   id='snpdatashow'
-                  options={(this.props.availableSNPs || []).map((d) => ({ value: d, label: d }))}
-                  value={(this.props.visSNPs || []).map((d) => ({ value: d, label: d }))}
+                  options={this.props.availableSNPs.map((d) => ({ value: d, label: d }))}
+                  value={this.props.visSNPs.map((d) => ({ value: d, label: d }))}
                   onChange={this.props.onSNPChange}
                   placeholder={"Visualize SNPs"}
                   isMulti
@@ -173,8 +172,8 @@ class Tools extends Component {
                 ></Select>
                 <Select
                   id='metadatashow'
-                  options={this.getMetadata(this.props.availableMDs || [])}
-                  value={(this.props.visMd || []).map((d) => ({ value: d, label: d }))}
+                  options={this.getMetadata(this.props.availableMDs)}
+                  value={this.props.visMd.map((d) => ({ value: d, label: d }))}
                   onChange={this.props.onMDChange}
                   isMulti
                   placeholder={"Visualize metadata"}
@@ -220,7 +219,7 @@ class Tools extends Component {
                     id='select-filter'
                     options={this.getMetadata(this.props.availableMDs || [])}
                     isMulti
-                    value={this.state.value}
+                    value={this.state.filterValue}
                     onChange={this.onChangeFilter}
                     placeholder={"Select metadata for filter group"}
                     components={{
@@ -232,8 +231,9 @@ class Tools extends Component {
                 </Form.Group>
                 <Button
                   variant='primary'
+                  disabled={this.state.selectedFeatures.length === 0}
                   onClick={() => {
-                    this.setState({ value: null, selectedFeatures: [] });
+                    this.setState({ filterValue: null, selectedFeatures: [] });
                     this.props.onOpenFilter(this.state.selectedFeatures);
                   }}
                 >
@@ -279,21 +279,16 @@ class Tools extends Component {
                   Export visualizations
                 </Typography>
                 <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
-                  <Grid item>
-                    <Button variant='primary' onClick={() => this.onExport("pdf")}>
-                      As PDF
-                    </Button>
-                  </Grid>
-                  <Grid item>
-                    <Button variant='primary' onClick={() => this.onExport("png")}>
-                      As PNG
-                    </Button>
-                  </Grid>
-                  <Grid item>
-                    <Button variant='primary' onClick={() => this.onExport("jpeg")}>
-                      As JPEG
-                    </Button>
-                  </Grid>
+                  {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
+                    <Grid item>
+                      <Button
+                        variant='primary'
+                        onClick={() => this.onExport(typeOfExport.toLowerCase())}
+                      >
+                        As {typeOfExport}
+                      </Button>
+                    </Grid>
+                  ))}
                 </Grid>
               </Card.Body>
             </Accordion.Collapse>
