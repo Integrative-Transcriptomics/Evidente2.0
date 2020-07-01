@@ -79,7 +79,18 @@ class Tools extends Component {
   onFileChange = ({ target }, label) => {
     if (target.files[0] !== undefined) {
       let fileName = target.files[0].name;
-      $(target).next(".custom-file-label").html(`${label}: ${fileName}`);
+      $(target)
+        .next(".custom-file-label")
+        .css({
+          "max-width": "100%",
+          overflow: "hidden",
+          "text-overflow": "ellipsis",
+          whiteSpace: "nowrap",
+          cursor: "default",
+          paddingRight: "30%",
+          display: "inline-block",
+        })
+        .html(`${label}: ${fileName}`);
     }
   };
   /**
@@ -123,6 +134,7 @@ class Tools extends Component {
                         label={label}
                         name={id}
                         custom
+                        // style={}
                         onChange={(el) => this.onFileChange(el, label)}
                       />
                     </Form.Group>
@@ -162,6 +174,7 @@ class Tools extends Component {
                 <Select
                   id='metadatashow'
                   options={this.getMetadata(this.props.availableMDs || [])}
+                  value={(this.props.visMd || []).map((d) => ({ value: d, label: d }))}
                   onChange={this.props.onMDChange}
                   isMulti
                   placeholder={"Visualize metadata"}
@@ -172,6 +185,8 @@ class Tools extends Component {
                   styles={selectStates}
                 ></Select>
                 <Legend
+                  visSNPs={this.props.visSNPs}
+                  visMd={this.props.visMd}
                   availableMDs={this.props.availableMDs}
                   onChange={this.props.onColorChange}
                 />

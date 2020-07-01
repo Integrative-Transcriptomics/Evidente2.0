@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import * as d3 from "d3";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 import {
   Collapse,
@@ -16,7 +17,13 @@ import {
   Button,
 } from "@material-ui/core";
 import * as _ from "lodash";
-
+const helpTooltip = (name, props) => {
+  return (
+    <Tooltip id='name-filter-row' {...props}>
+      {name}
+    </Tooltip>
+  );
+};
 const AntSwitch = withStyles((theme) => ({
   switchBase: {
     color: theme.palette.grey[500],
@@ -37,6 +44,7 @@ const AntSwitch = withStyles((theme) => ({
   },
   checked: {},
 }))(Switch);
+
 class Legend extends Component {
   classes = makeStyles((theme) => ({
     root: {
@@ -241,10 +249,11 @@ class Legend extends Component {
       }));
 
   componentDidUpdate() {
-    this.metadataToRows(this.props.availableMDs).map((row) => this.giveLegend(row));
+    this.metadataToRows(this.props.availableMDs).forEach((row) => this.giveLegend(row));
   }
 
   render() {
+    let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     return (
       <div className={this.classes.root}>
         <FormControlLabel
@@ -264,16 +273,30 @@ class Legend extends Component {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {this.metadataToRows(this.props.availableMDs).map((row) => {
-                      return (
-                        <TableRow key={row.name}>
-                          <TableCell component='th' scope='row'>
-                            {row.name}
-                          </TableCell>
-                          <TableCell align='left'>
-                            <svg id={`svg-legend-${row.name.replace(/ /g, "-")}`} />
-                          </TableCell>
-                          <TableCell>
+                    {_.filter(this.metadataToRows(this.props.availableMDs), (v) => {
+                      return accountForLegend.includes(v.name);
+                    }).map((row) => {
+                      let viewLegend =
+                        row.extent.length <= 12 ? (
+                          <React.Fragment>
+                            <TableCell align='left'>
+                              <svg id={`svg-legend-${row.name.replace(/ /g, "-")}`} />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                size='small'
+                                variant='outlined'
+                                style={{ color: "black" }}
+                                onClick={() => {
+                                  this.props.onChange(row.name);
+                                }}
+                              >
+                                Change
+                              </Button>
+                            </TableCell>
+                          </React.Fragment>
+                        ) : (
+                          <TableCell align='center' colSpan={2}>
                             <Button
                               size='small'
                               variant='outlined'
@@ -282,9 +305,32 @@ class Legend extends Component {
                                 this.props.onChange(row.name);
                               }}
                             >
-                              Change
+                              Show/Change Scale
                             </Button>
                           </TableCell>
+                        );
+                      return (
+                        <TableRow key={row.name}>
+                          <OverlayTrigger
+                            placement='left'
+                            overlay={helpTooltip(row.name, this.props)}
+                          >
+                            <TableCell
+                              component='th'
+                              scope='row'
+                              style={{
+                                "max-width": this.cell.offsetWidth / 4,
+                                overflow: "hidden",
+                                "text-overflow": "ellipsis",
+                                whiteSpace: "nowrap",
+                                cursor: "default",
+                              }}
+                            >
+                              {row.name}
+                            </TableCell>
+                          </OverlayTrigger>
+
+                          {viewLegend}
                         </TableRow>
                       );
                     })}
