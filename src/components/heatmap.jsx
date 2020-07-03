@@ -79,7 +79,7 @@ class Heatmap extends Component {
       );
     });
 
-    d3.select(`#display_${this.props.divID}`).call(modLR);
+    d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(modLR);
 
     if (props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
