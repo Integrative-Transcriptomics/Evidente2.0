@@ -23,6 +23,7 @@ class Toolbox extends Component {
           onSNPChange={this.props.onSNPChange}
           visMd={this.props.visMd}
           visSNPs={this.props.visSNPs}
+          orderChanged={this.props.orderChanged}
           onColorChange={this.props.onColorChange}
           onOpenFilter={this.props.onOpenFilter}
           createdFilters={this.props.createdFilters}

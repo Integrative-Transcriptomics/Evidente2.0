@@ -99,6 +99,7 @@ class App extends Component {
     createdFilters: [],
     nameOfFilters: [],
     activeFilters: [],
+    orderChanged: false,
   };
   constructor() {
     super();
@@ -232,7 +233,7 @@ class App extends Component {
         metadataInfo[metadataName].extent = newExtent;
       }
       metadataInfo = this.createColorScales(metadataInfo);
-      this.setState({ ordinalModalShow: false, mdinfo: metadataInfo });
+      this.setState({ ordinalModalShow: false, mdinfo: metadataInfo, orderChanged: true });
     }
   };
   handleFilterOpenModal = (selectedFeatures = []) => {
@@ -547,6 +548,7 @@ class App extends Component {
             availableMDs={this.state.mdinfo}
             availableSNPs={this.state.availableSNPs}
             visMd={this.state.visualizedMD}
+            orderChanged={this.state.orderChanged}
             visSNPs={this.state.visualizedSNPs}
             remainingNodes={this.state.remainingNodesAfterFilter}
             createdFilters={this.state.createdFilters}

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import * as d3 from "d3";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import AnnouncementIcon from "@material-ui/icons/Announcement";
 
 import {
   Collapse,
@@ -18,10 +19,18 @@ import {
 } from "@material-ui/core";
 
 import * as _ from "lodash";
-const helpTooltip = (name, props) => {
+const rowNameTooltip = (name, props) => {
   return (
-    <Tooltip id='name-filter-row' {...props}>
+    <Tooltip id={`${name}-filter-row`} {...props}>
       {name}
+    </Tooltip>
+  );
+};
+
+const warningTooltip = (name, props) => {
+  return (
+    <Tooltip id={`${name}-order-warning`} {...props}>
+      The order of this metadata has not been corrected by the user.
     </Tooltip>
   );
 };
@@ -327,24 +336,37 @@ class Legend extends Component {
                         );
                       return (
                         <TableRow key={row.name}>
-                          <OverlayTrigger
-                            placement='left'
-                            overlay={helpTooltip(row.name, this.props)}
-                          >
-                            <TableCell
-                              component='th'
-                              scope='row'
-                              style={{
-                                "max-width": this.cell.offsetWidth / 4,
-                                overflow: "hidden",
-                                "text-overflow": "ellipsis",
-                                whiteSpace: "nowrap",
-                                cursor: "default",
-                              }}
-                            >
-                              {row.name}
-                            </TableCell>
-                          </OverlayTrigger>
+                          <TableCell scope='row' alignItems='center'>
+                            <div style={{ display: "flex" }}>
+                              <OverlayTrigger
+                                placement='left'
+                                overlay={rowNameTooltip(row.name, this.props)}
+                              >
+                                <span
+                                  style={{
+                                    "max-width": this.cell.offsetWidth / 4,
+                                    overflow: "hidden",
+                                    "text-overflow": "ellipsis",
+                                    whiteSpace: "nowrap",
+                                    display: "block",
+                                    cursor: "default",
+                                  }}
+                                >
+                                  {row.name}
+                                </span>
+                              </OverlayTrigger>
+                              {!this.props.orderChanged && row.type === "ordinal" && (
+                                <OverlayTrigger
+                                  placement='top'
+                                  overlay={warningTooltip(row.name, this.props)}
+                                >
+                                  <AnnouncementIcon
+                                    style={{ display: "inline-block", marginLeft: "5px" }}
+                                  />
+                                </OverlayTrigger>
+                              )}
+                            </div>
+                          </TableCell>
 
                           {viewLegend}
                         </TableRow>

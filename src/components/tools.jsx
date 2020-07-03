@@ -6,6 +6,7 @@ import * as $ from "jquery";
 import { Typography, Divider, Grid } from "@material-ui/core";
 
 import HelpIcon from "@material-ui/icons/Help";
+
 import Legend from "./legend";
 import FilterList from "./filter-list";
 
@@ -184,6 +185,7 @@ class Tools extends Component {
                   styles={selectStates}
                 ></Select>
                 <Legend
+                  orderChanged={this.props.orderChanged}
                   visSNPs={this.props.visSNPs}
                   visMd={this.props.visMd}
                   availableMDs={this.props.availableMDs}
