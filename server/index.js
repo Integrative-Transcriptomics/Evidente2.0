@@ -15,7 +15,7 @@ app.use(pino);
 
 async function processFiles({ nwk, snp, taxainfo: taxametadata, SNPinfo: snpmetadata = {} }) {
   // Execute Processing Tool
-  let result = await executeJava(snp.path, nwk.path).catch((err) => {
+  await executeJava(snp.path, nwk.path).catch((err) => {
     console.log(err);
     throw err;
   });
@@ -73,13 +73,13 @@ app.post("/api/init-example", async (req, res, next) => {
   try {
     exampleFiles = {
       nwk: {
-        path: "./server/Mini Example/mini_nwk.nwk",
+        path: "./server/MiniExample/mini_nwk.nwk",
       },
       snp: {
-        path: "./server/Mini Example/mini_snp.nwk",
+        path: "./server/MiniExample/mini_snp.tsv",
       },
       taxainfo: {
-        path: "./server/Mini Example/mini_nodeinfo.csv",
+        path: "./server/MiniExample/mini_nodeinfo.csv",
         name: "mini_nodeinfo.csv",
       },
     };
@@ -222,9 +222,11 @@ const readCSV = async (path, info = {}) => {
 };
 
 const executeJava = async (snp, nwk) => {
+  console.log("Processing files:");
   console.log(snp, nwk);
   let exec = require("child_process").exec;
   return new Promise((resolve, reject) => {
+    console.log(snp);
     const child = exec(`java -jar ./server/main.jar ${snp} ${nwk} ./server/`, async function (
       error,
       stdout,
