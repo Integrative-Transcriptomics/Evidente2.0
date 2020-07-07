@@ -260,6 +260,7 @@ class Legend extends Component {
         break;
     }
   };
+
   state = { checked: false };
   header = ["Name", "Color Scale", "Actions"];
   setChecked = () => this.setState({ checked: !this.state.checked });
