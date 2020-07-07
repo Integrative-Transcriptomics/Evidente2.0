@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import ModalOwn from "./ModalOwn";
 import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
 import arrayMove from "array-move";
-import * as _ from "lodash";
+// import * as _ from "lodash";
 
 const DragHandle = sortableHandle(() => <span className='SortableHelper'></span>);
 // const SortableItem = SortableElement(({ value }) => <li>{value}</li>);

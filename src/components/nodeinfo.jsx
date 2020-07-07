@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import SNPTable from "./table";
 import { Accordion, Card } from "react-bootstrap";
 import * as _ from "lodash";
-import * as $ from "jquery";
+// import * as $ from "jquery";
 import * as d3 from "d3";
 
 const enterMouse = (event) => {

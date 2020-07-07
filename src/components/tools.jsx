@@ -55,9 +55,11 @@ const selectStates = {
 class Tools extends Component {
   state = { filterValue: [], selectedFeatures: [] };
 
+  // addLegend (container, )
+
   async onExport(type) {
     let data = document.getElementById("parent-svg");
-    console.log(data.outerHTML);
+
     let response = await fetch("/api/export", {
       method: "post",
       body: `data=${data.outerHTML}&type=${type}`,

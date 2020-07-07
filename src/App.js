@@ -10,7 +10,7 @@ import Labels from "./components/labels";
 import React, { Component } from "react";
 
 import * as d3 from "d3";
-import * as d3v5 from "d3v5";
+// import * as d3v5 from "d3v5";
 import * as $ from "jquery";
 import * as _ from "lodash";
 
@@ -20,8 +20,8 @@ import "../node_modules/bootstrap/dist/js/bootstrap";
 
 // Eventhough they are not used, need to be imported
 import bootbox from "bootbox";
-import { Accordion, Card, Button, Form } from "react-bootstrap";
-import { color } from "d3";
+// import { Accordion, Card, Button, Form } from "react-bootstrap";
+// import { color } from "d3";
 
 class App extends Component {
   state = {};

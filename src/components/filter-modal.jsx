@@ -118,6 +118,7 @@ class FilterModal extends Component {
               );
             }
           }
+          return null;
         })}
       </ModalOwn>
     );
