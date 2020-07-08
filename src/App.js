@@ -106,43 +106,45 @@ class App extends Component {
     this.state = this.initialState;
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-  handleInitTool = () => {
-    let dialog = bootbox.dialog({
-      title: "Welcome to Evidente",
-      message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+  handleInitTool = async () => {
+    console.log("test");
+    // let dialog = bootbox.dialog({
+    //   title: "Welcome to Evidente",
+    //   message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
+    // });
+
+    // dialog.init(async () => {
+    let response = await fetch(`/api/init-example`, {
+      method: "post",
     });
 
-    dialog.init(async () => {
-      let response = await fetch(`/api/init-example`, {
-        method: "post",
+    let json = await response.json();
+    if (response.status === 400) {
+      console.error(json.message);
+      alert("Error by processing files. Please revise the files uploaded. Details in console.");
+    } else {
+      let { metadataInfo = {} } = json;
+
+      metadataInfo = this.createColorScales(metadataInfo);
+
+      this.setState({
+        newick: json.newick,
+        snpdata: { support: json.support, notsupport: json.notSupport },
+        availableSNPs: json.availableSNPs,
+        ids: json.ids,
+        taxamd: json.taxaInfo || [],
+        snpmd: json.snpInfo || [],
+        mdinfo: metadataInfo,
       });
 
-      let json = await response.json();
-      if (response.status === 400) {
-        console.error(json.message);
-        alert("Error by processing files. Please revise the files uploaded. Details in console.");
-      } else {
-        let { metadataInfo = {} } = json;
-
-        metadataInfo = this.createColorScales(metadataInfo);
-
-        this.setState({
-          newick: json.newick,
-          snpdata: { support: json.support, notsupport: json.notSupport },
-          availableSNPs: json.availableSNPs,
-          ids: json.ids,
-          taxamd: json.taxaInfo || [],
-          snpmd: json.snpInfo || [],
-          mdinfo: metadataInfo,
-        });
-
-        dialog
-          .find(".bootbox-body")
-          .html(
-            'Evidente is loaded with a <b> default toy example</b> with seven taxa, five SNPs and four different metadata, in order for you to get to know this tool. </br> In order to upload your own files, please direct yourself to the "Load files" menu.  '
-          );
-      }
-    });
+      //   dialog
+      //     .find(".bootbox-body")
+      //     .html(
+      //       'Evidente is loaded with a <b> default toy example</b> with seven taxa, five SNPs and four different metadata, in order for you to get to know this tool. </br> In order to upload your own files, please direct yourself to the "Load files" menu.  '
+      //     );
+      // }
+    }
+    // );
   };
   handleSubmit = async (e) => {
     this.setState(this.initialState);
