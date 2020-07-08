@@ -1,10 +1,10 @@
 import * as d3 from "d3";
-import "../../node_modules/phylotree/src/phylotree";
-// import "../../node_modules/phylotree/src/main";
+// import "phylotree";
+import "../../node_modules/phylotree/src/main";
 
 import * as $ from "jquery";
 import * as _ from "lodash";
-
+// import bootstrap from "bootstrap";
 import * as bootbox from "bootbox";
 import React, { Component } from "react";
 class Phylotree extends Component {
