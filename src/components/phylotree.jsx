@@ -4,8 +4,7 @@ import "../../node_modules/phylotree/src/main";
 
 import * as $ from "jquery";
 import * as _ from "lodash";
-// import bootstrap from "bootstrap";
-import * as bootbox from "bootbox";
+import bootbox from "bootbox";
 import React, { Component } from "react";
 class Phylotree extends Component {
   nodeStyler = (container, node) => {

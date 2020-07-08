@@ -10,7 +10,7 @@ const pathparser = require("path");
 const puppeteer = require("puppeteer");
 
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
-
+app.use(bodyParser.json({ limit: "50mb", extended: true }));
 app.use(pino);
 
 async function processFiles({ nwk, snp, taxainfo: taxametadata, SNPinfo: snpmetadata = {} }) {
@@ -122,8 +122,9 @@ app.post("/api/upload", (req, res, next) => {
 });
 
 app.post("/api/export", async function (req, res, next) {
-  const content = req.body.data;
-  const type = req.body.type;
+  const content = req.body.htmlContent;
+  const type = req.body.typeOf;
+  console.log(content);
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
   await page.setContent(content);

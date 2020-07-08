@@ -237,7 +237,6 @@ class Heatmap extends Component {
 
   modifySNPs = (SNPdata, labelToID, notSupport = false) => {
     let nodes = this.props.tree.get_nodes();
-    console.log(nodes);
     let mappedSNPs = SNPdata.map((SNP) => {
       let actualID = labelToID[SNP.node];
       let actualPos = SNP.pos;
@@ -245,7 +244,6 @@ class Heatmap extends Component {
       let node = nodes.find(({ tempid }) => {
         return String(tempid) === actualID;
       });
-      console.log(actualID);
 
       return this.props.tree
         .descendants(node)

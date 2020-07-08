@@ -278,6 +278,7 @@ class Legend extends Component {
       let container = d3.select(`#svg-legend-${row.name.replace(/ /g, "-")}`);
       container.style("width", cellWidth + "px").style("height", isSNP ? "40px" : "15px");
       container.selectAll("*").remove();
+      console.log(row);
       this.props.addLegend(container, cellWidth, row);
     });
   }

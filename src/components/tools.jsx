@@ -65,15 +65,16 @@ class Tools extends Component {
    * @param {Number} cellWidth
    * @param {Object} rowOfData
    */
-  addLegend = (container, cellWidth, { name, colorScale, extent, type }) => {
+  addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
     // let svg = d3.select(`#svg-legend-${name.replace(/ /g, "-")}`);
     // let cellWidth = document.getElementById("metadata-card").offsetWidth / 4;
-
+    console.log(container);
     let svg = container.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
     let div = d3.select("#tooltip");
 
     const addTexts = (element, posX, posY, anchor, attributes, text) => {
       return element
+        .append("g")
         .append("text")
         .style("text-anchor", anchor)
         .attr({
@@ -141,8 +142,10 @@ class Tools extends Component {
         addTexts(group, posRight, yPosition, "end", attrShadow, maxExtent);
         let textRight = addTexts(group, posRight, yPosition, "end", attrsFronttext, maxExtent);
 
-        addMouseOver(textLeft, minExtent);
-        addMouseOver(textRight, maxExtent);
+        if (!isStatic) {
+          addMouseOver(textLeft, minExtent);
+          addMouseOver(textRight, maxExtent);
+        }
 
         break;
 
@@ -176,8 +179,8 @@ class Tools extends Component {
         };
 
         let maxWidth = 0;
+
         renderAxis("y-axis", yAxis).each(function () {
-          console.log(this);
           maxWidth = Math.max(maxWidth, this.getComputedTextLength());
         });
         renderAxis("x-axis", xAxis, `translate(-5, 5)`);
@@ -213,12 +216,15 @@ class Tools extends Component {
         let shadow = addTexts(groupCategory, 0, yPosition, "middle", attrShadow, (d) => d).each(
           function () {
             let thisWidth = Math.max(cubeWidth, this.getComputedTextLength() + 10); // Text width + margin
+
             textWidth.push(thisWidth);
           }
         );
 
         let text = addTexts(groupCategory, 0, yPosition, "middle", attrsFronttext, (d) => d);
-        addMouseOver(text);
+        if (!isStatic) {
+          addMouseOver(text);
+        }
 
         const cumulativeSum = ((sum) => (value) => (sum += value))(0);
         let positions = [0, ...textWidth.map(cumulativeSum)];
@@ -239,7 +245,7 @@ class Tools extends Component {
           })
           .style("fill", (value) => colorScale(value));
 
-        if (_.round(_.last(positions)) > cellWidth) {
+        if (_.round(_.last(positions)) > cellWidth && !isStatic) {
           let drag = d3.behavior.drag().on("drag", dragmove);
           function dragmove(d) {
             let actualTransform = d3.transform(d3.select(this).attr("transform")).translate[0];
@@ -268,20 +274,26 @@ class Tools extends Component {
     let allData = document.createElement("div");
     let data = document.getElementById("parent-svg");
     allData.appendChild(data.cloneNode(true));
-    let legend = document.createElement("svg");
-    legend.style.cssText = "display: hidden";
-    document.getElementsByTagName("body")[0].appendChild(legend);
+
     _.filter(this.metadataToRows(this.props.availableMDs), (v) => {
       return accountForLegend.includes(v.name);
     }).forEach((data) => {
-      this.addLegend(d3.select(legend), 100, data);
+      console.log(data.name);
+      let legend = d3
+        .select("#root")
+        .append("svg")
+        .attr({ id: `testing-output-${data.name}`, width: 1000 });
+      this.addLegend(legend, 100, data, true);
+      allData.appendChild(legend.node());
     });
-
+    console.log(allData.outerHTML);
     let response = await fetch("/api/export", {
       method: "post",
-      body: `data=${allData.outerHTML}&type=${type}`,
+      body: JSON.stringify({ htmlContent: allData.outerHTML, typeOf: type }),
+      // body:
+      // `data=${allData.outerHTML}&type=${type}`,
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
       },
     }).catch((e) => alert(e));
 
