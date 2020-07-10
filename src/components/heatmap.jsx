@@ -149,7 +149,12 @@ class Heatmap extends Component {
         .style("text-anchor", "start")
         .attr("dx", ".8em")
         .attr("dy", ".5em")
-        .attr("transform", (d) => "rotate(-25)");
+        .attr("transform", (d) => "rotate(-25)")
+        .call((g) => {
+          if (cellWidth < 10) {
+            g.remove();
+          }
+        });
 
       let ticks = container
         .select(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)

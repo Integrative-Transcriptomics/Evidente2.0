@@ -13,7 +13,7 @@ class Labels extends Component {
   componentDidUpdate(prevProps, prevState) {
     let margin_top = this.globalHeight * 0.05;
 
-    d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
+    // d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
 
     let div = d3.select("#tooltip");
     let height = this.globalHeight;
@@ -119,8 +119,12 @@ class Labels extends Component {
       .append("g")
       .attr("class", " own-label y axis")
       .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
+
     this.globalHeight = this.container.offsetHeight;
     this.globalWidth = this.container.offsetWidth;
+    let margin_top = this.globalHeight * 0.05;
+
+    d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
   }
   render() {
     return (
