@@ -8,14 +8,12 @@ import Toolbox from "./components/toolbox";
 import Labels from "./components/labels";
 // Important libraries
 import React, { Component } from "react";
+import colorbrewer from "colorbrewer";
 
 import * as d3 from "d3";
-// import * as d3v5 from "d3v5";
 import * as $ from "jquery";
 import * as _ from "lodash";
 
-// import "../node_modules/jquery/dist/jquery";
-// import "../node_modules/bootstrap/dist/js/bootstrap";
 import "bootstrap";
 
 // import { observable } from "mobx";
@@ -28,36 +26,6 @@ import bootbox from "bootbox";
 class App extends Component {
   state = {};
   lr = d3.behavior.drag().on("drag", this.handleLR);
-  color_cat = [
-    // Alternative 1
-    "#8dd3c7",
-    "#ffffb3",
-    "#bebada",
-    "#fb8072",
-    "#80b1d3",
-    "#fdb462",
-    "#b3de69",
-    "#fccde5",
-    "#d9d9d9",
-    "#bc80bd",
-    "#ccebc5",
-    "#ffed6f",
-  ];
-  color_cat = [
-    // Alternative 2
-    "#a6cee3",
-    "#1f78b4",
-    "#b2df8a",
-    "#33a02c",
-    "#fb9a99",
-    "#e31a1c",
-    "#fdbf6f",
-    "#ff7f00",
-    "#cab2d6",
-    "#6a3d9a",
-    "#ffff99",
-    "#b15928",
-  ];
   chosenMD = "";
   tree = d3.layout
     .phylotree()
@@ -97,6 +65,7 @@ class App extends Component {
     visualizedMD: [],
     visualizedSNPs: [],
     SNPTable: {},
+    selectedNodeId: null,
     ordinalModalShow: false,
     createdFilters: [],
     nameOfFilters: [],
@@ -109,7 +78,6 @@ class App extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
   handleInitTool = async () => {
-    console.log("test");
     let dialog = bootbox.dialog({
       title: "Welcome to Evidente",
       message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
@@ -199,15 +167,27 @@ class App extends Component {
     _.keys(metadata).forEach((k) => {
       let actualType = metadata[k].type.toLowerCase();
       let actualExtent = metadata[k].extent;
-      let colorScale =
-        actualType === "numerical"
-          ? d3.scale.linear().domain(actualExtent).range(["blue", "red"])
-          : ["categorical", "ordinal"].includes(actualType)
-          ? d3.scale.ordinal().domain(actualExtent).range(this.color_cat)
-          : d3.scale
-              .ordinal()
-              .domain(["A", "C", "T", "G", "N"])
-              .range(["red", "#E6D700", "blue", "green", "purple"]);
+      let colorScale;
+      switch (actualType) {
+        case "numerical":
+          colorScale = d3.scale.linear().domain(actualExtent).range(["blue", "red"]);
+          break;
+        case "categorical":
+          colorScale = d3.scale.category20();
+          break;
+        case "ordinal":
+          colorScale = d3.scale
+            .ordinal()
+            .domain(actualExtent)
+            .range(colorbrewer.Reds[actualExtent.length]);
+          break;
+        default:
+          colorScale = d3.scale
+            .ordinal()
+            .domain(["A", "C", "T", "G", "N"])
+            .range(["red", "#E6D700", "blue", "green", "purple"]);
+          break;
+      }
       metadata[k].colorScale = colorScale;
     });
     return metadata;
@@ -366,7 +346,6 @@ class App extends Component {
     let nodes = [node].concat(this.state.tree.select_all_descendants(node, true, true));
     this.state.tree.modify_selection(nodes, "hidden-t", true, true, "false");
     this.state.tree.modify_selection(nodes, "notshown", true, true, "false");
-
     this.handleShowOnHeatmap(this.state.tree.descendants(node));
   }
   handleApplyAllFilter = () => {

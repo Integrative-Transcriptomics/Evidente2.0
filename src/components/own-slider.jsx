@@ -48,23 +48,6 @@ class OwnSlider extends Component {
           />
         </Grid>
       </Grid>
-
-      // <div key={this.props.name}>
-      //   <Typography id='range-slider' gutterBottom>
-      //     {this.props.name}
-      //   </Typography>
-      //   <Slider
-      //     width='75%'
-      //     step={this.state.step}
-      //     min={this.props.initValue[0]}
-      //     max={this.props.initValue[1]}
-      //     value={this.state.value}
-      //     scale={(x) => parseFloat(x.toFixed(2))}
-      //     valueLabelDisplay='auto'
-      //     onChange={(ev, newValue) => this.onChange(ev, newValue, this.props.name)}
-      //     aria-labelledby='range-slider'
-      //   />
-      // </div>
     );
   }
 }

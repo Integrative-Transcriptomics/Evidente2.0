@@ -66,9 +66,6 @@ class Tools extends Component {
    * @param {Object} rowOfData
    */
   addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
-    // let svg = d3.select(`#svg-legend-${name.replace(/ /g, "-")}`);
-    // let cellWidth = document.getElementById("metadata-card").offsetWidth / 4;
-    console.log(container);
     let svg = container.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
     let div = d3.select("#tooltip");
 
@@ -278,7 +275,6 @@ class Tools extends Component {
     _.filter(this.metadataToRows(this.props.availableMDs), (v) => {
       return accountForLegend.includes(v.name);
     }).forEach((data) => {
-      console.log(data.name);
       let legend = d3
         .select("#root")
         .append("svg")
@@ -286,12 +282,9 @@ class Tools extends Component {
       this.addLegend(legend, 100, data, true);
       allData.appendChild(legend.node());
     });
-    console.log(allData.outerHTML);
     let response = await fetch("/api/export", {
       method: "post",
       body: JSON.stringify({ htmlContent: allData.outerHTML, typeOf: type }),
-      // body:
-      // `data=${allData.outerHTML}&type=${type}`,
       headers: {
         "Content-Type": "application/json",
       },

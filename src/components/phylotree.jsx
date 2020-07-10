@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-// import "phylotree";
 import "../../node_modules/phylotree/src/main";
 
 import * as $ from "jquery";
@@ -40,7 +39,7 @@ class Phylotree extends Component {
       this.props.selectedNodeID &&
       this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
     ) {
-      container.selectAll("circle").style({ fill: "red" }).attr({ r: 5 });
+      container.selectAll("circle").style({ fill: "purple" }).attr({ r: 5 });
     }
   };
 

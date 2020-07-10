@@ -21,7 +21,6 @@ async function processFiles({ nwk, snp, taxainfo: taxametadata, SNPinfo: snpmeta
   });
   // Read all files
   let newick = fs.readFileSync(nwk.path, "utf8").replace(/[^a-zA-Z0-9.:,()_-]/g, "_");
-  // console.log(newick);
   let taxaInfo = await readCSV(taxametadata.path, {
     separator: pathparser.extname(taxametadata.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
   });
@@ -124,7 +123,6 @@ app.post("/api/upload", (req, res, next) => {
 app.post("/api/export", async function (req, res, next) {
   const content = req.body.htmlContent;
   const type = req.body.typeOf;
-  console.log(content);
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
   await page.setContent(content);

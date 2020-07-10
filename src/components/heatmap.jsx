@@ -12,6 +12,8 @@ class Heatmap extends Component {
   heightGlobal = 0;
   widthGlobal = 0;
   SNPprefix = "Pos";
+  minCollapsedCellWidth = 40;
+  minNormalCellWidth = 5;
   shouldComponentUpdate(nextProp, nextState) {
     let actualProp = this.props;
     let actualState = this.state;
@@ -58,8 +60,10 @@ class Heatmap extends Component {
       y_elements = shownNodes;
 
     let cellWidthMin =
-      props.collapsedClades.length > 0 ? 40 : Math.min(5, this.widthGlobal / shownNodes.length);
-    let cellWidthMax = this.widthGlobal * (props.collapsedClades.length > 0 ? 0.35 : 0.2);
+      props.collapsedClades.length > 0
+        ? this.minCollapsedCellWidth
+        : Math.min(this.minNormalCellWidth, this.widthGlobal / shownNodes.length);
+    let cellWidthMax = this.widthGlobal * (props.collapsedClades.length > 0 ? 0.25 : 0.1);
     let cellWidth = Math.max(
       Math.min(this.widthGlobal / x_elements.length, cellWidthMax),
       cellWidthMin
@@ -70,11 +74,14 @@ class Heatmap extends Component {
 
     const modLR = d3.behavior.drag().on("drag", () => {
       let t = d3.transform(container.attr("transform"));
+      let intendedDrag = t.translate[0] + d3.event.dx;
+      let diffWidths = expectedVizWidth === 0 ? 0 : this.widthGlobal - expectedVizWidth;
       container.attr(
         "transform",
         `translate( ${Math.max(
-          Math.min(t.translate[0] + d3.event.dx, t.scale[0] * this.widthGlobal * 0.95),
-          -t.scale[0] * expectedVizWidth * 0.95
+          Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
+          t.scale[0] *
+            Math.min(diffWidths, -(t.scale[0] * this.widthGlobal) / 2 + this.widthGlobal / 2)
         )}, ${t.translate[1]})scale(${t.scale})`
       );
     });
@@ -84,8 +91,6 @@ class Heatmap extends Component {
     if (props.nodes && !prevProp.nodes) {
       this.initHeatmap(container);
     } else if (shownNodes.length !== this.props.nodes.length) {
-      console.log(props);
-
       let processedData = this.isSNP
         ? this.preprocessSNPs(
             props.snpdata.support,
@@ -135,9 +140,10 @@ class Heatmap extends Component {
         .selectAll("text, .domain")
         .remove();
 
-      container
-        .selectAll("g.x.axis")
-        .call(xAxis)
+      let renderedXAxis = container.selectAll("g.x.axis").call(xAxis);
+      renderedXAxis.selectAll(".domain").remove();
+
+      renderedXAxis
         .selectAll("text")
         .style("font-size", `${Math.min(cellWidth, 12)}px`)
         .style("text-anchor", "start")

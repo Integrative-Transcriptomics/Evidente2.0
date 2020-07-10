@@ -81,7 +81,6 @@ class FilterModal extends Component {
           label='Name of filter'
           defaultValue={this.state.name}
           onChange={this.onChangeName}
-          // helperText='Incorrect entry.'
           margin='dense'
           variant='outlined'
           inputRef={(el) => (this.nameInput = el)}

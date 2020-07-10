@@ -11,9 +11,12 @@ class Labels extends Component {
     );
   };
   componentDidUpdate(prevProps, prevState) {
+    let margin_top = this.globalHeight * 0.05;
+
+    d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
+
     let div = d3.select("#tooltip");
     let height = this.globalHeight;
-    let margin_top = height * 0.05;
     let props = this.props;
     let shownNodes = props.tree
       .get_nodes()
@@ -55,6 +58,7 @@ class Labels extends Component {
       });
 
     let textWidth = [];
+    let textMargin = 15;
     ticks.selectAll("text").each(function () {
       var thisWidth = this.getComputedTextLength();
       textWidth.push(thisWidth);
@@ -68,7 +72,7 @@ class Labels extends Component {
     ticks
       .append("line")
       .attr("class", (d) => `guides node-${d}`)
-      .attr("x1", (d, i) => -1 * textWidth[i] - 15)
+      .attr("x1", (d, i) => -1 * textWidth[i] - textMargin)
       .attr("x2", -2 * this.globalWidth)
       .attr("y1", 0)
       .attr("y2", 0)
@@ -81,10 +85,25 @@ class Labels extends Component {
       .attr("y1", 0)
       .attr("y2", 0)
       .style(guideStyle);
+    let container = d3.select(`#container-labels`);
+
+    const dragLabels = d3.behavior.drag().on("drag", () => {
+      let t = d3.transform(container.attr("transform"));
+      let intendedDrag = t.translate[0] + d3.event.dx;
+      let diffWidths = Math.max(...textWidth) + textMargin - this.globalWidth;
+      container.attr(
+        "transform",
+        `translate( ${Math.max(
+          Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
+          t.scale[0] *
+            Math.min(diffWidths, (-t.scale[0] * this.globalWidth) / 2 + this.globalWidth / 2)
+        )}, ${t.translate[1]})scale(${t.scale})`
+      );
+    });
+    d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(dragLabels);
   }
 
   componentDidMount() {
-    let margin_top = this.container.offsetHeight * 0.05;
     let svg = d3
       .select(`#${this.props.divID}`)
       .append("svg")
@@ -92,7 +111,7 @@ class Labels extends Component {
       .attr("height", this.container.offsetHeight)
       .attr("id", `display_${this.props.divID}`)
       .append("g")
-      .attr("transform", `translate(${[0, margin_top]})`)
+      .attr("id", "adds-margin")
       .append("g")
       .attr("id", "container-labels");
 
@@ -100,20 +119,12 @@ class Labels extends Component {
       .append("g")
       .attr("class", " own-label y axis")
       .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
-    // .attr("height", this.container.offsetHeight)
     this.globalHeight = this.container.offsetHeight;
     this.globalWidth = this.container.offsetWidth;
-
-    d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(this.props.onDrag);
   }
   render() {
     return (
-      <div
-        // style={{ width: "10%", height: "100%" }}
-        id={this.props.divID}
-        className='labels-child'
-        ref={(el) => (this.container = el)}
-      ></div>
+      <div id={this.props.divID} className='labels-child' ref={(el) => (this.container = el)}></div>
     );
   }
 }
