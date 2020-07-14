@@ -35,11 +35,13 @@ class Heatmap extends Component {
       !_.isEqual(actualNodes, newNodes) ||
       !_.isEqual(actualHiddenNodes, newHiddenNodes) ||
       !_.isEqual(actualCollapsedClades, newCollapsedClades) ||
-      !_.isEqual(actualSelectedNodes, newSelectedNodes) ||
       (!_.isEqual(actualState.mdinfo, nextProp.mdinfo) && newNodes.length > 0)
     ) {
       return true;
     } else if (!nextState.taxadata) {
+      return false;
+    } else if (!_.isEqual(actualSelectedNodes, newSelectedNodes)) {
+      this.highlight_leaves(newSelectedNodes);
       return false;
     } else {
       return false;
@@ -48,7 +50,6 @@ class Heatmap extends Component {
   componentDidUpdate(prevProp, prevState) {
     let props = this.props;
     this.SNPcolorScale = this.props.SNPcolorScale;
-
     let shownNodes = props.tree
       .get_nodes()
       .filter((node) => this.isVisibleEndNode(node))
@@ -151,7 +152,7 @@ class Heatmap extends Component {
         .attr("dy", ".5em")
         .attr("transform", (d) => "rotate(-25)")
         .call((g) => {
-          if (cellWidth < 10) {
+          if (cellWidth < 15) {
             g.remove();
           }
         });
@@ -212,7 +213,6 @@ class Heatmap extends Component {
         );
       }
     }
-
     this.highlight_leaves(this.props.selectedNodes);
   }
   /**

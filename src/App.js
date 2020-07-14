@@ -6,9 +6,11 @@ import OrdinalModal from "./components/modal-ordinal-sort";
 import FilterModal from "./components/filter-modal";
 import Toolbox from "./components/toolbox";
 import Labels from "./components/labels";
+import WelcomeModal from "./components/WelcomeModal";
+import RenameModal from "./components/rename-modal";
+
 // Important libraries
 import React, { Component } from "react";
-import colorbrewer from "colorbrewer";
 
 import * as d3 from "d3";
 import * as $ from "jquery";
@@ -17,9 +19,10 @@ import * as _ from "lodash";
 import "bootstrap";
 
 // import { observable } from "mobx";
-
+// import Dialog from "react-bootstrap-dialog";
+// import colorbrewer from "colorbrewer";
 // Eventhough they are not used, need to be imported
-import bootbox from "bootbox";
+// import bootbox from "bootbox";
 // import { Accordion, Card, Button, Form } from "react-bootstrap";
 // import { color } from "d3";
 
@@ -27,6 +30,7 @@ class App extends Component {
   state = {};
   lr = d3.behavior.drag().on("drag", this.handleLR);
   chosenMD = "";
+
   tree = d3.layout
     .phylotree()
     .options({
@@ -67,6 +71,7 @@ class App extends Component {
     SNPTable: {},
     selectedNodeId: null,
     ordinalModalShow: false,
+    renameModalShow: false,
     createdFilters: [],
     nameOfFilters: [],
     activeFilters: [],
@@ -78,43 +83,31 @@ class App extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
   handleInitTool = async () => {
-    let dialog = bootbox.dialog({
-      title: "Welcome to Evidente",
-      message: '<p><i class="fa fa-spin fa-spinner"></i> Loading...</p>',
-      centerVertical: true,
+    let response = await fetch(`/api/init-example`, {
+      method: "post",
     });
 
-    dialog.init(async () => {
-      let response = await fetch(`/api/init-example`, {
-        method: "post",
+    let json = await response.json();
+    if (response.status === 400) {
+      console.error(json.message);
+      alert("Error by processing files. Please revise the files uploaded. Details in console.");
+    } else {
+      let { metadataInfo = {} } = json;
+
+      metadataInfo = this.createColorScales(metadataInfo);
+
+      this.setState({
+        newick: json.newick,
+        snpdata: { support: json.support, notsupport: json.notSupport },
+        availableSNPs: json.availableSNPs,
+        ids: json.ids,
+        taxamd: json.taxaInfo || [],
+        snpmd: json.snpInfo || [],
+        mdinfo: metadataInfo,
       });
 
-      let json = await response.json();
-      if (response.status === 400) {
-        console.error(json.message);
-        alert("Error by processing files. Please revise the files uploaded. Details in console.");
-      } else {
-        let { metadataInfo = {} } = json;
-
-        metadataInfo = this.createColorScales(metadataInfo);
-
-        this.setState({
-          newick: json.newick,
-          snpdata: { support: json.support, notsupport: json.notSupport },
-          availableSNPs: json.availableSNPs,
-          ids: json.ids,
-          taxamd: json.taxaInfo || [],
-          snpmd: json.snpInfo || [],
-          mdinfo: metadataInfo,
-        });
-
-        dialog
-          .find(".bootbox-body")
-          .html(
-            'Evidente is loaded with a <b> default toy example</b> with seven taxa, five SNPs and four different metadata, in order for you to get to know this tool. </br> In order to upload your own files, please direct yourself to the "Load files" menu.  '
-          );
-      }
-    });
+      $("#welcome-modal-button").text("Done");
+    }
   };
   handleSubmit = async (e) => {
     this.setState(this.initialState);
@@ -176,10 +169,15 @@ class App extends Component {
           colorScale = d3.scale.category20();
           break;
         case "ordinal":
-          colorScale = d3.scale
-            .ordinal()
-            .domain(actualExtent)
-            .range(colorbrewer.Reds[actualExtent.length]);
+          colorScale = (value) => {
+            let index = actualExtent.indexOf(value);
+            let temp = d3.scale
+              .linear()
+              .domain([0, actualExtent.length - 1])
+              .range([0, 1])(index);
+            return d3.interpolate("rgb(255, 240, 240)", "red")(temp);
+          };
+
           break;
         default:
           colorScale = d3.scale
@@ -221,28 +219,6 @@ class App extends Component {
   handleCladeCreation = () => {
     let actualNumber = this.state.cladeNumber;
     this.setState({ cladeNumber: actualNumber + 1 });
-  };
-
-  handleCollapse = (cladeNode) => {
-    let collapsedNodes = this.state.tree
-      .descendants(cladeNode)
-      .filter(d3.layout.phylotree.is_leafnode);
-
-    let clade = {
-      name: "Clade_" + this.state.cladeNumber,
-      showname: "Clade_" + this.state.cladeNumber,
-      cladeParent: cladeNode,
-      cladeLeaves: collapsedNodes,
-    };
-    cladeNode.name = clade.name;
-
-    cladeNode["show-name"] = clade.name;
-    this.handleCladeCreation();
-    let jointNodes = this.state.collapsedClades.concat([clade]);
-    this.state.tree.toggle_collapse(cladeNode).update();
-
-    this.setState({ collapsedClades: jointNodes });
-    return clade.name;
   };
 
   handleOrdinalCloseModal = (save, extents) => {
@@ -307,6 +283,7 @@ class App extends Component {
           filterModalShow: false,
         });
   };
+
   testForFilters(node, filters, data) {
     let nodeName = node.name;
     let processedFilter = filters.map((filter) => {
@@ -362,6 +339,46 @@ class App extends Component {
     this.handleHideMultipleNodes(resultingNodes);
   };
 
+  handleRenameOpenModal = (node) => {
+    this.setState({ renameModalShow: true, changingCladeNode: node });
+  };
+  handleRenameCloseModal = (save, node, name) => {
+    name = name.replace(/[^a-zA-Z0-9_-]/g, "_");
+    let given_names = this.tree
+      .get_nodes()
+      .filter((n) => d3.layout.phylotree.is_leafnode(n) || node.collapsed)
+      .map((leaf) => (leaf.collapsed ? leaf["show-name"] : leaf["name"]));
+
+    if (!save) {
+      this.setState({
+        renameModalShow: false,
+      });
+    } else if (given_names.includes(name)) {
+      alert("This name is already given. Try another name.");
+    } else {
+      let oldName = node["show-name"];
+      let newName = name;
+      node["show-name"] = newName;
+
+      $(`.guides.node-${oldName}`).removeClass(`node-${oldName}`).addClass(`node-${newName}`);
+      let clades = this.state.collapsedClades;
+      let renamedClade = clades.find((x) => x.showname === oldName);
+      renamedClade.showname = newName;
+
+      let jointNodes = [
+        ...this.state.collapsedClades.filter((x) => x.showname !== oldName),
+        renamedClade,
+      ];
+      this.state.tree.update();
+      this.handleSelection(this.tree.get_selection());
+      this.setState({
+        collapsedClades: jointNodes,
+        renameModalShow: false,
+      });
+      d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom);
+    }
+  };
+
   handleColorScaleCloseModal = (save, extents) => {
     if (!save) {
       this.setState({ colorScaleModalShow: false });
@@ -384,19 +401,28 @@ class App extends Component {
       this.setState({ colorScaleModalShow: false, mdinfo: metadataInfo });
     }
   };
-  handleCladeUpdate = (oldName, newName) => {
-    $(`.guides.node-${oldName}`).removeClass(`node-${oldName}`).addClass(`node-${newName}`);
-    let clades = this.state.collapsedClades;
-    let renamedClade = clades.find((x) => x.showname === oldName);
-    renamedClade.showname = newName;
 
-    let jointNodes = [
-      ...this.state.collapsedClades.filter((x) => x.showname !== oldName),
-      renamedClade,
-    ];
+  handleCollapse = (cladeNode) => {
+    let collapsedNodes = this.state.tree
+      .descendants(cladeNode)
+      .filter(d3.layout.phylotree.is_leafnode);
+
+    let clade = {
+      name: "Clade_" + this.state.cladeNumber,
+      showname: "Clade_" + this.state.cladeNumber,
+      cladeParent: cladeNode,
+      cladeLeaves: collapsedNodes,
+    };
+    cladeNode.name = clade.name;
+
+    cladeNode["show-name"] = clade.name;
+    this.handleCladeCreation();
+    let jointNodes = this.state.collapsedClades.concat([clade]);
+    this.state.tree.toggle_collapse(cladeNode).update();
+
     this.setState({ collapsedClades: jointNodes });
+    return clade.name;
   };
-
   handleDecollapse = (cladeNode) => {
     let filteredClades = this.state.collapsedClades.filter((n) => {
       return !Object.is(n.cladeParent, cladeNode);
@@ -455,7 +481,7 @@ class App extends Component {
     for (let id of [
       "#heatmap-container",
       "#md-container",
-      ".phylotree-container",
+      "#zoom-phylotree",
       "#container-labels",
     ]) {
       let temp = d3.transform(d3.select(id).attr("transform"));
@@ -468,7 +494,7 @@ class App extends Component {
 
   handleLR() {
     let translate = {
-      "tree-display": ".phylotree-container",
+      "tree-display": "#zoom-phylotree",
       display_heatmap_viz: "#heatmap-container",
       display_md_viz: "#md-container",
       display_labels_viz: "#container-labels",
@@ -494,6 +520,7 @@ class App extends Component {
         <div id='div-container-all' className='parent-div'>
           <div id='parent-svg' className='parent-svgs'>
             <Phylotree
+              showRenameModal={this.state.renameModalShow}
               selectedNodeID={this.state.selectedNodeID}
               updateSNPTable={this.updateSNPTable}
               tree={this.state.tree}
@@ -505,10 +532,11 @@ class App extends Component {
               onUploadTree={this.handleUploadTree}
               onHide={this.handleHide}
               onSelection={this.handleSelection}
-              onCladeUpdate={this.handleCladeUpdate}
+              onOpenRenameClade={this.handleRenameOpenModal}
               newick={this.state.newick}
               snpdata={this.state.snpdata}
               ids={this.state.ids}
+              dialog={this.dialog}
             />
             <Labels
               divID={"labels_viz"}
@@ -581,7 +609,7 @@ class App extends Component {
         </div>
         {this.state.ordinalModalShow && (
           <OrdinalModal
-            ID='ordinal-modal'
+            id='ordinal-modal'
             show={this.state.ordinalModalShow}
             ordinalValues={this.state.ordinalValues}
             handleClose={this.handleOrdinalCloseModal}
@@ -589,7 +617,7 @@ class App extends Component {
         )}
         {this.state.colorScaleModalShow && (
           <ColorScaleModal
-            ID='color-scale-modal'
+            id='color-scale-modal'
             mdinfo={this.state.mdinfo}
             chosenMD={this.chosenMD}
             show={this.state.colorScaleModalShow}
@@ -599,13 +627,24 @@ class App extends Component {
 
         {this.state.filterModalShow && (
           <FilterModal
-            ID='filter-modal'
+            id='filter-modal'
             mdinfo={this.state.mdinfo}
             show={this.state.filterModalShow}
             filterFeatures={this.state.filterFeatures}
             handleClose={this.handleFilterCloseModal}
           />
         )}
+        {this.state.renameModalShow && (
+          <RenameModal
+            id='rename-modal'
+            show={this.state.renameModalShow}
+            changingCladeNode={this.state.changingCladeNode}
+            name={this.state.changingCladeNode["show-name"]}
+            handleClose={this.handleRenameCloseModal}
+          />
+        )}
+
+        <WelcomeModal id='welcome-modal' />
       </div>
     );
   }

@@ -13,7 +13,7 @@ class Labels extends Component {
   componentDidUpdate(prevProps, prevState) {
     let margin_top = this.globalHeight * 0.05;
 
-    // d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
+    d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
 
     let div = d3.select("#tooltip");
     let height = this.globalHeight;
