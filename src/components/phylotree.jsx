@@ -115,17 +115,12 @@ class Phylotree extends Component {
   }
 
   shouldComponentUpdate(nextProp, nextState) {
-    return (
-      // !nextProp.showRenameModal ||
-      nextProp.newick !== undefined && nextProp.newick !== this.props.newick
-    );
+    return nextProp.newick !== undefined && nextProp.newick !== this.props.newick;
   }
   componentDidUpdate(prevProp) {
     if (prevProp.newick !== this.props.newick) {
       this.renderTree(this.props.newick);
     }
-    // console.log("test");
-    // d3.select("#tree-display").call(this.props.onZoom).call(this.props.onDrag);
   }
   componentDidMount() {
     let margin_top = this.container.offsetHeight * 0.05;

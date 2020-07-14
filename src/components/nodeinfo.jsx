@@ -36,7 +36,7 @@ class NodeInformation extends Component {
   render() {
     return (
       <div>
-        <h3>{this.props.children}</h3>
+        <h4>{this.props.children}</h4>
         <div>
           <Accordion>
             <Card>

@@ -18,14 +18,6 @@ import * as _ from "lodash";
 
 import "bootstrap";
 
-// import { observable } from "mobx";
-// import Dialog from "react-bootstrap-dialog";
-// import colorbrewer from "colorbrewer";
-// Eventhough they are not used, need to be imported
-// import bootbox from "bootbox";
-// import { Accordion, Card, Button, Form } from "react-bootstrap";
-// import { color } from "d3";
-
 class App extends Component {
   state = {};
   lr = d3.behavior.drag().on("drag", this.handleLR);
@@ -106,7 +98,7 @@ class App extends Component {
         mdinfo: metadataInfo,
       });
 
-      $("#welcome-modal-button").text("Done");
+      $("#welcome-modal-button").text("Run App");
     }
   };
   handleSubmit = async (e) => {

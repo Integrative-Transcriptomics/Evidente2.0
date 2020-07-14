@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import * as d3 from "d3";
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { OverlayTrigger, Tooltip, Card } from "react-bootstrap";
 import AnnouncementIcon from "@material-ui/icons/Announcement";
 
 import {
@@ -46,9 +46,14 @@ const AntSwitch = withStyles((theme) => ({
       },
     },
   },
+  root: {
+    marginLeft: "15px",
+    // marginRight: "5px",
+    verticalAlign: "middle",
+  },
   track: {
     border: `1px solid ${theme.palette.grey[500]}`,
-    borderRadius: 16 / 2,
+    borderRadius: 8,
     opacity: 1,
     backgroundColor: theme.palette.common.white,
   },
@@ -57,18 +62,16 @@ const AntSwitch = withStyles((theme) => ({
 
 class Legend extends Component {
   classes = makeStyles((theme) => ({
-    root: {
-      height: 180,
-    },
     container: {
       display: "flex",
+      margin: "15px",
     },
     paper: {
-      margin: theme.spacing(1),
+      margin: theme.spacing(4),
     },
   }));
 
-  state = { checked: false };
+  state = { checked: true };
   header = ["Name", "Color Scale", "Actions"];
   setChecked = () => this.setState({ checked: !this.state.checked });
 
@@ -88,34 +91,54 @@ class Legend extends Component {
   render() {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     return (
-      <div className={this.classes.root}>
-        <FormControlLabel
-          control={<AntSwitch checked={this.state.checked} onChange={this.setChecked} />}
-          label='Show legend'
-        />
-        <div className={this.classes.container}>
-          <Collapse in={this.state.checked}>
-            <Paper elevation={4} className={this.classes.paper} ref={(el) => (this.cell = el)}>
-              <TableContainer>
-                <Table size='small' aria-label='sticky table'>
-                  <TableHead>
-                    <TableRow>
-                      {this.header.map((title) => (
-                        <TableCell key={title}>{title} </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {_.filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
-                      return accountForLegend.includes(v.name);
-                    }).map((row) => {
-                      let viewLegend =
-                        row.extent.length <= 12 ? (
-                          <React.Fragment>
-                            <TableCell align='left'>
-                              <svg id={`svg-legend-${row.name.replace(/ /g, "-")}`} />
-                            </TableCell>
-                            <TableCell>
+      <React.Fragment>
+        <div style={{ display: "flex" }}>
+          <h4>Legend</h4>
+          <AntSwitch
+            size='small'
+            style={{ marginLeft: "auto", marginRight: "0" }}
+            checked={this.state.checked}
+            onChange={this.setChecked}
+          />
+        </div>
+        <div style={{ padding: "0px 10px" }}>
+          <div className={this.classes.container}>
+            <Collapse in={this.state.checked}>
+              <Paper elevation={4} className={this.classes.paper} ref={(el) => (this.cell = el)}>
+                <TableContainer>
+                  <Table size='small' aria-label='sticky table'>
+                    <TableHead>
+                      <TableRow>
+                        {this.header.map((title) => (
+                          <TableCell key={title}>{title} </TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {_.filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
+                        return accountForLegend.includes(v.name);
+                      }).map((row) => {
+                        let viewLegend =
+                          row.extent.length <= 12 ? (
+                            <React.Fragment>
+                              <TableCell align='left'>
+                                <svg id={`svg-legend-${row.name.replace(/ /g, "-")}`} />
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  size='small'
+                                  variant='outlined'
+                                  style={{ color: "black" }}
+                                  onClick={() => {
+                                    this.props.onChange(row.name);
+                                  }}
+                                >
+                                  Change
+                                </Button>
+                              </TableCell>
+                            </React.Fragment>
+                          ) : (
+                            <TableCell align='center' colSpan={2}>
                               <Button
                                 size='small'
                                 variant='outlined'
@@ -124,69 +147,56 @@ class Legend extends Component {
                                   this.props.onChange(row.name);
                                 }}
                               >
-                                Change
+                                Show/Change Scale
                               </Button>
                             </TableCell>
-                          </React.Fragment>
-                        ) : (
-                          <TableCell align='center' colSpan={2}>
-                            <Button
-                              size='small'
-                              variant='outlined'
-                              style={{ color: "black" }}
-                              onClick={() => {
-                                this.props.onChange(row.name);
-                              }}
-                            >
-                              Show/Change Scale
-                            </Button>
-                          </TableCell>
-                        );
-                      return (
-                        <TableRow key={row.name}>
-                          <TableCell scope='row' alignItems='center'>
-                            <div style={{ display: "flex" }}>
-                              <OverlayTrigger
-                                placement='left'
-                                overlay={rowNameTooltip(row.name, this.props)}
-                              >
-                                <span
-                                  style={{
-                                    "max-width": this.cell.offsetWidth / 4,
-                                    overflow: "hidden",
-                                    "text-overflow": "ellipsis",
-                                    whiteSpace: "nowrap",
-                                    display: "block",
-                                    cursor: "default",
-                                  }}
-                                >
-                                  {row.name}
-                                </span>
-                              </OverlayTrigger>
-                              {!this.props.orderChanged && row.type === "ordinal" && (
+                          );
+                        return (
+                          <TableRow key={row.name}>
+                            <TableCell scope='row' alignItems='center'>
+                              <div style={{ display: "flex" }}>
                                 <OverlayTrigger
-                                  placement='top'
-                                  overlay={warningTooltip(row.name, this.props)}
+                                  placement='left'
+                                  overlay={rowNameTooltip(row.name, this.props)}
                                 >
-                                  <AnnouncementIcon
-                                    style={{ display: "inline-block", marginLeft: "5px" }}
-                                  />
+                                  <span
+                                    style={{
+                                      "max-width": this.cell.offsetWidth / 4,
+                                      overflow: "hidden",
+                                      "text-overflow": "ellipsis",
+                                      whiteSpace: "nowrap",
+                                      display: "block",
+                                      cursor: "default",
+                                    }}
+                                  >
+                                    {row.name}
+                                  </span>
                                 </OverlayTrigger>
-                              )}
-                            </div>
-                          </TableCell>
+                                {!this.props.orderChanged && row.type === "ordinal" && (
+                                  <OverlayTrigger
+                                    placement='top'
+                                    overlay={warningTooltip(row.name, this.props)}
+                                  >
+                                    <AnnouncementIcon
+                                      style={{ display: "inline-block", marginLeft: "5px" }}
+                                    />
+                                  </OverlayTrigger>
+                                )}
+                              </div>
+                            </TableCell>
 
-                          {viewLegend}
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
-          </Collapse>
+                            {viewLegend}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Paper>
+            </Collapse>
+          </div>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
 }

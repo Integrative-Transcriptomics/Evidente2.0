@@ -517,7 +517,7 @@ class Heatmap extends Component {
 
     if (isSNP) {
       heatmapCell
-        .selectAll(`.pattern.md-${this.transformNameToClass(type)}`)
+        .selectAll(`.pattern-bars.md-${this.transformNameToClass(type)}`)
         .data((d) =>
           Object.entries(_.get(d, isSNP ? subtype : type, {})).filter(
             (datum) => datum[0][1] === "-"
@@ -525,7 +525,7 @@ class Heatmap extends Component {
         )
         .enter()
         .append("svg:rect")
-        .attr("class", `pattern md-${this.transformNameToClass(type)}`)
+        .attr("class", `pattern-bars md-${this.transformNameToClass(type)}`)
         .attr("width", barWidth)
         .attr("height", (d) => Math.abs(cellHeight / 2 - yScaleBar(d[1])))
         .attr("y", (d) =>
