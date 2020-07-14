@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import ModalOwn from "./ModalOwn";
-import * as _ from "lodash";
 
 import { TextField } from "@material-ui/core";
 
