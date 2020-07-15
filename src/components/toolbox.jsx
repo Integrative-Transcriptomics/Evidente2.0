@@ -232,6 +232,7 @@ class Toolbox extends Component {
           visMd={this.props.visMd}
           availableMDs={this.props.availableMDs}
           onChange={this.props.onColorChange}
+          onChangeOrder={this.props.onChangeOrder}
         />
         <NodeInformation
           SNPTable={this.props.SNPTable}

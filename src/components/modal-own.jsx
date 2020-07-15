@@ -19,6 +19,17 @@ class ModalOwn extends Component {
         </Modal.Header>
         <Modal.Body className='ModalLimited'>{this.props.children}</Modal.Body>
         <Modal.Footer>
+          {this.props.secondButtonName && (
+            <Button
+              variant='secondary'
+              onClick={() => {
+                this.props.onClose(false);
+              }}
+            >
+              {" "}
+              {this.props.secondButtonName}
+            </Button>
+          )}
           <Button
             id={this.props.buttonId || undefined}
             variant='primary'

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ModalOwn from "./ModalOwn";
+import ModalOwn from "./modal-own";
 import * as _ from "lodash";
 import Select, { components } from "react-select";
 import OwnSlider from "./own-slider";

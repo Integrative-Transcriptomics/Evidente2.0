@@ -265,6 +265,7 @@ class Tools extends Component {
                       ValueContainer: CustomValueContainer,
                     }}
                     menuPortalTarget={document.getElementById("tools")}
+                    menuPosition={"fixed"}
                     styles={selectStates}
                   ></Select>
                 </Form.Group>

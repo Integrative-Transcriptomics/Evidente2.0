@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ModalOwn from "./ModalOwn";
+import ModalOwn from "./modal-own";
 import { SortableContainer, SortableElement, sortableHandle } from "react-sortable-hoc";
 import arrayMove from "array-move";
 

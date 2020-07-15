@@ -6,7 +6,7 @@ import OrdinalModal from "./components/modal-ordinal-sort";
 import FilterModal from "./components/filter-modal";
 import Toolbox from "./components/toolbox";
 import Labels from "./components/labels";
-import WelcomeModal from "./components/WelcomeModal";
+import WelcomeModal from "./components/welcome-modal";
 import RenameModal from "./components/rename-modal";
 
 // Important libraries
@@ -17,6 +17,7 @@ import * as $ from "jquery";
 import * as _ from "lodash";
 
 import "bootstrap";
+import DecideOrdinalModal from "./components/decide-ordinal-modal";
 
 class App extends Component {
   state = {};
@@ -85,7 +86,14 @@ class App extends Component {
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {
       let { metadataInfo = {} } = json;
-
+      let ordinalValues = _.toPairs(metadataInfo).filter(
+        (d) => d[1].type.toLowerCase() === "ordinal"
+      );
+      if (ordinalValues.length !== 0) {
+        this.setState({
+          ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
+        });
+      }
       metadataInfo = this.createColorScales(metadataInfo);
 
       this.setState({
@@ -101,6 +109,10 @@ class App extends Component {
       $("#welcome-modal-button").text("Run App");
     }
   };
+  /**
+   * Handles the files being sent to the server.
+   * @param {Event} e sent from the file input form.
+   */
   handleSubmit = async (e) => {
     this.setState(this.initialState);
     e.preventDefault();
@@ -121,7 +133,7 @@ class App extends Component {
       );
       if (ordinalValues.length !== 0) {
         this.setState({
-          ordinalModalShow: true,
+          decideOrdinalModalShow: true,
           ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
         });
       }
@@ -155,7 +167,10 @@ class App extends Component {
       let colorScale;
       switch (actualType) {
         case "numerical":
-          colorScale = d3.scale.linear().domain(actualExtent).range(["blue", "red"]);
+          colorScale = d3.scale
+            .linear()
+            .domain(actualExtent)
+            .range(["rgb(250, 240, 240)", "purple"]);
           break;
         case "categorical":
           colorScale = d3.scale.category20();
@@ -167,7 +182,7 @@ class App extends Component {
               .linear()
               .domain([0, actualExtent.length - 1])
               .range([0, 1])(index);
-            return d3.interpolate("rgb(255, 240, 240)", "red")(temp);
+            return d3.interpolate("rgb(255, 250, 240)", "orange")(temp);
           };
 
           break;
@@ -211,6 +226,17 @@ class App extends Component {
   handleCladeCreation = () => {
     let actualNumber = this.state.cladeNumber;
     this.setState({ cladeNumber: actualNumber + 1 });
+  };
+  handleChangeOrder = () => {
+    this.setState({ ordinalModalShow: true });
+  };
+
+  handleDecisionOrdinalCloseModal = (save) => {
+    if (!save) {
+      this.setState({ decideOrdinalModalShow: false });
+    } else {
+      this.setState({ ordinalModalShow: true, decideOrdinalModalShow: false });
+    }
   };
 
   handleOrdinalCloseModal = (save, extents) => {
@@ -578,6 +604,7 @@ class App extends Component {
             />
           </div>
           <Toolbox
+            onChangeOrder={this.handleChangeOrder}
             onApplyAllFilters={this.handleApplyAllFilter}
             onSNPaddition={this.handleSNPaddition}
             onMultipleSNPaddition={this.handleMultipleSNPaddition}
@@ -633,6 +660,13 @@ class App extends Component {
             changingCladeNode={this.state.changingCladeNode}
             name={this.state.changingCladeNode["show-name"]}
             handleClose={this.handleRenameCloseModal}
+          />
+        )}
+        {this.state.decideOrdinalModalShow && (
+          <DecideOrdinalModal
+            id='decide-ordinal-modal'
+            show={this.state.decideOrdinalModalShow}
+            handleClose={this.handleDecisionOrdinalCloseModal}
           />
         )}
 

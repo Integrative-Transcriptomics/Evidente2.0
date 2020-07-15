@@ -100,6 +100,17 @@ class Legend extends Component {
         <div style={{ padding: "0px 10px" }}>
           <div className={this.classes.container}>
             <Collapse in={this.state.checked}>
+              <div style={{ display: "flex", justifyContent: "center", padding: "5px" }}>
+                <Button
+                  size='small'
+                  variant='outlined'
+                  style={{ color: "black" }}
+                  onClick={this.props.onChangeOrder}
+                >
+                  Change order of Ordinal values
+                </Button>
+              </div>
+
               <Paper elevation={4} className={this.classes.paper} ref={(el) => (this.cell = el)}>
                 <TableContainer>
                   <Table size='small' aria-label='sticky table'>

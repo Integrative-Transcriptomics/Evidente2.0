@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ModalOwn from "./ModalOwn";
+import ModalOwn from "./modal-own";
 import { makeStyles } from "@material-ui/core/styles";
 import * as _ from "lodash";
 import MyColorPicker from "./color-picker";

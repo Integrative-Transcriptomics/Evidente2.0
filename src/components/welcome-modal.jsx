@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ModalOwn from "./ModalOwn";
+import ModalOwn from "./modal-own";
 
 class WelcomeModal extends Component {
   state = { show: true };
@@ -13,7 +13,6 @@ class WelcomeModal extends Component {
         show={this.state.show}
         onClose={this.close}
         buttonName={"Loading..."}
-        buttonDisabled={true}
         buttonId={"welcome-modal-button"}
         title='Evidente'
       >

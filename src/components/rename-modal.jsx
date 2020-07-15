@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ModalOwn from "./ModalOwn";
+import ModalOwn from "./modal-own";
 
 import { TextField } from "@material-ui/core";
 
