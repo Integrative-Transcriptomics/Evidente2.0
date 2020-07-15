@@ -48,7 +48,8 @@ const AntSwitch = withStyles((theme) => ({
   },
   root: {
     marginLeft: "15px",
-    // marginRight: "5px",
+    marginRight: "25px",
+    marginTop: "3px",
     verticalAlign: "middle",
   },
   track: {
@@ -92,14 +93,9 @@ class Legend extends Component {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     return (
       <React.Fragment>
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", "align-items": "center" }}>
           <h4>Legend</h4>
-          <AntSwitch
-            size='small'
-            style={{ marginLeft: "auto", marginRight: "0" }}
-            checked={this.state.checked}
-            onChange={this.setChecked}
-          />
+          <AntSwitch size='small' checked={this.state.checked} onChange={this.setChecked} />
         </div>
         <div style={{ padding: "0px 10px" }}>
           <div className={this.classes.container}>

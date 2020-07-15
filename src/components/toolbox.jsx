@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import NodeInformation from "./nodeinfo";
+import Legend from "./legend";
 import Tools from "./tools";
 import * as _ from "lodash";
 import * as d3 from "d3";
-import LegendContainer from "./legend-container";
 class Toolbox extends Component {
   state = {};
 
@@ -223,15 +223,15 @@ class Toolbox extends Component {
       }));
   render() {
     return (
-      <div className='rchild'>
-        <LegendContainer
-          visMd={this.props.visMd}
-          visSNPs={this.props.visSNPs}
-          orderChanged={this.props.orderChanged}
-          onColorChange={this.props.onColorChange}
-          addLegend={this.addLegend}
+      <div id='toolbox' className='rchild'>
+        <Legend
           metadataToRows={this.metadataToRows}
+          addLegend={this.addLegend}
+          orderChanged={this.props.orderChanged}
+          visSNPs={this.props.visSNPs}
+          visMd={this.props.visMd}
           availableMDs={this.props.availableMDs}
+          onChange={this.props.onColorChange}
         />
         <NodeInformation
           SNPTable={this.props.SNPTable}

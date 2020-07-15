@@ -48,6 +48,11 @@ const selectStates = {
     ...provided,
     overflow: "visible",
     height: "auto",
+    // maxHeight: "5px",
+  }),
+  menuList: (provided, state) => ({
+    ...provided,
+    maxHeight: "150px",
   }),
   placeholder: (provided, state) => ({
     ...provided,
@@ -146,15 +151,6 @@ class Tools extends Component {
     return (
       <div>
         <h4>{this.props.children}</h4>
-        {/* <Legend
-          metadataToRows={this.metadataToRows}
-          addLegend={this.addLegend}
-          orderChanged={this.props.orderChanged}
-          visSNPs={this.props.visSNPs}
-          visMd={this.props.visMd}
-          availableMDs={this.props.availableMDs}
-          onChange={this.props.onColorChange}
-        /> */}
         <Accordion id='tools' defaultActiveKey='0'>
           <Card>
             <Accordion.Toggle
@@ -214,6 +210,7 @@ class Tools extends Component {
                   components={{
                     ValueContainer: CustomValueContainer,
                   }}
+                  menuPosition={"fixed"}
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
                 ></Select>
@@ -227,6 +224,7 @@ class Tools extends Component {
                   components={{
                     ValueContainer: CustomValueContainer,
                   }}
+                  menuPosition={"fixed"}
                   menuPortalTarget={document.getElementById("tools")}
                   styles={selectStates}
                 ></Select>
