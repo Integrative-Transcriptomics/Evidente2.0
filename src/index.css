@@ -10,7 +10,9 @@ body,
   height: 100%;
   width: 100%;
 }
-
+._loading_overlay_wrapper {
+  height: 100%;
+}
 header {
   text-align: center;
   justify-content: center;
@@ -113,11 +115,6 @@ div.tooltip {
   stroke-opacity: 0.25;
 }
 
-.guides-selected,
-.guides-hovered {
-  stroke: "red" !important;
-}
-
 .x.axis line {
   stroke: #fff;
 }
@@ -214,7 +211,8 @@ div.tooltip {
   overflow: auto;
 }
 
-.highlighted-guide {
+.highlighted-guide,
+.fixed-guide {
   stroke: red !important;
   stroke-opacity: 0.75 !important;
 }

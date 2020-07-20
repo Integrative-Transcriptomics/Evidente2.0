@@ -164,7 +164,6 @@ class Toolbox extends Component {
         let shadow = addTexts(groupCategory, 0, yPosition, "middle", attrShadow, (d) => d).each(
           function () {
             let thisWidth = Math.max(cubeWidth, this.getComputedTextLength() + 10); // Text width + margin
-
             textWidth.push(thisWidth);
           }
         );
@@ -175,22 +174,54 @@ class Toolbox extends Component {
         }
 
         const cumulativeSum = ((sum) => (value) => (sum += value))(0);
-        let positions = [0, ...textWidth.map(cumulativeSum)];
+        const ceiledCumulativeSum = (([x, y], top) => (value) =>
+          x + value < top ? [(x += value), y] : [(x = 0), (y += 1)])([0, 0], cellWidth);
 
-        shadow.attr({
-          x: (d, i) => positions[i] + textWidth[i] * 0.5,
-        });
-        text.attr({
-          x: (d, i) => positions[i] + textWidth[i] * 0.5,
-        });
+        let textWidthSum = textWidth.map(cumulativeSum);
+        let positions = [0, ...textWidthSum];
+        let positionX, positionY;
+        if (isStatic) {
+          let temp = textWidth.map(ceiledCumulativeSum);
+          positionX = [0, ...temp.map((d) => d[0])];
+          positionY = [0, ...temp.map((d) => d[1] * 15)];
+          d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
+            height: positionY.slice(-1)[0] * 1.25,
+          });
+        }
+        shadow.attr(
+          isStatic
+            ? {
+                x: (d, i) => positionX[i] + textWidth[i] * 0.5,
+                y: (d, i) => positionY[i] + 12,
+              }
+            : {
+                x: (d, i) => positions[i] + textWidth[i] * 0.5,
+              }
+        );
+        text.attr(
+          isStatic
+            ? {
+                x: (d, i) => positionX[i] + textWidth[i] * 0.5,
+                y: (d, i) => positionY[i] + 12,
+              }
+            : {
+                x: (d, i) => positions[i] + textWidth[i] * 0.5,
+              }
+        );
 
         groupCategory
           .insert("rect", ":first-child")
           .attr({
-            width: (d, i) => Math.max(textWidth[i], cubeWidth),
+            width: (d, i) => Math.max(textWidth[i], cubeWidth + 10),
             height: 15,
-            x: (d, i) => positions[i],
           })
+          .attr(
+            isStatic
+              ? { x: (d, i) => positionX[i], y: (d, i) => positionY[i], stroke: "black" }
+              : {
+                  x: (d, i) => positions[i],
+                }
+          )
           .style("fill", (value) => colorScale(value));
 
         if (_.round(_.last(positions)) > cellWidth && !isStatic) {
@@ -242,6 +273,7 @@ class Toolbox extends Component {
           Node Information
         </NodeInformation>
         <Tools
+          handleLoadingToggle={this.props.handleLoadingToggle}
           availableMDs={this.props.availableMDs}
           availableSNPs={this.props.availableSNPs}
           onFileUpload={this.props.onFileUpload}

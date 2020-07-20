@@ -61,6 +61,7 @@ class Phylotree extends Component {
   }
 
   showSNPsfromNode(node) {
+    this.props.handleLoadingToggle(true);
     let node_name = this.props.ids.numToLabel[node.tempid];
     let descendants = this.props.tree
       .descendants(node)
@@ -88,6 +89,8 @@ class Phylotree extends Component {
     this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable);
     this.props.tree.update();
     this.props.onSelection(this.props.tree.get_selection());
+    this.props.handleLoadingToggle(false);
+
     d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
     if (!$("#supportingSNPs-card").hasClass("show")) {
       $("#supportingSNPs-header").click();

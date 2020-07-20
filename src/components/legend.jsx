@@ -1,14 +1,12 @@
 import React, { Component } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
 import * as d3 from "d3";
-import { OverlayTrigger, Tooltip, Card } from "react-bootstrap";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import AnnouncementIcon from "@material-ui/icons/Announcement";
-
 import {
   Collapse,
   Switch,
   Paper,
-  FormControlLabel,
   Table,
   TableBody,
   TableCell,
@@ -100,17 +98,6 @@ class Legend extends Component {
         <div style={{ padding: "0px 10px" }}>
           <div className={this.classes.container}>
             <Collapse in={this.state.checked}>
-              <div style={{ display: "flex", justifyContent: "center", padding: "5px" }}>
-                <Button
-                  size='small'
-                  variant='outlined'
-                  style={{ color: "black" }}
-                  onClick={this.props.onChangeOrder}
-                >
-                  Change order of Ordinal values
-                </Button>
-              </div>
-
               <Paper elevation={4} className={this.classes.paper} ref={(el) => (this.cell = el)}>
                 <TableContainer>
                   <Table size='small' aria-label='sticky table'>
@@ -196,6 +183,18 @@ class Legend extends Component {
                           </TableRow>
                         );
                       })}
+                      <TableRow>
+                        <TableCell align='center' colSpan={3}>
+                          <Button
+                            size='small'
+                            variant='outlined'
+                            style={{ color: "black" }}
+                            onClick={this.props.onChangeOrder}
+                          >
+                            Change order of Ordinal values
+                          </Button>
+                        </TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 </TableContainer>

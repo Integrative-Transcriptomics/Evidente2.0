@@ -29,7 +29,10 @@ class Heatmap extends Component {
     let actualVisualized = actualProp.visMd || [];
     let newVisualizedSNPs = nextProp.visSNPs || [];
     let actualVisualizedSNPs = actualProp.visSNPs || [];
-    if (
+    if (!_.isEqual(actualSelectedNodes, newSelectedNodes)) {
+      this.highlight_leaves(newSelectedNodes);
+      return false;
+    } else if (
       !_.isEqual(newVisualized, actualVisualized) ||
       !_.isEqual(actualVisualizedSNPs, newVisualizedSNPs) ||
       !_.isEqual(actualNodes, newNodes) ||
@@ -38,11 +41,6 @@ class Heatmap extends Component {
       (!_.isEqual(actualState.mdinfo, nextProp.mdinfo) && newNodes.length > 0)
     ) {
       return true;
-    } else if (!nextState.taxadata) {
-      return false;
-    } else if (!_.isEqual(actualSelectedNodes, newSelectedNodes)) {
-      this.highlight_leaves(newSelectedNodes);
-      return false;
     } else {
       return false;
     }
@@ -561,17 +559,15 @@ class Heatmap extends Component {
   highlight_leaves(selection = []) {
     if (selection.length === 0) {
       $(".cell, .boxplot, .histo, .pattern").css("opacity", 1); // Nothing selected, everythin bold
-      d3.selectAll(`.guides`).style("stroke", "grey").style("stroke-opacity", 0.25);
+      d3.selectAll(`.guides`).classed("fixed-guide", false);
     } else {
       $(".cell, .boxplot, .histo, .pattern").css("opacity", 0.2);
-      d3.selectAll(`.guides`).style("stroke", "grey").style("stroke-opacity", 0.25);
+      d3.selectAll(`.guides`).classed("fixed-guide", false);
 
       selection.forEach((t) => {
         let lookFor = t.collapsed ? t["show-name"] : t.name; // Either clade or leaf
         $(`.node-${lookFor}`).css("opacity", 1);
-        d3.selectAll(`.node-${lookFor}.guides`)
-          .style("stroke", "red")
-          .style("stroke-opacity", 0.75);
+        d3.selectAll(`.guides.node-${lookFor}`).classed("fixed-guide", true);
       });
     }
   }

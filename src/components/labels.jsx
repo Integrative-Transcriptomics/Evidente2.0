@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import * as d3 from "d3";
+// import { isEqual } from "lodash";
+
 class Labels extends Component {
   state = {};
   globalHeight = 0;
@@ -10,7 +12,30 @@ class Labels extends Component {
       d3.layout.phylotree.is_node_visible(node)
     );
   };
+  // componentDidUpdate(prevProps, prevState) {
+
+  // }
+  // shouldComponentUpdate(nextProp, nextState) {
+  //   let oldNodes = this.props.tree
+  //     .get_nodes()
+  //     .filter((node) => this.isVisibleEndNode(node))
+  //     .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
+  //   let newNodes = nextProp.tree
+  //     .get_nodes()
+  //     .filter((node) => this.isVisibleEndNode(node))
+  //     .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
+  //   return isEqual(newNodes, oldNodes);
+  // }
   componentDidUpdate(prevProps, prevState) {
+    Object.entries(this.props).forEach(
+      ([key, val]) => prevProps[key] !== val && console.log(`Prop '${key}' changed`)
+    );
+    if (this.state) {
+      Object.entries(this.state).forEach(
+        ([key, val]) => prevState[key] !== val && console.log(`State '${key}' changed`)
+      );
+    }
+    console.log("test");
     let margin_top = this.globalHeight * 0.05;
 
     d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);

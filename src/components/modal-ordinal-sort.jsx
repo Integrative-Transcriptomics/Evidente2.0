@@ -46,7 +46,8 @@ class OrdinalModal extends Component {
   };
 
   componentDidMount() {
-    this.setState({ collections: this.props.ordinalValues });
+    let ordinalData = this.props.ordinalValues;
+    this.setState({ collections: ordinalData });
   }
 
   render() {
@@ -54,7 +55,10 @@ class OrdinalModal extends Component {
       <ModalOwn
         id={this.props.ID}
         show={this.props.show}
-        onClose={(save) => this.props.handleClose(save, this.state.collections)}
+        onClose={(save) => {
+          this.props.handleClose(save, this.state.collections);
+          this.setState({ collections: [] });
+        }}
         title='Select order for ordinal values'
       >
         <SortableList

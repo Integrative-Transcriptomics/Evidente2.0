@@ -60,6 +60,9 @@ const selectStates = {
     top: state.hasValue || state.selectProps.inputValue ? -15 : "50%",
     transition: "top 0.1s, font-size 0.1s",
     fontSize: (state.hasValue || state.selectProps.inputValue) && 13,
+    "white-space": "nowrap",
+    overflow: "hidden",
+    "text-overflow": "ellipsis",
   }),
 };
 
@@ -72,21 +75,36 @@ class Tools extends Component {
    * @param {String} typeOfExport defines the type of export that is run: PNG, JPEG, PDF
    */
   async onExport(type) {
+    this.props.handleLoadingToggle(true);
+
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     let allData = document.createElement("div");
-    let data = document.getElementById("parent-svg");
-    allData.appendChild(data.cloneNode(true));
-
+    let mainVisualization = document.getElementById("parent-svg");
+    allData.appendChild(mainVisualization.cloneNode(true));
+    let divLegend = document.createElement("div");
+    divLegend.style.display = "flex";
+    divLegend.style.flexWrap = "wrap";
+    divLegend.style.padding = "5px";
     _.filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
       return accountForLegend.includes(v.name);
     }).forEach((data) => {
+      let blockLegendLabel = document.createElement("div");
+      let labelLegend = document.createElement("p");
+      labelLegend.textContent = data.name;
+      let svgLegend = document.createElement("div");
+
       let legend = d3
         .select("#root")
         .append("svg")
-        .attr({ id: `testing-output-${data.name}`, width: 1000 });
-      this.props.addLegend(legend, 100, data, true);
-      allData.appendChild(legend.node());
+        .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 350 });
+      this.props.addLegend(legend, 250, data, true);
+      svgLegend.appendChild(legend.node());
+      blockLegendLabel.appendChild(labelLegend);
+      blockLegendLabel.appendChild(svgLegend);
+      divLegend.appendChild(blockLegendLabel);
     });
+    allData.appendChild(divLegend);
+
     let response = await fetch("/api/export", {
       method: "post",
       body: JSON.stringify({ htmlContent: allData.outerHTML, typeOf: type }),
@@ -100,6 +118,8 @@ class Tools extends Component {
     let link = document.createElement("a");
     link.href = url;
     link.download = `export_evidente.${type}`;
+    this.props.handleLoadingToggle(false);
+
     link.click();
   }
 

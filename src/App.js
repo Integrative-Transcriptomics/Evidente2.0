@@ -8,6 +8,9 @@ import Toolbox from "./components/toolbox";
 import Labels from "./components/labels";
 import WelcomeModal from "./components/welcome-modal";
 import RenameModal from "./components/rename-modal";
+import DecideOrdinalModal from "./components/decide-ordinal-modal";
+// import { PushSpinner } from "react-spinners-kit";
+import LoadingOverlay from "react-loading-overlay";
 
 // Important libraries
 import React, { Component } from "react";
@@ -17,7 +20,6 @@ import * as $ from "jquery";
 import * as _ from "lodash";
 
 import "bootstrap";
-import DecideOrdinalModal from "./components/decide-ordinal-modal";
 
 class App extends Component {
   state = {};
@@ -52,7 +54,7 @@ class App extends Component {
     .on("zoom", this.handleZoom);
   initialState = {
     zoom: this.zoom,
-    tree: this.tree,
+    // tree: this.tree,
     hiddenNodes: [],
     cladeNumber: 0,
     mdinfo: [],
@@ -69,6 +71,7 @@ class App extends Component {
     nameOfFilters: [],
     activeFilters: [],
     orderChanged: false,
+    loadAnimationShow: false,
   };
   constructor() {
     super();
@@ -115,6 +118,7 @@ class App extends Component {
    */
   handleSubmit = async (e) => {
     this.setState(this.initialState);
+    this.handleLoadingToggle(true);
     e.preventDefault();
     const formData = new FormData(document.getElementById("fileform"));
     let response = await fetch(`/api/upload`, {
@@ -148,16 +152,10 @@ class App extends Component {
         snpmd: json.snpInfo || [],
         mdinfo: metadataInfo,
       });
+      this.handleLoadingToggle(false);
 
       $("#metadata-card").click();
     }
-  };
-
-  updateSNPTable = (nodeID, supportSNPTable, nonSupportSNPTable) => {
-    this.setState({
-      selectedNodeID: nodeID,
-      SNPTable: { support: supportSNPTable, notsupport: nonSupportSNPTable },
-    });
   };
 
   createColorScales = (metadata) => {
@@ -198,15 +196,21 @@ class App extends Component {
     return metadata;
   };
 
-  handleColorChange = (metadataName) => {
-    this.chosenMD = metadataName;
-    this.setState({ colorScaleModalShow: true });
+  handleLoadingToggle = (show) => {
+    this.setState({ loadAnimationShow: show });
   };
   handleMDChange = (ev) => {
     this.setState({
       visualizedMD: ev.map(({ value }) => value),
     });
   };
+  updateSNPTable = (nodeID, supportSNPTable, nonSupportSNPTable) => {
+    this.setState({
+      selectedNodeID: nodeID,
+      SNPTable: { support: supportSNPTable, notsupport: nonSupportSNPTable },
+    });
+  };
+
   handleSNPChange = (ev) => {
     this.setState({
       visualizedSNPs: ev.map(({ value }) => value),
@@ -223,10 +227,6 @@ class App extends Component {
     });
   };
 
-  handleCladeCreation = () => {
-    let actualNumber = this.state.cladeNumber;
-    this.setState({ cladeNumber: actualNumber + 1 });
-  };
   handleChangeOrder = () => {
     this.setState({ ordinalModalShow: true });
   };
@@ -263,9 +263,9 @@ class App extends Component {
 
     let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
 
-    let resultingNodes = this.state.tree
+    let resultingNodes = this.tree
       .get_nodes()
-      .filter(this.state.tree.is_leafnode)
+      .filter(this.tree.is_leafnode)
       .filter((node) => {
         let filterResult = this.testForFilters(node, modActiveFilters, taxaDataModified);
         return filterResult;
@@ -276,16 +276,16 @@ class App extends Component {
     });
   };
   handleDeleteAllFilters = () => {
-    this.handleShowNodes(this.state.tree.get_nodes()[0]);
+    this.handleShowNodes(this.tree.get_nodes()[0]);
     this.setState({ createdFilters: [], nameOfFilters: [] });
   };
   handleFilterCloseModal = (save, filter, name) => {
     let newFilters = [...this.state.createdFilters, filter];
     let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
 
-    let resultingNodes = this.state.tree
+    let resultingNodes = this.tree
       .get_nodes()
-      .filter(this.state.tree.is_leafnode)
+      .filter(this.tree.is_leafnode)
       .filter((node) => {
         let filterResult = this.testForFilters(node, newFilters, taxaDataModified);
         return filterResult;
@@ -327,29 +327,29 @@ class App extends Component {
     for (let node of nodeList) {
       if (!node["hidden-t"]) {
         node["hidden-t"] = true;
-        this.state.tree.modify_selection([node], "notshown", true, true, "true");
+        this.tree.modify_selection([node], "notshown", true, true, "true");
       }
     }
     this.handleHide(nodeList);
-    this.state.tree.update_has_hidden_nodes().update();
+    this.tree.update_has_hidden_nodes().update();
 
     d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
-    this.handleSelection(this.state.tree.get_selection());
+    this.handleSelection(this.tree.get_selection());
   }
 
   tempShowNodes(node) {
-    let nodes = [node].concat(this.state.tree.select_all_descendants(node, true, true));
-    this.state.tree.modify_selection(nodes, "hidden-t", true, true, "false");
-    this.state.tree.modify_selection(nodes, "notshown", true, true, "false");
-    this.handleShowOnHeatmap(this.state.tree.descendants(node));
+    let nodes = [node].concat(this.tree.select_all_descendants(node, true, true));
+    this.tree.modify_selection(nodes, "hidden-t", true, true, "false");
+    this.tree.modify_selection(nodes, "notshown", true, true, "false");
+    this.handleShowOnHeatmap(this.tree.descendants(node));
   }
   handleApplyAllFilter = () => {
-    let root = this.state.tree.get_nodes()[0];
+    let root = this.tree.get_nodes()[0];
     this.tempShowNodes(root);
     let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
-    let resultingNodes = this.state.tree
+    let resultingNodes = this.tree
       .get_nodes()
-      .filter(this.state.tree.is_leafnode)
+      .filter(this.tree.is_leafnode)
       .filter((node) => {
         let filterResult = this.testForFilters(node, this.state.createdFilters, taxaDataModified);
         return !filterResult;
@@ -387,7 +387,7 @@ class App extends Component {
         ...this.state.collapsedClades.filter((x) => x.showname !== oldName),
         renamedClade,
       ];
-      this.state.tree.update();
+      this.tree.update();
       this.handleSelection(this.tree.get_selection());
       this.setState({
         collapsedClades: jointNodes,
@@ -396,7 +396,10 @@ class App extends Component {
       d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom);
     }
   };
-
+  handleColorChange = (metadataName) => {
+    this.chosenMD = metadataName;
+    this.setState({ colorScaleModalShow: true });
+  };
   handleColorScaleCloseModal = (save, extents) => {
     if (!save) {
       this.setState({ colorScaleModalShow: false });
@@ -419,11 +422,13 @@ class App extends Component {
       this.setState({ colorScaleModalShow: false, mdinfo: metadataInfo });
     }
   };
-
+  handleUploadTree = (nodes) => {
+    this.setState({
+      nodes: nodes,
+    });
+  };
   handleCollapse = (cladeNode) => {
-    let collapsedNodes = this.state.tree
-      .descendants(cladeNode)
-      .filter(d3.layout.phylotree.is_leafnode);
+    let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
 
     let clade = {
       name: "Clade_" + this.state.cladeNumber,
@@ -434,18 +439,18 @@ class App extends Component {
     cladeNode.name = clade.name;
 
     cladeNode["show-name"] = clade.name;
-    this.handleCladeCreation();
+    let actualNumber = this.state.cladeNumber;
     let jointNodes = this.state.collapsedClades.concat([clade]);
-    this.state.tree.toggle_collapse(cladeNode).update();
+    this.tree.toggle_collapse(cladeNode).update();
 
-    this.setState({ collapsedClades: jointNodes });
+    this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
     return clade.name;
   };
   handleDecollapse = (cladeNode) => {
     let filteredClades = this.state.collapsedClades.filter((n) => {
       return !Object.is(n.cladeParent, cladeNode);
     });
-    this.state.tree.toggle_collapse(cladeNode).update();
+    this.tree.toggle_collapse(cladeNode).update();
     this.setState({ collapsedClades: filteredClades });
   };
 
@@ -453,19 +458,15 @@ class App extends Component {
     let jointNodes = this.state.hiddenNodes.concat(hideNodes);
     this.setState({ hiddenNodes: jointNodes });
   };
-  handleUploadTree = (nodes) => {
-    this.setState({
-      nodes: nodes,
-    });
-  };
+
   handleShowNodes = (node) => {
-    let nodes = [node].concat(this.state.tree.select_all_descendants(node, true, true));
-    this.state.tree.modify_selection(nodes, "hidden-t", true, true, "false");
-    this.state.tree.modify_selection(nodes, "notshown", true, true, "false");
-    this.state.tree.update_has_hidden_nodes().update();
-    this.handleShowOnHeatmap(this.state.tree.descendants(node));
+    let nodes = [node].concat(this.tree.select_all_descendants(node, true, true));
+    this.tree.modify_selection(nodes, "hidden-t", true, true, "false");
+    this.tree.modify_selection(nodes, "notshown", true, true, "false");
+    this.tree.update_has_hidden_nodes().update();
+    this.handleShowOnHeatmap(this.tree.descendants(node));
     d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
-    this.handleSelection(this.state.tree.get_selection());
+    this.handleSelection(this.tree.get_selection());
   };
   handleShowOnHeatmap = (showNodes) => {
     let namesShowNodes = showNodes.map(({ name }) => name);
@@ -533,145 +534,152 @@ class App extends Component {
 
   render() {
     return (
-      <div id='outer'>
-        <header id='inner_fixed'>Evidente</header>
-        <div id='div-container-all' className='parent-div'>
-          <div id='parent-svg' className='parent-svgs'>
-            <Phylotree
-              showRenameModal={this.state.renameModalShow}
-              selectedNodeID={this.state.selectedNodeID}
-              updateSNPTable={this.updateSNPTable}
-              tree={this.state.tree}
-              onShowMyNodes={this.handleShowNodes}
-              onZoom={this.state.zoom}
-              onDrag={this.lr}
-              onCollapse={this.handleCollapse}
-              onDecollapse={this.handleDecollapse}
-              onUploadTree={this.handleUploadTree}
-              onHide={this.handleHide}
-              onSelection={this.handleSelection}
-              onOpenRenameClade={this.handleRenameOpenModal}
-              newick={this.state.newick}
-              snpdata={this.state.snpdata}
-              ids={this.state.ids}
-              dialog={this.dialog}
-            />
-            <Labels
-              divID={"labels_viz"}
-              tree={this.state.tree}
-              onZoom={this.state.zoom}
-              onDrag={this.lr}
-            />
-            <Heatmap
-              onZoom={this.state.zoom}
-              onDrag={this.lr}
-              divID={"heatmap_viz"}
-              containerID={"heatmap-container"}
-              margin={{ top: 0, right: 20, bottom: 0, left: 5 }}
-              tree={this.state.tree}
-              nodes={this.state.nodes}
-              hiddenNodes={this.state.hiddenNodes}
-              collapsedClades={this.state.collapsedClades}
-              selectedNodes={this.state.selectedNodes}
-              ids={this.state.ids}
-              visMd={this.state.visualizedMD}
-              visSNPs={this.state.visualizedSNPs}
-              SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
-              taxadata={[]}
-              snpdata={this.state.snpdata}
-              mdinfo={[]}
-              isSNP={true}
-            />
-            <Heatmap
-              onZoom={this.state.zoom}
-              onDrag={this.lr}
-              divID={"md_viz"}
-              containerID={"md-container"}
-              margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
-              tree={this.state.tree}
-              nodes={this.state.nodes}
-              hiddenNodes={this.state.hiddenNodes}
-              collapsedClades={this.state.collapsedClades}
-              selectedNodes={this.state.selectedNodes}
-              ids={this.state.ids}
-              visMd={this.state.visualizedMD}
-              visSNPs={[]}
-              taxadata={this.state.taxamd}
-              snpdata={[]}
-              mdinfo={this.state.mdinfo}
-              isSNP={false}
-              createdFilters={this.state.createdFilters}
-            />
+      <React.Fragment>
+        <LoadingOverlay active={this.state.loadAnimationShow} spinner text='Loading...'>
+          <div id='outer'>
+            <header id='inner_fixed'>Evidente</header>
+
+            <div id='div-container-all' className='parent-div'>
+              <div id='parent-svg' className='parent-svgs'>
+                <Phylotree
+                  handleLoadingToggle={this.handleLoadingToggle}
+                  showRenameModal={this.state.renameModalShow}
+                  selectedNodeID={this.state.selectedNodeID}
+                  updateSNPTable={this.updateSNPTable}
+                  tree={this.tree}
+                  onShowMyNodes={this.handleShowNodes}
+                  onZoom={this.state.zoom}
+                  onDrag={this.lr}
+                  onCollapse={this.handleCollapse}
+                  onDecollapse={this.handleDecollapse}
+                  onUploadTree={this.handleUploadTree}
+                  onHide={this.handleHide}
+                  onSelection={this.handleSelection}
+                  onOpenRenameClade={this.handleRenameOpenModal}
+                  newick={this.state.newick}
+                  snpdata={this.state.snpdata}
+                  ids={this.state.ids}
+                  dialog={this.dialog}
+                />
+                <Labels
+                  divID={"labels_viz"}
+                  tree={this.tree}
+                  onZoom={this.state.zoom}
+                  onDrag={this.lr}
+                />
+                <Heatmap
+                  onZoom={this.state.zoom}
+                  onDrag={this.lr}
+                  divID={"heatmap_viz"}
+                  containerID={"heatmap-container"}
+                  margin={{ top: 0, right: 20, bottom: 0, left: 5 }}
+                  tree={this.tree}
+                  nodes={this.state.nodes}
+                  hiddenNodes={this.state.hiddenNodes}
+                  collapsedClades={this.state.collapsedClades}
+                  selectedNodes={this.state.selectedNodes}
+                  ids={this.state.ids}
+                  visMd={this.state.visualizedMD}
+                  visSNPs={this.state.visualizedSNPs}
+                  SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+                  taxadata={[]}
+                  snpdata={this.state.snpdata}
+                  mdinfo={[]}
+                  isSNP={true}
+                />
+                <Heatmap
+                  onZoom={this.state.zoom}
+                  onDrag={this.lr}
+                  divID={"md_viz"}
+                  containerID={"md-container"}
+                  margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
+                  tree={this.tree}
+                  nodes={this.state.nodes}
+                  hiddenNodes={this.state.hiddenNodes}
+                  collapsedClades={this.state.collapsedClades}
+                  selectedNodes={this.state.selectedNodes}
+                  ids={this.state.ids}
+                  visMd={this.state.visualizedMD}
+                  visSNPs={[]}
+                  taxadata={this.state.taxamd}
+                  snpdata={[]}
+                  mdinfo={this.state.mdinfo}
+                  isSNP={false}
+                  createdFilters={this.state.createdFilters}
+                />
+              </div>
+              <Toolbox
+                onChangeOrder={this.handleChangeOrder}
+                onApplyAllFilters={this.handleApplyAllFilter}
+                onSNPaddition={this.handleSNPaddition}
+                onMultipleSNPaddition={this.handleMultipleSNPaddition}
+                onFileUpload={this.handleSubmit}
+                onMDChange={this.handleMDChange}
+                onSNPChange={this.handleSNPChange}
+                onColorChange={this.handleColorChange}
+                onOpenFilter={this.handleFilterOpenModal}
+                SNPTable={this.state.SNPTable}
+                availableMDs={this.state.mdinfo}
+                availableSNPs={this.state.availableSNPs}
+                visMd={this.state.visualizedMD}
+                orderChanged={this.state.orderChanged}
+                visSNPs={this.state.visualizedSNPs}
+                remainingNodes={this.state.remainingNodesAfterFilter}
+                createdFilters={this.state.createdFilters}
+                nameOfFilters={this.state.nameOfFilters}
+                onDeleteFilter={this.handleDeleteFilter}
+                onDeleteAllFilters={this.handleDeleteAllFilters}
+                handleLoadingToggle={this.handleLoadingToggle}
+              ></Toolbox>
+            </div>
+            {this.state.ordinalModalShow && (
+              <OrdinalModal
+                id='ordinal-modal'
+                show={this.state.ordinalModalShow}
+                ordinalValues={this.state.ordinalValues}
+                handleClose={this.handleOrdinalCloseModal}
+              />
+            )}
+            {this.state.colorScaleModalShow && (
+              <ColorScaleModal
+                id='color-scale-modal'
+                mdinfo={this.state.mdinfo}
+                chosenMD={this.chosenMD}
+                show={this.state.colorScaleModalShow}
+                handleClose={this.handleColorScaleCloseModal}
+              />
+            )}
+
+            {this.state.filterModalShow && (
+              <FilterModal
+                id='filter-modal'
+                mdinfo={this.state.mdinfo}
+                show={this.state.filterModalShow}
+                filterFeatures={this.state.filterFeatures}
+                handleClose={this.handleFilterCloseModal}
+              />
+            )}
+            {this.state.renameModalShow && (
+              <RenameModal
+                id='rename-modal'
+                show={this.state.renameModalShow}
+                changingCladeNode={this.state.changingCladeNode}
+                name={this.state.changingCladeNode["show-name"]}
+                handleClose={this.handleRenameCloseModal}
+              />
+            )}
+            {this.state.decideOrdinalModalShow && (
+              <DecideOrdinalModal
+                id='decide-ordinal-modal'
+                show={this.state.decideOrdinalModalShow}
+                handleClose={this.handleDecisionOrdinalCloseModal}
+              />
+            )}
+
+            <WelcomeModal id='welcome-modal' />
           </div>
-          <Toolbox
-            onChangeOrder={this.handleChangeOrder}
-            onApplyAllFilters={this.handleApplyAllFilter}
-            onSNPaddition={this.handleSNPaddition}
-            onMultipleSNPaddition={this.handleMultipleSNPaddition}
-            onFileUpload={this.handleSubmit}
-            onMDChange={this.handleMDChange}
-            onSNPChange={this.handleSNPChange}
-            onColorChange={this.handleColorChange}
-            onOpenFilter={this.handleFilterOpenModal}
-            SNPTable={this.state.SNPTable}
-            availableMDs={this.state.mdinfo}
-            availableSNPs={this.state.availableSNPs}
-            visMd={this.state.visualizedMD}
-            orderChanged={this.state.orderChanged}
-            visSNPs={this.state.visualizedSNPs}
-            remainingNodes={this.state.remainingNodesAfterFilter}
-            createdFilters={this.state.createdFilters}
-            nameOfFilters={this.state.nameOfFilters}
-            onDeleteFilter={this.handleDeleteFilter}
-            onDeleteAllFilters={this.handleDeleteAllFilters}
-          ></Toolbox>
-        </div>
-        {this.state.ordinalModalShow && (
-          <OrdinalModal
-            id='ordinal-modal'
-            show={this.state.ordinalModalShow}
-            ordinalValues={this.state.ordinalValues}
-            handleClose={this.handleOrdinalCloseModal}
-          />
-        )}
-        {this.state.colorScaleModalShow && (
-          <ColorScaleModal
-            id='color-scale-modal'
-            mdinfo={this.state.mdinfo}
-            chosenMD={this.chosenMD}
-            show={this.state.colorScaleModalShow}
-            handleClose={this.handleColorScaleCloseModal}
-          />
-        )}
-
-        {this.state.filterModalShow && (
-          <FilterModal
-            id='filter-modal'
-            mdinfo={this.state.mdinfo}
-            show={this.state.filterModalShow}
-            filterFeatures={this.state.filterFeatures}
-            handleClose={this.handleFilterCloseModal}
-          />
-        )}
-        {this.state.renameModalShow && (
-          <RenameModal
-            id='rename-modal'
-            show={this.state.renameModalShow}
-            changingCladeNode={this.state.changingCladeNode}
-            name={this.state.changingCladeNode["show-name"]}
-            handleClose={this.handleRenameCloseModal}
-          />
-        )}
-        {this.state.decideOrdinalModalShow && (
-          <DecideOrdinalModal
-            id='decide-ordinal-modal'
-            show={this.state.decideOrdinalModalShow}
-            handleClose={this.handleDecisionOrdinalCloseModal}
-          />
-        )}
-
-        <WelcomeModal id='welcome-modal' />
-      </div>
+        </LoadingOverlay>
+      </React.Fragment>
     );
   }
 }

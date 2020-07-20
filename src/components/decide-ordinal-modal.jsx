@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import ModalOwn from "./modal-own";
-import * as _ from "lodash";
 import { Typography } from "@material-ui/core";
 
 class DecideOrdinalModal extends Component {
