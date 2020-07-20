@@ -76,6 +76,7 @@ class NodeInformation extends Component {
               <Accordion.Toggle
                 as={Card.Header}
                 eventKey={this.state.showNonSupport ? "1" : "-1"}
+                id='nonSupportingSNPs-header'
                 className={`noselect ${
                   this.state.showNonSupport ? "header-accordion" : "header-accordion-disabled"
                 }`}
@@ -84,7 +85,7 @@ class NodeInformation extends Component {
               >
                 Non Supporting SNPs
               </Accordion.Toggle>
-              <Accordion.Collapse eventKey='1'>
+              <Accordion.Collapse eventKey='1' id='nonSupportingSNPs-card'>
                 <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                   <SNPTable
                     rows={_.get(this.props.SNPTable, `notsupport.actualNode`, [])}

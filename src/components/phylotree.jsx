@@ -53,7 +53,6 @@ class Phylotree extends Component {
       this.props.onDecollapse(node);
     }
     this.props.onSelection(this.props.tree.get_selection());
-    d3.selectAll(".phylotree-").call(this.props.onZoom).call(this.props.onZoom.event);
   }
 
   renameClade(node) {
@@ -61,7 +60,6 @@ class Phylotree extends Component {
   }
 
   showSNPsfromNode(node) {
-    this.props.handleLoadingToggle(true);
     let node_name = this.props.ids.numToLabel[node.tempid];
     let descendants = this.props.tree
       .descendants(node)
@@ -73,27 +71,41 @@ class Phylotree extends Component {
       _.uniqWith(
         listSNPs
           .filter((snp) => listNames.includes(snp.node))
-          .map((snp) => ({ pos: snp.pos, allele: snp.allele }))
+          .map((snp) => ({
+            pos: snp.pos,
+            allele: snp.allele,
+            inActualNode: snp.node === listNames[0],
+          }))
           .sort((a, b) => d3.ascending(parseInt(a.pos), parseInt(b.pos))),
         _.isEqual
       );
+    let uniqSupportSNPs = modifyListOfSNPs(supportSNPs, [node_name, ...descendants]);
+    let groupedSupport = _.groupBy(uniqSupportSNPs, "inActualNode");
+    let uniqNonSupportSNPs = modifyListOfSNPs(notSupportSNPs, [node_name, ...descendants]);
+    let groupedNonSupport = _.groupBy(uniqNonSupportSNPs, "inActualNode");
     let supportSNPTable = {
-      actualNode: modifyListOfSNPs(supportSNPs, [node_name]),
-      descendants: modifyListOfSNPs(supportSNPs, descendants),
+      actualNode: groupedSupport.true,
+      descendants: groupedSupport.false,
     };
 
     let nonSupportSNPTable = {
-      actualNode: modifyListOfSNPs(notSupportSNPs, [node_name]),
-      descendants: modifyListOfSNPs(notSupportSNPs, descendants),
+      actualNode: groupedNonSupport.true,
+      descendants: groupedNonSupport.false,
     };
-    this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable);
-    this.props.tree.update();
-    this.props.onSelection(this.props.tree.get_selection());
-    this.props.handleLoadingToggle(false);
 
-    d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
-    if (!$("#supportingSNPs-card").hasClass("show")) {
-      $("#supportingSNPs-header").click();
+    this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable);
+    this.props.tree.trigger_refresh();
+
+    if (uniqSupportSNPs.length === 0 && uniqNonSupportSNPs.length === 0) {
+      alert("This node contains no SNP. Please select another node.");
+    } else if (uniqSupportSNPs.length > 0) {
+      if (!$("#supportingSNPs-card").hasClass("show")) {
+        $("#supportingSNPs-header").click();
+      }
+    } else {
+      if (!$("#nonSupportingSNPs-card").hasClass("show")) {
+        $("#nonSupportingSNPs-header").click();
+      }
     }
   }
 
@@ -142,6 +154,14 @@ class Phylotree extends Component {
   }
 
   renderTree(input_tree) {
+    const addTimeoutCursor = (func, time = 10) => {
+      document.body.style.cursor = "wait";
+      setTimeout(() => {
+        func();
+        document.body.style.cursor = "";
+      }, time);
+    };
+
     this.props.tree(input_tree).style_nodes(this.nodeStyler).layout();
     this.props.onUploadTree(this.props.tree.get_nodes());
     let count = 1;
@@ -154,28 +174,32 @@ class Phylotree extends Component {
       d3.layout.phylotree.add_custom_menu(
         tnode,
         () => "Show SNPs from Node",
-        () => this.showSNPsfromNode(tnode),
+        () => addTimeoutCursor(() => this.showSNPsfromNode(tnode)),
         () => true
       );
 
       d3.layout.phylotree.add_custom_menu(
         tnode,
         (node) => (node["own-collapse"] ? "Decollapse subtree" : "Collapse substree"),
-        () => {
-          this.collapseNode(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse);
-        },
+        () =>
+          addTimeoutCursor(
+            () =>
+              this.collapseNode(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse),
+            1
+          ),
+
         () => !d3.layout.phylotree.is_leafnode(tnode)
       );
       d3.layout.phylotree.add_custom_menu(
         tnode, // add to this node
         (node) => "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree"), // display this text for the menu
-        () => this.hideNode(tnode, this.props.tree, this.props.onZoom),
+        () => addTimeoutCursor(() => this.hideNode(tnode, this.props.tree, this.props.onZoom)),
         (node) => node.name !== "root" // condition on when to display the menu
       );
       d3.layout.phylotree.add_custom_menu(
         tnode, // add to this node
         () => "Show the hidden nodes", // display this text for the menu
-        () => this.props.onShowMyNodes(tnode),
+        () => addTimeoutCursor(() => this.props.onShowMyNodes(tnode)),
         (node) => node.has_hidden_nodes || node.name === "root" || false
       );
       d3.layout.phylotree.add_custom_menu(

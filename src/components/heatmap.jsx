@@ -46,6 +46,15 @@ class Heatmap extends Component {
     }
   }
   componentDidUpdate(prevProp, prevState) {
+    // console.log("Updating");
+    // Object.entries(this.props).forEach(
+    //   ([key, val]) => prevProp[key] !== val && console.log(`Prop '${key}' changed`)
+    // );
+    // if (this.state) {
+    //   Object.entries(this.state).forEach(
+    //     ([key, val]) => prevState[key] !== val && console.log(`State '${key}' changed`)
+    //   );
+    // }
     let props = this.props;
     this.SNPcolorScale = this.props.SNPcolorScale;
     let shownNodes = props.tree

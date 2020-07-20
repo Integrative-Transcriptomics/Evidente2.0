@@ -7,9 +7,6 @@ class Labels extends Component {
   globalHeight = 0;
   globalWidth = 0;
 
-  // componentDidUpdate(prevProps, prevState) {
-
-  // }
   shouldComponentUpdate(nextProp, nextState) {
     let oldNodes = this.props.shownNodes;
     let newNodes = nextProp.shownNodes;
@@ -17,15 +14,14 @@ class Labels extends Component {
   }
   componentDidUpdate(prevProps, prevState) {
     // To check what changed
-    Object.entries(this.props).forEach(
-      ([key, val]) => prevProps[key] !== val && console.log(`Prop '${key}' changed`)
-    );
-    if (this.state) {
-      Object.entries(this.state).forEach(
-        ([key, val]) => prevState[key] !== val && console.log(`State '${key}' changed`)
-      );
-    }
-
+    // Object.entries(this.props).forEach(
+    //   ([key, val]) => prevProps[key] !== val && console.log(`Prop '${key}' changed`)
+    // );
+    // if (this.state) {
+    //   Object.entries(this.state).forEach(
+    //     ([key, val]) => prevState[key] !== val && console.log(`State '${key}' changed`)
+    //   );
+    // }
     let margin_top = this.globalHeight * 0.05;
 
     d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);

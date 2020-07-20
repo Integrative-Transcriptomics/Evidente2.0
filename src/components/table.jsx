@@ -16,6 +16,10 @@ class SNPTable extends Component {
   state = {};
   header = ["Position", "Allele", "Actions"];
   render() {
+    // const addTimeoutCursor = (func, time = 10) => {
+
+    // };
+
     if (this.props.rows.length > 0) {
       return (
         <Paper>
@@ -32,9 +36,12 @@ class SNPTable extends Component {
                       variant='outlined'
                       style={{ color: "black" }}
                       onClick={() => {
-                        this.props.onMultipleSNPaddition(
-                          _.uniq(this.props.rows.map((row) => row.pos))
-                        );
+                        // document.body.style.cursor = "wait";
+                        // setTimeout(() => {
+                        let SNPs = _.uniq(this.props.rows.map((row) => row.pos));
+                        this.props.onMultipleSNPaddition(SNPs);
+                        //   document.body.style.cursor = "";
+                        // }, 1);
                       }}
                     >
                       Show all

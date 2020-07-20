@@ -30,7 +30,7 @@ class App extends Component {
     .phylotree()
     .options({
       brush: false,
-      zoom: true,
+      zoom: false,
       "show-scale": false,
       selectable: true,
       collapsible: false,
@@ -232,9 +232,13 @@ class App extends Component {
     });
   };
   handleMultipleSNPaddition = (listOfSnps) => {
-    this.setState({
-      visualizedSNPs: _.uniq(this.state.visualizedSNPs.concat(listOfSnps)),
-    });
+    document.body.style.cursor = "wait !important";
+    setTimeout(() => {
+      this.setState({
+        visualizedSNPs: _.uniq(this.state.visualizedSNPs.concat(listOfSnps)),
+      });
+      document.body.style.cursor = "";
+    }, 5);
   };
 
   handleChangeOrder = () => {
@@ -596,9 +600,7 @@ class App extends Component {
                   visMd={this.state.visualizedMD}
                   visSNPs={this.state.visualizedSNPs}
                   SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
-                  taxadata={[]}
                   snpdata={this.state.snpdata}
-                  mdinfo={[]}
                   isSNP={true}
                 />
                 <Heatmap
@@ -614,9 +616,7 @@ class App extends Component {
                   selectedNodes={this.state.selectedNodes}
                   ids={this.state.ids}
                   visMd={this.state.visualizedMD}
-                  visSNPs={[]}
                   taxadata={this.state.taxamd}
-                  snpdata={[]}
                   mdinfo={this.state.mdinfo}
                   isSNP={false}
                   createdFilters={this.state.createdFilters}
