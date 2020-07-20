@@ -1,32 +1,22 @@
 import React, { Component } from "react";
 import * as d3 from "d3";
-// import { isEqual } from "lodash";
+import { isEqual } from "lodash";
 
 class Labels extends Component {
   state = {};
   globalHeight = 0;
   globalWidth = 0;
-  isVisibleEndNode = (node) => {
-    return (
-      (this.props.tree.is_leafnode(node) || node["own-collapse"]) &&
-      d3.layout.phylotree.is_node_visible(node)
-    );
-  };
+
   // componentDidUpdate(prevProps, prevState) {
 
   // }
-  // shouldComponentUpdate(nextProp, nextState) {
-  //   let oldNodes = this.props.tree
-  //     .get_nodes()
-  //     .filter((node) => this.isVisibleEndNode(node))
-  //     .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
-  //   let newNodes = nextProp.tree
-  //     .get_nodes()
-  //     .filter((node) => this.isVisibleEndNode(node))
-  //     .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
-  //   return isEqual(newNodes, oldNodes);
-  // }
+  shouldComponentUpdate(nextProp, nextState) {
+    let oldNodes = this.props.shownNodes;
+    let newNodes = nextProp.shownNodes;
+    return !isEqual(newNodes, oldNodes);
+  }
   componentDidUpdate(prevProps, prevState) {
+    // To check what changed
     Object.entries(this.props).forEach(
       ([key, val]) => prevProps[key] !== val && console.log(`Prop '${key}' changed`)
     );
@@ -35,7 +25,7 @@ class Labels extends Component {
         ([key, val]) => prevState[key] !== val && console.log(`State '${key}' changed`)
       );
     }
-    console.log("test");
+
     let margin_top = this.globalHeight * 0.05;
 
     d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
@@ -43,10 +33,7 @@ class Labels extends Component {
     let div = d3.select("#tooltip");
     let height = this.globalHeight;
     let props = this.props;
-    let shownNodes = props.tree
-      .get_nodes()
-      .filter((node) => this.isVisibleEndNode(node))
-      .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
+    let shownNodes = props.shownNodes;
     let yScale = d3.scale
       .ordinal()
       .domain(shownNodes)

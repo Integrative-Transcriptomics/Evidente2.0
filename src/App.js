@@ -157,6 +157,16 @@ class App extends Component {
       $("#metadata-card").click();
     }
   };
+  /**
+   * Verifies if the node is a visible End-node
+   * @param {Object} node of Phylotree library
+   */
+  isVisibleEndNode = (node) => {
+    return (
+      (this.tree.is_leafnode(node) || node["own-collapse"]) &&
+      d3.layout.phylotree.is_node_visible(node)
+    );
+  };
 
   createColorScales = (metadata) => {
     _.keys(metadata).forEach((k) => {
@@ -533,6 +543,10 @@ class App extends Component {
   }
 
   render() {
+    let shownNodes = this.tree
+      .get_nodes()
+      .filter((node) => this.isVisibleEndNode(node))
+      .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
     return (
       <React.Fragment>
         <LoadingOverlay active={this.state.loadAnimationShow} spinner text='Loading...'>
@@ -563,7 +577,7 @@ class App extends Component {
                 />
                 <Labels
                   divID={"labels_viz"}
-                  tree={this.tree}
+                  shownNodes={shownNodes}
                   onZoom={this.state.zoom}
                   onDrag={this.lr}
                 />

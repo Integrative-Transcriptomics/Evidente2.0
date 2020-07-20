@@ -20,7 +20,11 @@ header {
   border-bottom: 1pt solid grey;
   display: flex;
 }
-
+.highlighted-guide,
+.fixed-guide {
+  stroke: red !important;
+  stroke-opacity: 0.75 !important;
+}
 #outer {
   display: flex;
   flex-flow: column;
