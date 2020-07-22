@@ -21,6 +21,7 @@ class SNPTable extends Component {
   }
   render() {
     if (this.props.rows.length > 0) {
+      let SNPs = uniq(this.props.rows.map((row) => row.pos));
       return (
         <Paper>
           <TableContainer>
@@ -41,11 +42,10 @@ class SNPTable extends Component {
                       variant='outlined'
                       style={{ color: "black" }}
                       onClick={() => {
-                        let SNPs = uniq(this.props.rows.map((row) => row.pos));
                         this.props.onMultipleSNPaddition(SNPs);
                       }}
                     >
-                      Show all
+                      Show all {SNPs.length} SNPs
                     </Button>
                   </TableCell>
                 </TableRow>

@@ -156,42 +156,51 @@ class ReactVirtualizedTable extends Component {
   }
   render() {
     let maxHeight = Math.max(80, Math.min(this.props.rows.length * 30 + 30, 250));
-    return (
-      <Paper
-        style={{
-          height: maxHeight,
-          width: "100%",
-          margin: 5,
-        }}
-      >
-        <Typography variant='h6' align='center' gutterBottom={true}>
-          SNPs within the actual {this.props.type}
+    if (this.props.rows.length > 0) {
+      let SNPs = uniq(this.props.rows.map((row) => row.pos));
+      return (
+        <Paper
+          style={{
+            height: maxHeight,
+            width: "100%",
+            margin: 5,
+          }}
+        >
+          <Typography variant='h6' align='center' gutterBottom={true}>
+            SNPs within the actual {this.props.type}
+          </Typography>
+          <div style={{ height: maxHeight - 25 }}>
+            <VirtualizedTable
+              rowCount={this.props.rows.length}
+              rowGetter={this.rowGetter}
+              columns={[
+                {
+                  label: "Position",
+                  dataKey: "pos",
+                },
+                {
+                  label: "Allele",
+                  dataKey: "allele",
+                },
+                {
+                  label: "Actions",
+                  dataKey: "pos",
+                },
+              ]}
+              onSNPaddition={this.props.onSNPaddition}
+              onMultipleSNPaddition={this.props.onMultipleSNPaddition}
+              data={this.props.rows}
+            />
+          </div>
+        </Paper>
+      );
+    } else {
+      return (
+        <Typography align='center' gutterBottom={true} variant='h6' style={{ margin: 5 }}>
+          No SNPs within the actual {this.props.type}
         </Typography>
-        <div style={{ height: maxHeight - 25 }}>
-          <VirtualizedTable
-            rowCount={this.props.rows.length}
-            rowGetter={this.rowGetter}
-            columns={[
-              {
-                label: "Position",
-                dataKey: "pos",
-              },
-              {
-                label: "Allele",
-                dataKey: "allele",
-              },
-              {
-                label: "Actions",
-                dataKey: "pos",
-              },
-            ]}
-            onSNPaddition={this.props.onSNPaddition}
-            onMultipleSNPaddition={this.props.onMultipleSNPaddition}
-            data={this.props.rows}
-          />
-        </div>
-      </Paper>
-    );
+      );
+    }
   }
 }
 
