@@ -25,8 +25,7 @@ class OwnSlider extends Component {
       >
         <Grid
           key={`range-slider-title-grid-${this.props.name}`}
-          alignItems='center'
-          style={{ display: "flex" }}
+          style={{ alignItems: "center", display: "flex" }}
           item
         >
           <Typography id={`range-slider-${this.props.name}`}>{this.props.name}</Typography>

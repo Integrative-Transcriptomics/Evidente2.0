@@ -252,6 +252,7 @@ class Toolbox extends Component {
         extent: d[1].extent,
         type: d[1].type,
       }));
+
   render() {
     return (
       <div id='toolbox' className='rchild'>

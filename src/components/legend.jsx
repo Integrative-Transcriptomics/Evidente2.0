@@ -18,16 +18,12 @@ import {
 
 import * as _ from "lodash";
 const rowNameTooltip = (name, props) => {
-  return (
-    <Tooltip id={`${name}-filter-row`} {...props}>
-      {name}
-    </Tooltip>
-  );
+  return <Tooltip id={`${name}-filter-row`}>{name}</Tooltip>;
 };
 
-const warningTooltip = (name, props) => {
+const warningTooltip = (name, { onChange }) => {
   return (
-    <Tooltip id={`${name}-order-warning`} {...props}>
+    <Tooltip id={`${name}-order-warning`}>
       The order of this metadata has not been corrected by the user.
     </Tooltip>
   );
@@ -91,7 +87,7 @@ class Legend extends Component {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     return (
       <React.Fragment>
-        <div style={{ display: "flex", "align-items": "center" }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <h4>Legend</h4>
           <AntSwitch size='small' checked={this.state.checked} onChange={this.setChecked} />
         </div>
@@ -147,7 +143,7 @@ class Legend extends Component {
                           );
                         return (
                           <TableRow key={row.name}>
-                            <TableCell scope='row' alignItems='center'>
+                            <TableCell scope='row' style={{ alignItems: "center" }}>
                               <div style={{ display: "flex" }}>
                                 <OverlayTrigger
                                   placement='left'
@@ -155,9 +151,9 @@ class Legend extends Component {
                                 >
                                   <span
                                     style={{
-                                      "max-width": this.cell.offsetWidth / 4,
+                                      maxWidth: this.cell.offsetWidth / 4,
                                       overflow: "hidden",
-                                      "text-overflow": "ellipsis",
+                                      textOverflow: "ellipsis",
                                       whiteSpace: "nowrap",
                                       display: "block",
                                       cursor: "default",

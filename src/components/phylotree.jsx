@@ -156,9 +156,9 @@ class Phylotree extends Component {
   renderTree(input_tree) {
     const addTimeoutCursor = (func, time = 10) => {
       document.body.style.cursor = "wait";
-      setTimeout(() => {
+      window.setTimeout(() => {
         func();
-        document.body.style.cursor = "";
+        document.body.style.cursor = "default";
       }, time);
     };
 
@@ -174,7 +174,7 @@ class Phylotree extends Component {
       d3.layout.phylotree.add_custom_menu(
         tnode,
         () => "Show SNPs from Node",
-        () => addTimeoutCursor(() => this.showSNPsfromNode(tnode)),
+        () => addTimeoutCursor(() => this.showSNPsfromNode(tnode), 50),
         () => true
       );
 

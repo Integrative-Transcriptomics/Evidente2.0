@@ -1,23 +1,27 @@
 import React, { Component } from "react";
-import SNPTable from "./table";
+// import SNPTable from "./table";
 import { Accordion, Card } from "react-bootstrap";
 import * as _ from "lodash";
 import * as d3 from "d3";
+import VirtualizedTable from "./virtualized-snp-table";
 
 const enterMouse = (event) => {
   const div = d3.select("#tooltip");
-
-  div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+  div
+    .transition()
+    .duration(200)
+    .style("max-width", "150px")
+    .style("opacity", 0.9)
+    .style("display", "flex");
   div
     .html(`Select first a node to show the SNPs among the subtree`)
     .style("left", event.pageX + "px")
-    .style("top", event.pageY - 28 + "px")
-    .style("max-width", "150px");
+    .style("top", event.pageY - 28 + "px");
 };
 
 const outMouse = () => {
   const div = d3.select("#tooltip");
-  div.transition().duration(500).style("opacity", 0);
+  div.transition().duration(500).style("opacity", 0).style("max-width", "");
 };
 
 class NodeInformation extends Component {
@@ -47,28 +51,27 @@ class NodeInformation extends Component {
                 className={`noselect ${
                   this.state.showSupport ? "header-accordion" : "header-accordion-disabled"
                 }`}
-                onMouseOver={!this.state.showSupport && enterMouse}
-                onMouseOut={!this.state.showSupport && outMouse}
+                onMouseOver={!this.state.showSupport ? enterMouse : undefined}
+                onMouseOut={!this.state.showSupport ? outMouse : undefined}
               >
                 Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='0' id='supportingSNPs-card'>
                 <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
-                  <SNPTable
+                  <VirtualizedTable
                     rows={_.get(this.props.SNPTable, `support.actualNode`, [])}
                     title={"SNPs among the actual node"}
                     type={"node"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></SNPTable>
-
-                  <SNPTable
+                  ></VirtualizedTable>
+                  <VirtualizedTable
                     rows={_.get(this.props.SNPTable, `support.descendants`, [])}
                     title={"SNPs among the actual subtree"}
                     type={"subtree"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></SNPTable>
+                  ></VirtualizedTable>
                 </Card.Body>
               </Accordion.Collapse>
             </Card>
@@ -80,28 +83,28 @@ class NodeInformation extends Component {
                 className={`noselect ${
                   this.state.showNonSupport ? "header-accordion" : "header-accordion-disabled"
                 }`}
-                onMouseOver={!this.state.showSupport && enterMouse}
-                onMouseOut={!this.state.showSupport && outMouse}
+                onMouseOver={!this.state.showSupport ? enterMouse : undefined}
+                onMouseOut={!this.state.showSupport ? outMouse : undefined}
               >
                 Non Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='1' id='nonSupportingSNPs-card'>
                 <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
-                  <SNPTable
+                  <VirtualizedTable
                     rows={_.get(this.props.SNPTable, `notsupport.actualNode`, [])}
                     title={"SNPs among the actual node"}
                     type={"node"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></SNPTable>
+                  ></VirtualizedTable>
 
-                  <SNPTable
+                  <VirtualizedTable
                     rows={_.get(this.props.SNPTable, `notsupport.descendants`, [])}
                     title={"SNPs among the actual subtree"}
                     type={"subtree"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></SNPTable>
+                  ></VirtualizedTable>
                 </Card.Body>
               </Accordion.Collapse>
             </Card>

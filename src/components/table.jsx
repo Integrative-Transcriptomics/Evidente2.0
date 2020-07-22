@@ -10,21 +10,26 @@ import {
   Button,
   Typography,
 } from "@material-ui/core";
+import SNPRow from "./SNP-row";
 import * as _ from "lodash";
 
 class SNPTable extends Component {
   state = {};
   header = ["Position", "Allele", "Actions"];
+  shouldComponentUpdate(nextProp, nextState) {
+    return !_.isEqual(nextProp.rows, this.props.rows);
+  }
   render() {
-    // const addTimeoutCursor = (func, time = 10) => {
-
-    // };
-
     if (this.props.rows.length > 0) {
       return (
         <Paper>
           <TableContainer>
-            <Table size='small' stickyHeader aria-label='sticky table'>
+            <Table
+              style={{ maxHeight: "250px" }}
+              size='small'
+              stickyHeader
+              aria-label='sticky table'
+            >
               <TableHead>
                 <TableRow>
                   <TableCell align='center' colSpan={2}>
@@ -36,12 +41,8 @@ class SNPTable extends Component {
                       variant='outlined'
                       style={{ color: "black" }}
                       onClick={() => {
-                        // document.body.style.cursor = "wait";
-                        // setTimeout(() => {
                         let SNPs = _.uniq(this.props.rows.map((row) => row.pos));
                         this.props.onMultipleSNPaddition(SNPs);
-                        //   document.body.style.cursor = "";
-                        // }, 1);
                       }}
                     >
                       Show all
@@ -56,24 +57,11 @@ class SNPTable extends Component {
               </TableHead>
               <TableBody>
                 {this.props.rows.map((row) => (
-                  <TableRow key={`${row.pos}-${row.allele}`}>
-                    <TableCell component='th' scope='row'>
-                      {row.pos}
-                    </TableCell>
-                    <TableCell align='left'>{row.allele}</TableCell>
-                    <TableCell>
-                      <Button
-                        size='small'
-                        variant='outlined'
-                        style={{ color: "black" }}
-                        onClick={() => {
-                          this.props.onSNPaddition(row.pos);
-                        }}
-                      >
-                        Visualize
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  <SNPRow
+                    key={`${row.pos}-${row.allele}`}
+                    row={row}
+                    onSNPaddition={this.props.onSNPaddition}
+                  />
                 ))}
               </TableBody>
             </Table>

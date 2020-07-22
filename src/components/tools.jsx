@@ -10,6 +10,7 @@ import { Typography, Divider, Grid } from "@material-ui/core";
 import HelpIcon from "@material-ui/icons/Help";
 
 import FilterList from "./filter-list";
+import VisualizeDataCard from "./visualize-card";
 
 /**
  * Helper function for the filter tooltip
@@ -122,6 +123,17 @@ class Tools extends Component {
 
     link.click();
   }
+  /**
+   * Creates the labels and values for the correspoinding selecting menu
+   * @param {dictionary of metadata} metadata
+   */
+  getMetadata(metadata) {
+    return _.keys(metadata)
+      .filter((d) => !["SNP", "Information"].includes(d))
+      .map((d) => {
+        return { value: d, label: d };
+      });
+  }
 
   /**
    *
@@ -143,9 +155,9 @@ class Tools extends Component {
       $(target)
         .next(".custom-file-label")
         .css({
-          "max-width": "100%",
+          maxWidth: "100%",
           overflow: "hidden",
-          "text-overflow": "ellipsis",
+          textOverflow: "ellipsis",
           whiteSpace: "nowrap",
           cursor: "default",
           paddingRight: "30%",
@@ -154,18 +166,6 @@ class Tools extends Component {
         .html(`${label}: ${fileName}`);
     }
   };
-
-  /**
-   * Creates the labels and values for the correspoinding selecting menu
-   * @param {dictionary of metadata} metadata
-   */
-  getMetadata(metadata) {
-    return _.keys(metadata)
-      .filter((d) => !["SNP", "Information"].includes(d))
-      .map((d) => {
-        return { value: d, label: d };
-      });
-  }
 
   render() {
     return (
@@ -218,37 +218,15 @@ class Tools extends Component {
               Visualize data
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='1'>
-              <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
-                <Typography variant='h6'>Select to visualize</Typography>
-                <Select
-                  id='snpdatashow'
-                  options={this.props.availableSNPs.map((d) => ({ value: d, label: d }))}
-                  value={this.props.visSNPs.map((d) => ({ value: d, label: d }))}
-                  onChange={this.props.onSNPChange}
-                  placeholder={"Visualize SNPs"}
-                  isMulti
-                  components={{
-                    ValueContainer: CustomValueContainer,
-                  }}
-                  menuPosition={"fixed"}
-                  menuPortalTarget={document.getElementById("tools")}
-                  styles={selectStates}
-                ></Select>
-                <Select
-                  id='metadatashow'
-                  options={this.getMetadata(this.props.availableMDs)}
-                  value={this.props.visMd.map((d) => ({ value: d, label: d }))}
-                  onChange={this.props.onMDChange}
-                  isMulti
-                  placeholder={"Visualize metadata"}
-                  components={{
-                    ValueContainer: CustomValueContainer,
-                  }}
-                  menuPosition={"fixed"}
-                  menuPortalTarget={document.getElementById("tools")}
-                  styles={selectStates}
-                ></Select>
-              </Card.Body>
+              <VisualizeDataCard
+                availableMDs={this.props.availableMDs}
+                availableSNPs={this.props.availableSNPs}
+                visSNPs={this.props.visSNPs}
+                visMd={this.props.visMd}
+                onSNPChange={this.props.onSNPChange}
+                onMDChange={this.props.onMDChange}
+                getMetadata={this.getMetadata}
+              />
             </Accordion.Collapse>
           </Card>
           <Card>
@@ -276,7 +254,7 @@ class Tools extends Component {
                 <Form.Group key='metadatafilter'>
                   <Select
                     id='select-filter'
-                    options={this.getMetadata(this.props.availableMDs || [])}
+                    options={this.getMetadata(this.props.availableMDs)}
                     isMulti
                     value={this.state.filterValue}
                     onChange={this.onChangeFilter}
@@ -340,7 +318,7 @@ class Tools extends Component {
                 </Typography>
                 <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
                   {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
-                    <Grid item>
+                    <Grid key={typeOfExport} item>
                       <Button
                         variant='primary'
                         onClick={() => this.onExport(typeOfExport.toLowerCase())}
