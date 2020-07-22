@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ModalOwn from "./modal-own";
-import * as _ from "lodash";
+import { toPairs } from "lodash";
 import Select, { components } from "react-select";
 import OwnSlider from "./own-slider";
 import { Typography, Divider, TextField } from "@material-ui/core";
@@ -88,7 +88,7 @@ class FilterModal extends Component {
 
         <Typography variant='h6'>Data for filter: </Typography>
 
-        {_.toPairs(this.props.mdinfo).map((arr) => {
+        {toPairs(this.props.mdinfo).map((arr) => {
           let k = arr[0],
             v = arr[1];
           if (this.props.filterFeatures.includes(k)) {

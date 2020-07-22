@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Accordion, Card, Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import Select, { components } from "react-select";
-import * as _ from "lodash";
+import { filter, keys } from "lodash";
 import * as $ from "jquery";
 import * as d3 from "d3";
 
@@ -86,7 +86,7 @@ class Tools extends Component {
     divLegend.style.display = "flex";
     divLegend.style.flexWrap = "wrap";
     divLegend.style.padding = "5px";
-    _.filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
+    filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
       return accountForLegend.includes(v.name);
     }).forEach((data) => {
       let blockLegendLabel = document.createElement("div");
@@ -128,7 +128,7 @@ class Tools extends Component {
    * @param {dictionary of metadata} metadata
    */
   getMetadata(metadata) {
-    return _.keys(metadata)
+    return keys(metadata)
       .filter((d) => !["SNP", "Information"].includes(d))
       .map((d) => {
         return { value: d, label: d };

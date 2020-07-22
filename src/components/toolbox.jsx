@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
 import Tools from "./tools";
-import * as _ from "lodash";
+import { round, last, clamp, toPairs } from "lodash";
 import * as d3 from "d3";
 class Toolbox extends Component {
   state = {};
@@ -224,11 +224,11 @@ class Toolbox extends Component {
           )
           .style("fill", (value) => colorScale(value));
 
-        if (_.round(_.last(positions)) > cellWidth && !isStatic) {
+        if (round(last(positions)) > cellWidth && !isStatic) {
           let drag = d3.behavior.drag().on("drag", dragmove);
           function dragmove(d) {
             let actualTransform = d3.transform(d3.select(this).attr("transform")).translate[0];
-            let x = _.clamp(d3.event.dx + actualTransform, cellWidth - _.last(positions), 0);
+            let x = clamp(d3.event.dx + actualTransform, cellWidth - last(positions), 0);
             d3.select(this).attr("transform", `translate( ${x}  , 0)`);
           }
           svg.style("cursor", "grab").call(drag);
@@ -244,7 +244,7 @@ class Toolbox extends Component {
    * @param {Object} metadata Object containng the metadata names as keys, content as value.
    */
   metadataToRows = (metadata) =>
-    _.toPairs(metadata)
+    toPairs(metadata)
       .filter((d) => d[1].type.toLowerCase() !== "type")
       .map((d) => ({
         name: d[0],

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ModalOwn from "./modal-own";
 import { makeStyles } from "@material-ui/core/styles";
-import * as _ from "lodash";
+import { get } from "lodash";
 import MyColorPicker from "./color-picker";
 import {
   Popover,
@@ -70,7 +70,7 @@ class ColorScaleModal extends Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {_.get(this.props.mdinfo, `${this.props.chosenMD}.extent`, []).map((value, i) => {
+                {get(this.props.mdinfo, `${this.props.chosenMD}.extent`, []).map((value, i) => {
                   return (
                     <TableRow key={value}>
                       <TableCell component='th' scope='row'>
@@ -84,7 +84,7 @@ class ColorScaleModal extends Component {
                             width='10px'
                             height='10px'
                             stroke='black'
-                            fill={_.get(
+                            fill={get(
                               this.props.mdinfo,
                               `${this.props.chosenMD}.colorScale`
                             )(value)}

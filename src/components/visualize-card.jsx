@@ -7,7 +7,7 @@ import Select, { components } from "react-select";
 const { MenuItem } = components;
 
 function Option(props) {
-  // Fix
+  // Fix slow rendering of menu item
   const { onMouseMove, onMouseOver, ...newInnerProps } = props.innerProps;
 
   return (
@@ -50,7 +50,6 @@ const selectStates = {
     ...provided,
     overflow: "visible",
     height: "auto",
-    // maxHeight: "5px",
   }),
   menuList: (provided, state) => ({
     ...provided,
@@ -105,7 +104,6 @@ class VisualizeDataCard extends Component {
           isMulti
           components={{
             ValueContainer: CustomValueContainer,
-            // MenuList: MenuListOverride,
             MenuItem: Option,
           }}
           menuPosition={"fixed"}

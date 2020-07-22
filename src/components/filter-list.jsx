@@ -11,11 +11,11 @@ import {
 } from "@material-ui/core";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 
-import * as _ from "lodash";
+import { toPairs, get, isEqual } from "lodash";
 
 const popover = (valueFilter, props) => (
   <Tooltip>
-    {_.toPairs(valueFilter).map(([key, value]) => {
+    {toPairs(valueFilter).map(([key, value]) => {
       return (
         <Grid key={`container-${key}`} container justify='center' spacing={2}>
           <Grid key={key} item>
@@ -23,7 +23,7 @@ const popover = (valueFilter, props) => (
           </Grid>
           <Grid key={value} item>
             <Paper className='paper-tooltip'>
-              {_.get(props, `availableMDs["${key}"].type`, undefined) === "numerical"
+              {get(props, `availableMDs["${key}"].type`, undefined) === "numerical"
                 ? `from ${parseFloat(value[0].toFixed(3))} to ${parseFloat(value[1].toFixed(3))}`
                 : `Includes: [${value.join(", ")}]`}
             </Paper>
@@ -38,7 +38,7 @@ class FilterList extends Component {
   state = { createdFilters: this.props.createdFilters };
 
   static getDerivedStateFromProps(props, state) {
-    if (!_.isEqual(props.createdFilters, state.createdFilters)) {
+    if (!isEqual(props.createdFilters, state.createdFilters)) {
       return {
         createdFilters: props.createdFilters,
       };

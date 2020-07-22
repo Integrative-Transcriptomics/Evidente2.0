@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 // import SNPTable from "./table";
 import { Accordion, Card } from "react-bootstrap";
-import * as _ from "lodash";
+import { get } from "lodash";
 import * as d3 from "d3";
 import VirtualizedTable from "./virtualized-snp-table";
 
@@ -29,8 +29,8 @@ class NodeInformation extends Component {
 
   static getDerivedStateFromProps(props) {
     const getIfShow = (props, type) =>
-      _.get(props, `SNPTable.${type}.actualNode.length`, 0) > 0 ||
-      _.get(props, `SNPTable.${type}.descendants.length`, 0) > 0;
+      get(props, `SNPTable.${type}.actualNode.length`, 0) > 0 ||
+      get(props, `SNPTable.${type}.descendants.length`, 0) > 0;
     return {
       showSupport: getIfShow(props, "support"),
       showNonSupport: getIfShow(props, "notsupport"),
@@ -59,14 +59,14 @@ class NodeInformation extends Component {
               <Accordion.Collapse eventKey='0' id='supportingSNPs-card'>
                 <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                   <VirtualizedTable
-                    rows={_.get(this.props.SNPTable, `support.actualNode`, [])}
+                    rows={get(this.props.SNPTable, `support.actualNode`, [])}
                     title={"SNPs among the actual node"}
                     type={"node"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
                   ></VirtualizedTable>
                   <VirtualizedTable
-                    rows={_.get(this.props.SNPTable, `support.descendants`, [])}
+                    rows={get(this.props.SNPTable, `support.descendants`, [])}
                     title={"SNPs among the actual subtree"}
                     type={"subtree"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
@@ -91,7 +91,7 @@ class NodeInformation extends Component {
               <Accordion.Collapse eventKey='1' id='nonSupportingSNPs-card'>
                 <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                   <VirtualizedTable
-                    rows={_.get(this.props.SNPTable, `notsupport.actualNode`, [])}
+                    rows={get(this.props.SNPTable, `notsupport.actualNode`, [])}
                     title={"SNPs among the actual node"}
                     type={"node"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
@@ -99,7 +99,7 @@ class NodeInformation extends Component {
                   ></VirtualizedTable>
 
                   <VirtualizedTable
-                    rows={_.get(this.props.SNPTable, `notsupport.descendants`, [])}
+                    rows={get(this.props.SNPTable, `notsupport.descendants`, [])}
                     title={"SNPs among the actual subtree"}
                     type={"subtree"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}

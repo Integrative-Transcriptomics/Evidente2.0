@@ -11,13 +11,13 @@ import {
   Typography,
 } from "@material-ui/core";
 import SNPRow from "./SNP-row";
-import * as _ from "lodash";
+import { isEqual, uniq } from "lodash";
 
 class SNPTable extends Component {
   state = {};
   header = ["Position", "Allele", "Actions"];
   shouldComponentUpdate(nextProp, nextState) {
-    return !_.isEqual(nextProp.rows, this.props.rows);
+    return !isEqual(nextProp.rows, this.props.rows);
   }
   render() {
     if (this.props.rows.length > 0) {
@@ -41,7 +41,7 @@ class SNPTable extends Component {
                       variant='outlined'
                       style={{ color: "black" }}
                       onClick={() => {
-                        let SNPs = _.uniq(this.props.rows.map((row) => row.pos));
+                        let SNPs = uniq(this.props.rows.map((row) => row.pos));
                         this.props.onMultipleSNPaddition(SNPs);
                       }}
                     >

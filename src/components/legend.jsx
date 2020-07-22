@@ -16,7 +16,7 @@ import {
   Button,
 } from "@material-ui/core";
 
-import * as _ from "lodash";
+import { filter } from "lodash";
 const rowNameTooltip = (name, props) => {
   return <Tooltip id={`${name}-filter-row`}>{name}</Tooltip>;
 };
@@ -105,7 +105,7 @@ class Legend extends Component {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {_.filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
+                      {filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
                         return accountForLegend.includes(v.name);
                       }).map((row) => {
                         let viewLegend =
