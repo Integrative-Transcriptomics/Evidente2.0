@@ -74,7 +74,7 @@ header {
   max-height: 100%;
 }
 .mchild {
-  width: 25%;
+  /* width: 25%; */
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flexbox: 1;

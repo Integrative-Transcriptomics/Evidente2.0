@@ -17,6 +17,7 @@ const styles = (theme) => ({
   tableRow: {
     cursor: "pointer",
   },
+  buttonSNP: { color: "black", whiteSpace: "nowrap" },
   tableRowHover: {
     "&:hover": {
       backgroundColor: theme.palette.grey[200],
@@ -25,6 +26,7 @@ const styles = (theme) => ({
   tableCell: {
     flex: 1,
     padding: 0,
+    justifyContent: "center",
   },
   noClick: {
     cursor: "initial",
@@ -32,11 +34,6 @@ const styles = (theme) => ({
 });
 
 class MuiVirtualizedTable extends React.PureComponent {
-  static defaultProps = {
-    headerHeight: 30,
-    rowHeight: 30,
-  };
-
   getRowClassName = ({ index }) => {
     const { classes, onRowClick } = this.props;
 
@@ -54,14 +51,13 @@ class MuiVirtualizedTable extends React.PureComponent {
           [classes.noClick]: onRowClick == null,
         })}
         variant='body'
-        style={{ height: rowHeight, justifyContent: "center" }}
-        align={"center"}
+        style={{ height: rowHeight }}
       >
         {columns[columnIndex].label === "Actions" ? (
           <Button
             size='small'
             variant='outlined'
-            style={{ color: "black" }}
+            className={clsx(classes.buttonSNP)}
             onClick={() => {
               this.props.onSNPaddition(cellData);
             }}
@@ -77,26 +73,25 @@ class MuiVirtualizedTable extends React.PureComponent {
 
   headerRenderer = ({ label, columnIndex }) => {
     const { headerHeight, columns, classes, data } = this.props;
+    let SNPs = uniq(data.map((row) => row.pos));
 
     return (
       <TableCell
         component='div'
         className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
         variant='head'
-        style={{ height: headerHeight, justifyContent: "center" }}
-        align={columns[columnIndex].numeric || false ? "right" : "left"}
+        style={{ height: headerHeight }}
       >
         {columns[columnIndex].label === "Actions" ? (
           <Button
             size='small'
             variant='outlined'
-            style={{ color: "black" }}
+            className={clsx(classes.buttonSNP)}
             onClick={() => {
-              let SNPs = uniq(data.map((row) => row.pos));
               this.props.onMultipleSNPaddition(SNPs);
             }}
           >
-            Show all
+            Show all {SNPs.length} SNPs
           </Button>
         ) : (
           <span>{label}</span>
@@ -106,7 +101,7 @@ class MuiVirtualizedTable extends React.PureComponent {
   };
 
   render() {
-    const { classes, columns, rowHeight, headerHeight, ...tableProps } = this.props;
+    const { classes, columns, rowHeight, headerHeight, paperWidth, ...tableProps } = this.props;
     return (
       <AutoSizer>
         {({ height, width }) => {
@@ -114,6 +109,7 @@ class MuiVirtualizedTable extends React.PureComponent {
             <Table
               height={height}
               width={width}
+              // width={Math.min(270, width)}
               rowHeight={rowHeight}
               headerHeight={headerHeight}
               className={classes.table}
@@ -149,19 +145,41 @@ class MuiVirtualizedTable extends React.PureComponent {
 const VirtualizedTable = withStyles(styles)(MuiVirtualizedTable);
 
 class ReactVirtualizedTable extends Component {
+  constructor(props) {
+    super(props);
+    this.paperTable = React.createRef();
+  }
   state = {};
+  minPaperHeight = 60;
+  maxPaperHeight = 250;
+  rowHeight = 30;
+  columnInformation = [
+    {
+      label: "Position",
+      dataKey: "pos",
+    },
+    {
+      label: "Allele",
+      dataKey: "allele",
+    },
+    {
+      label: "Actions",
+      dataKey: "pos",
+    },
+  ];
   rowGetter = ({ index }) => this.props.rows[index];
-  shouldComponentUpdate(nextProp, nextState) {
+  shouldComponentUpdate(nextProp) {
     return !isEqual(this.props.rows, nextProp.rows);
   }
   render() {
-    let maxHeight = Math.max(80, Math.min(this.props.rows.length * 30 + 30, 250));
+    let expectedHeight = (this.props.rows.length + 1) * this.rowHeight; // number of SNP rows + header
+    let maxHeight = Math.max(this.minPaperHeight, Math.min(expectedHeight, this.maxPaperHeight));
     if (this.props.rows.length > 0) {
-      let SNPs = uniq(this.props.rows.map((row) => row.pos));
       return (
         <Paper
+          ref={this.paperTable}
           style={{
-            height: maxHeight,
+            height: maxHeight + 25,
             width: "100%",
             margin: 5,
           }}
@@ -169,24 +187,14 @@ class ReactVirtualizedTable extends Component {
           <Typography variant='h6' align='center' gutterBottom={true}>
             SNPs within the actual {this.props.type}
           </Typography>
-          <div style={{ height: maxHeight - 25 }}>
+          <div style={{ height: maxHeight }}>
             <VirtualizedTable
+              paperWidth={this.paperTable.offsetWidth}
               rowCount={this.props.rows.length}
               rowGetter={this.rowGetter}
-              columns={[
-                {
-                  label: "Position",
-                  dataKey: "pos",
-                },
-                {
-                  label: "Allele",
-                  dataKey: "allele",
-                },
-                {
-                  label: "Actions",
-                  dataKey: "pos",
-                },
-              ]}
+              headerHeight={this.rowHeight}
+              rowHeight={this.rowHeight}
+              columns={this.columnInformation}
               onSNPaddition={this.props.onSNPaddition}
               onMultipleSNPaddition={this.props.onMultipleSNPaddition}
               data={this.props.rows}

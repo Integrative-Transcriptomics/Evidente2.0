@@ -603,6 +603,7 @@ class App extends Component {
                   snpdata={this.state.snpdata}
                   isSNP={true}
                 />
+
                 <Heatmap
                   onZoom={this.state.zoom}
                   onDrag={this.lr}

@@ -1,4 +1,4 @@
-Information,WeightTheLongestName,Lifespan,Class,Size
+Information,Weight,Lifespan,Class,Size
 Type,Numerical,Numerical,Categorical,Ordinal
 CHAMELEON,0.17,5,Reptilia,Small
 PIGEON,0.9,6,Aves,Medium

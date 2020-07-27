@@ -93,6 +93,7 @@ class Tools extends Component {
       let labelLegend = document.createElement("p");
       labelLegend.textContent = data.name;
       let svgLegend = document.createElement("div");
+      svgLegend.style.minHeight = 30;
 
       let legend = d3
         .select("#root")
@@ -189,7 +190,6 @@ class Tools extends Component {
                     { id: "snp", label: "SNP Table" },
                     { id: "taxainfo", label: "Taxa metadata" },
                     // { id: "SNPinfo", label: "SNP metadata" },
-                    // { id: "decoding", label: "Decoding files" },
                   ].map(({ id, label }) => (
                     <Form.Group key={id}>
                       <Form.File

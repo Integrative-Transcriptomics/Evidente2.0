@@ -19,6 +19,7 @@ class Toolbox extends Component {
   addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
     let svg = container.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
     let div = d3.select("#tooltip");
+    let elementHeight = 15;
 
     const addTexts = (element, posX, posY, anchor, attributes, text) => {
       return element
@@ -78,7 +79,7 @@ class Toolbox extends Component {
         group
           .append("rect")
           .attr("width", cellWidth)
-          .attr("height", 15)
+          .attr("height", elementHeight)
           .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")})`);
 
         let minExtent = parseFloat(extent[0].toFixed(2));
@@ -135,7 +136,7 @@ class Toolbox extends Component {
 
         let margin = maxWidth + 5;
         let legendCubeWidth = (cellWidth - margin) / extent.length;
-        let legendCubeHeight = 30 / 2;
+        let legendCubeHeight = elementHeight;
 
         let groupAllele = svg.selectAll("rect").data(extent).enter();
 
@@ -185,7 +186,7 @@ class Toolbox extends Component {
           positionX = [0, ...temp.map((d) => d[0])];
           positionY = [0, ...temp.map((d) => d[1] * 15)];
           d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
-            height: positionY.slice(-1)[0] * 1.25,
+            height: Math.max(positionY.slice(-1)[0] * 1.25, elementHeight),
           });
         }
         shadow.attr(
@@ -213,7 +214,7 @@ class Toolbox extends Component {
           .insert("rect", ":first-child")
           .attr({
             width: (d, i) => Math.max(textWidth[i], cubeWidth + 10),
-            height: 15,
+            height: elementHeight,
           })
           .attr(
             isStatic
@@ -254,15 +255,15 @@ class Toolbox extends Component {
       }));
 
   render() {
+    let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
     return (
       <div id='toolbox' className='rchild'>
         <Legend
-          metadataToRows={this.metadataToRows}
           addLegend={this.addLegend}
           orderChanged={this.props.orderChanged}
           visSNPs={this.props.visSNPs}
           visMd={this.props.visMd}
-          availableMDs={this.props.availableMDs}
+          availableMDs={modifiedMetadata}
           onChange={this.props.onColorChange}
           onChangeOrder={this.props.onChangeOrder}
         />

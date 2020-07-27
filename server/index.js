@@ -83,18 +83,18 @@ app.post("/api/init-example", async (req, res, next) => {
       },
     };
 
-    exampleFiles = {
-      nwk: {
-        path: "./server/Leprosy/nwk.nwk",
-      },
-      snp: {
-        path: "./server/Leprosy/snp.tsv",
-      },
-      taxainfo: {
-        path: "./server/Leprosy/taxainfo.tsv",
-        name: "taxainfo.tsv",
-      },
-    };
+    // exampleFiles = {
+    //   nwk: {
+    //     path: "./server/Leprosy/nwk.nwk",
+    //   },
+    //   snp: {
+    //     path: "./server/Leprosy/snp.tsv",
+    //   },
+    //   taxainfo: {
+    //     path: "./server/Leprosy/taxainfo.tsv",
+    //     name: "taxainfo.tsv",
+    //   },
+    // };
 
     let processedFiles = await processFiles(exampleFiles);
 

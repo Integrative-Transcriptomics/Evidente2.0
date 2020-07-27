@@ -16,7 +16,7 @@ import {
   Button,
 } from "@material-ui/core";
 
-import { filter } from "lodash";
+import { filter, isEqual } from "lodash";
 const rowNameTooltip = (name, props) => {
   return <Tooltip id={`${name}-filter-row`}>{name}</Tooltip>;
 };
@@ -70,10 +70,21 @@ class Legend extends Component {
   header = ["Name", "Color Scale", "Actions"];
   setChecked = () => this.setState({ checked: !this.state.checked });
 
+  shouldComponentUpdate(nextProp) {
+    return (
+      !isEqual(this.props.availableMDs, nextProp.availableMDs) ||
+      !isEqual(this.props.visMd, nextProp.visMd) ||
+      !isEqual(this.props.visSNPs, nextProp.visSNPs)
+    );
+  }
+  someOrdinalPresent(el) {
+    return el.type.toLowerCase() === "ordinal";
+  }
+
   componentDidUpdate() {
     let cellWidth = document.getElementById("metadata-card").offsetWidth / 4;
 
-    this.props.metadataToRows(this.props.availableMDs).forEach((row) => {
+    this.props.availableMDs.forEach((row) => {
       let isSNP = row.type.toLowerCase() === "snp";
 
       let container = d3.select(`#svg-legend-${row.name.replace(/ /g, "-")}`);
@@ -105,7 +116,7 @@ class Legend extends Component {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
+                      {filter(this.props.availableMDs, (v) => {
                         return accountForLegend.includes(v.name);
                       }).map((row) => {
                         let viewLegend =
@@ -179,18 +190,21 @@ class Legend extends Component {
                           </TableRow>
                         );
                       })}
-                      <TableRow>
-                        <TableCell align='center' colSpan={3}>
-                          <Button
-                            size='small'
-                            variant='outlined'
-                            style={{ color: "black" }}
-                            onClick={this.props.onChangeOrder}
-                          >
-                            Change order of Ordinal values
-                          </Button>
-                        </TableCell>
-                      </TableRow>
+
+                      {this.props.availableMDs.some(this.someOrdinalPresent) && (
+                        <TableRow>
+                          <TableCell align='center' colSpan={3}>
+                            <Button
+                              size='small'
+                              variant='outlined'
+                              style={{ color: "black" }}
+                              onClick={this.props.onChangeOrder}
+                            >
+                              Change order of Ordinal values
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>
