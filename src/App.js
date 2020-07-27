@@ -117,7 +117,6 @@ class App extends Component {
    * @param {Event} e sent from the file input form.
    */
   handleSubmit = async (e) => {
-    this.setState(this.initialState);
     this.handleLoadingToggle(true);
     e.preventDefault();
     const formData = new FormData(document.getElementById("fileform"));
@@ -131,6 +130,15 @@ class App extends Component {
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {
+      this.setState(this.initialState);
+      // Set file to starting state
+      Array.from(document.getElementsByClassName("custom-file-input")).forEach(
+        (el) => (el.value = "")
+      );
+      Array.from(document.getElementsByClassName("custom-file-label")).forEach(
+        (el) => (el.innerText = el.innerText.split(":")[0])
+      );
+
       let { metadataInfo = {} } = json;
       let ordinalValues = _.toPairs(metadataInfo).filter(
         (d) => d[1].type.toLowerCase() === "ordinal"
@@ -152,10 +160,10 @@ class App extends Component {
         snpmd: json.snpInfo || [],
         mdinfo: metadataInfo,
       });
-      this.handleLoadingToggle(false);
 
       $("#metadata-card").click();
     }
+    this.handleLoadingToggle(false);
   };
   /**
    * Verifies if the node is a visible End-node
