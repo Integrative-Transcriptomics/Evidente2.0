@@ -432,9 +432,8 @@ class App extends Component {
         let extent = selectedMetadata.extent;
         let actualType = selectedMetadata.type;
         let colors = extent.map((value, i) => {
-          return $(`#colorScale-legendValue-${i}`).attr("fill");
+          return document.getElementById(`colorScale-legendValue-${i}`).style.backgroundColor;
         });
-
         let colorScale =
           actualType === "numerical"
             ? d3.scale.linear().domain(extent).range(colors)

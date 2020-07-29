@@ -77,19 +77,10 @@ class ColorScaleModal extends Component {
                         {value}
                       </TableCell>
                       <TableCell align='left'>
-                        <svg width='10px' height='10px'>
-                          <rect
-                            id={`colorScale-legendValue-${i}`}
-                            onClick={this.onClickChangeColor}
-                            width='10px'
-                            height='10px'
-                            stroke='black'
-                            fill={get(
-                              this.props.mdinfo,
-                              `${this.props.chosenMD}.colorScale`
-                            )(value)}
-                          />
-                        </svg>
+                        <MyColorPicker
+                          passID={i}
+                          fill={get(this.props.mdinfo, `${this.props.chosenMD}.colorScale`)(value)}
+                        />
                       </TableCell>
                     </TableRow>
                   );
