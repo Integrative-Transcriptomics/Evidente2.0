@@ -1,0 +1,81 @@
+Information	Clade Prediction	Prediction Strength	Macrolide resistance	Clade classification based on TP0548
+Type	Categorical	Numerical	Categorical	Categorical
+AR1	Nichols	0.76	sensitive	Nichols 
+AR2	SS14	0.98	sensitive	SS14 
+AR3	SS14	0.96	sensitive	SS14 
+AR4	SS14	0.94	sensitive	SS14 
+AU13	SS14	0.97	resistant (1)	SS14 
+AU14	SS14	0.32	resistant (1)	SS14 
+AU15	SS14	0.98	resistant (1)	SS14 
+AU16	SS14	0.98	resistant (1)	SS14 
+AU17	SS14	0.98	resistant (1)	SS14 
+AU18	SS14	0.42	resistant (1)	SS14 
+BAL3	Nichols	0.88	sensitive	Nichols 
+BAL73	Nichols	0.97	sensitive	Nichols 
+BAL9	Nichols	0.75	sensitive	Nichols 
+BOSA	TPE/TEN	0.37	sensitive	TEN
+CDC1	TPE/TEN	0.8	sensitive	TPE
+CDC2	TPE/TEN	0.79	sensitive	TPE
+CHI	Nichols	0.98	sensitive	Nichols 
+CZ22	SS14	0.93	resistant (1)	SS14 
+CZ23	TPE/TEN	0.06	resistant1	SS14 
+CZ24	SS14	0.09	sensitive	SS14 
+CZ25	Nichols 	0.07	resistant (2)	SS14 
+CZ26	SS14	0.93	sensitive	SS14 
+CZ27	SS14	0.96	sensitive	SS14 
+CZ28	Nichols	0.54	resistant (1)	Nichols 
+CZ30	SS14	0.41	resistant (1)	SS14 
+CZ31	SS14	0.48	resistant (1)	SS14 
+CZ32	Nichols 	0.39	resistant (1)	SS14 
+CZ33	SS14	0.95	resistant (1) 	SS14 
+CZ34	SS14	0.6	resistant (1)	SS14 
+DAL	Nichols	0.98	sensitive	Nichols 
+FRI	TPE/TEN	0.8	sensitive	TPE
+GAU	TPE/TEN	0.77	sensitive	TPE
+GHA1	TPE/TEN	0.79	sensitive	TPE
+GRA1	SS14	0.84	sensitive	SS14 
+GRA2	SS14	0.98	sensitive	SS14 
+HAIB	Nichols 	0.74	sensitive	NA
+IND1	TPE/TEN	0.78	sensitive	TPE
+IND2	TPE/TEN	0.56	sensitive	TPE
+IRAB	Nichols 	0.83	sensitive	TEN
+MEXA	SS14	0.89	sensitive	SS14
+NE12	SS14 	0.97	resistant (1)	SS14 
+NE13	SS14	0.97	resistant (1)	SS14 
+NE14	SS14	0.98	resistant (1)	SS14 
+NE15	SS14 	0.98	resistant (1)	SS14 
+NE16	SS14	0.97	sensitive	SS14 
+NE17	SS14	0.98	resistant (1)	SS14 
+NE18	SS14 	0.24	resistant (1)	NA
+NE19	SS14 	0.97	resistant (1)	SS14 
+NE20	Nichols	0.76	resistant (1)	Nichols 
+NE21	SS14 	0.69	resistant (1)	NA
+NIC1	Nichols	1	sensitive	Nichols
+NIC2	Nichols	0.98	sensitive	Nichols
+PHIL1	SS14	0.65	sensitive	SS14
+SAM1	TPE/TEN	0.8	sensitive	NA
+SAMD	TPE/TEN	0.77	sensitive	TPE
+SEA81	Nichols	0.7	sensitive	Nichols
+SEA86	Nichols	0.77	sensitive	Nichols 
+SPA1	SS14	0.57	resistant (1)	SS14 
+SW1	SS14	0.97	resistant (1)	SS14 
+SW10	SS14	0.67	resistant (1)	SS14 
+SW11			resistant (1)	SS14 
+SW12	SS14 	0.27	sensitive	NA
+SW19	SS14	0.81	resistant (1)	SS14 
+SW2	SS14	0.96	resistant (1)	SS14 
+SW3	SS14 	0.27	resistant (1)	NA
+SW4	SS14	0.96	resistant (1)	SS14 
+SW5	SS14 	0.46	resistant (2)	NA
+SW6	SS14	0.97	resistant (1)	SS14 
+SW7	SS14 	0.76	resistant (1)	NA
+SW8	SS14	0.98	resistant (1)	SS14 
+SW9	SS14 	0.68	resistant (1)	NA
+UK1	SS14	0.58	sensitive	SS14 
+UK2	SS14	0.2	NA	NA
+UK3	SS14	0.62	resistant (1)	SS14 
+UK4	SS14 	0.87	resistant (1)	SS14 
+UK5	SS14 	0.35	resistant (1)	SS14 
+UK6	SS14 	0.51	resistant (1)	NA
+UW1	SS14	0.98	resistant (1)	SS14 
+UW2	SS14	0.96	resistant (2)	SS14 

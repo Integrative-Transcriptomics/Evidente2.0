@@ -171,7 +171,7 @@ class Heatmap extends Component {
       container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
 
       if (x_elements.length > 0) {
-        this.appendGuideLines(ticks, -5, -this.widthGlobal * 2);
+        this.appendGuideLines(ticks, -5, -this.widthGlobal);
 
         x_elements.forEach((x_elem) => {
           let typeOfMD = _.get(props.mdinfo, `${x_elem}.type`, "").toLowerCase();
@@ -216,7 +216,7 @@ class Heatmap extends Component {
         this.appendGuideLines(
           ticks,
           5 + x_elements.length * cellWidth,
-          Math.max(expectedVizWidth, this.widthGlobal) * 1.95
+          Math.max(expectedVizWidth, this.widthGlobal) * 1.1
         );
       }
     }
@@ -252,7 +252,12 @@ class Heatmap extends Component {
       d3.layout.phylotree.is_node_visible(node)
     );
   };
-
+  /**
+   * Helper function for the extraction of the SNPs from the nodes
+   * @param {Object} SNPdata contains the SNP distribution to the nodes
+   * @param {Object} labelToID contains the dictionary that distributes the labels
+   * @param {Boolean} notSupport Boolean to know which category is meant
+   */
   modifySNPs = (SNPdata, labelToID, notSupport = false) => {
     let nodes = this.props.tree.get_nodes();
     let mappedSNPs = SNPdata.map((SNP) => {
@@ -561,10 +566,18 @@ class Heatmap extends Component {
     }
   }
 
+  /**
+   * Removes unallowed strings from the classname
+   * @param {String} name of the class to be changed
+   */
   transformNameToClass(name) {
     return name.replace(/[^a-zA-Z0-9_-]/g, "_");
   }
-
+  /**
+   * Highlights the corresponding elements for the selected nodes.
+   *
+   * @param {Object} selection Object containing the nodes selected
+   */
   highlight_leaves(selection = []) {
     if (selection.length === 0) {
       $(".cell, .boxplot, .histo, .pattern").css("opacity", 1); // Nothing selected, everythin bold
@@ -580,7 +593,13 @@ class Heatmap extends Component {
       });
     }
   }
-
+  /**
+   *
+   * @param {Object} supportSNPs Contains the SNPs label as supporting
+   * @param {Object} nonSupportSNPs Similar, but for non-supporting SNPs
+   * @param {Array} visualizedSNPs List of the SNPs to visualize
+   * @param {Object} IDs Contains the id to label dictinoary
+   */
   preprocessSNPs(supportSNPs, nonSupportSNPs, visualizedSNPs, IDs) {
     // Include only those that are visualized
     let reducedSupportSNPs = supportSNPs.filter(({ pos }) => visualizedSNPs.includes(pos));
@@ -596,7 +615,13 @@ class Heatmap extends Component {
     }, []);
     return mergedSNPs;
   }
-
+  /**
+   *
+   * @param {*} v Value -- Data for the group to aggregate
+   * @param {*} k Key -- The metadata the group belongs to
+   * @param {*} mdinfo Object containing all metadata info
+   * @param {*} actualClade Object for the actual clade
+   */
   clusterMetadata = (v, k, mdinfo, actualClade) =>
     mdinfo[k].type.toLowerCase() === "numerical"
       ? boxplot.boxplotStats(v)
@@ -604,11 +629,21 @@ class Heatmap extends Component {
       ? _.countBy(v)
       : actualClade.showname;
 
+  /**
+   *
+   * @param {*} v Value -- Data for the group to aggregate
+   * @param {*} k Key -- The metadata the group belongs to
+   * @param {*} actualClade Object for the actual clade
+   */
   clusterSNPs = (v, k, mdinfo, actualClade) =>
     k === "Information"
       ? actualClade.showname
       : _.countBy(v.map((d) => `${d.allele}${d.notsupport ? "-" : "+"}`));
-
+  /**
+   * Initiates the heatmap within the given container
+   *
+   * @param {HTMLElement} container
+   */
   initHeatmap(container) {
     container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`);
     container.append("g").attr("class", "x axis");
