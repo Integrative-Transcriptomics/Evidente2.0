@@ -200,6 +200,7 @@ class Heatmap extends Component {
               x_elem
             );
           } else {
+            console.log(onlyClusteredData);
             this.createHistogram(
               onlyClusteredData,
               scales,
@@ -504,24 +505,16 @@ class Heatmap extends Component {
       .append("rect")
       .attr("class", `.bars.md-${this.transformNameToClass(type)}`)
       .attr("fill", (d) => colorScale(isSNP ? d[0][0] : d[0]));
-    let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([0, cellWidth]);
 
-    let yScaleBar = d3.scale
-      .linear()
-      .domain([isSNP ? -1 * max : 0, max])
-      .range([cellHeight, 0]);
+    let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([0, cellWidth]);
+    let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight, 0]);
+
     let barWidth = cellWidth / dataDomain.length;
     bars
       .attr("x", (d) => xScaleBar(isSNP ? d[0][0] : d[0]))
-      .attr("y", (d) =>
-        isSNP
-          ? Math.min(cellHeight / 2, yScaleBar((d[0][1] === "-" ? -1 : 1) * d[1]))
-          : yScaleBar(d[1])
-      )
+      .attr("y", (d) => yScaleBar(d[1]))
       .attr("width", barWidth)
-      .attr("height", (d) =>
-        isSNP ? Math.abs(cellHeight / 2 - yScaleBar(d[1])) : cellHeight - yScaleBar(d[1])
-      )
+      .attr("height", (d) => cellHeight - yScaleBar(d[1]))
       .on("mouseover", onMouseOverBars)
       .on("mouseout", function (d) {
         div.transition().duration(500).style("opacity", 0);
@@ -539,10 +532,8 @@ class Heatmap extends Component {
         .append("svg:rect")
         .attr("class", `pattern-bars md-${this.transformNameToClass(type)}`)
         .attr("width", barWidth)
-        .attr("height", (d) => Math.abs(cellHeight / 2 - yScaleBar(d[1])))
-        .attr("y", (d) =>
-          Math.min(cellHeight / 2, yScaleBar((isSNP & (d[0][1] === "-") ? -1 : 1) * d[1]))
-        )
+        .attr("height", (d) => cellHeight - yScaleBar(d[1]))
+        .attr("y", (d) => yScaleBar(d[1]))
         .attr("x", (d) => xScaleBar(d[0][0]))
         .attr("fill", "url(#diagonalHatch)")
         .on("mouseover", onMouseOverBars)
@@ -550,19 +541,18 @@ class Heatmap extends Component {
           div.transition().duration(500).style("opacity", 0);
         });
 
-      let xAxis = d3.svg
-        .axis()
-        .scale(xScaleBar)
-        .tickFormat((d) => d);
+      // let xAxis = d3.svg
+      //   .axis()
+      //   .scale(xScaleBar)
+      //   .tickFormat((d) => d);
 
-      heatmapCell
-        .append("g")
-        .attr("class", "x axis-bar")
-        .attr("transform", `translate(0,${cellHeight / 2})`)
-        .call(xAxis)
-        .call((g) => g.selectAll("text").remove())
-        .select("path")
-        .style({ "stroke-width": 0.1, fill: "none", stroke: "black", width: 0.1 });
+      // heatmapCell
+      //   .append("g")
+      //   .attr("class", "x axis-bar")
+      //   .call(xAxis)
+      //   .call((g) => g.selectAll("text").remove())
+      //   .select("path")
+      //   .style({ "stroke-width": 0.1, fill: "none", stroke: "black", width: 0.1 });
     }
   }
 
