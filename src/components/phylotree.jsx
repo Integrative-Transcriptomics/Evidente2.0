@@ -6,6 +6,12 @@ import * as _ from "lodash";
 import React, { Component } from "react";
 
 class Phylotree extends Component {
+  /**
+   * For general node styling within the phylogenetic tree
+   *
+   * @param {HTMLElement} container
+   * @param {Object} node
+   */
   nodeStyler = (container, node) => {
     let div = d3.select("#tooltip");
     let lookFor = node.collapsed ? node["show-name"] : node.name; // Either clade or leaf
@@ -42,7 +48,10 @@ class Phylotree extends Component {
       container.selectAll("circle").style({ fill: "purple" }).attr({ r: 5 });
     }
   };
-
+  /**
+   * Aggregates the selected clade
+   * @param {Object} node
+   */
   collapseNode(node) {
     if (!node["own-collapse"]) {
       node["own-collapse"] = true;
@@ -54,11 +63,18 @@ class Phylotree extends Component {
     }
     this.props.onSelection(this.props.tree.get_selection());
   }
-
+  /**
+   * Opens modal for rename of clade
+   * @param {Object} node
+   */
   renameClade(node) {
     this.props.onOpenRenameClade(node);
   }
 
+  /**
+   * Shows the SNPs distributed to the selected node.
+   * @param {Object} node selected
+   */
   showSNPsfromNode(node) {
     let node_name = this.props.ids.numToLabel[node.tempid];
     let descendants = this.props.tree
@@ -108,7 +124,10 @@ class Phylotree extends Component {
       }
     }
   }
-
+  /**
+   * Hides selected node and its descendants
+   * @param {Object} node
+   */
   hideNode(node) {
     if (!node["hidden-t"]) {
       node["hidden-t"] = true;
@@ -152,7 +171,12 @@ class Phylotree extends Component {
         .attr("id", "zoom-phylotree")
     );
   }
-
+  /**
+   * Start the rendering of the newick tree.
+   * It includes the interactions also.
+   *
+   * @param {String} input_tree
+   */
   renderTree(input_tree) {
     const addTimeoutCursor = (func, time = 10) => {
       document.body.style.cursor = "wait";
@@ -213,7 +237,9 @@ class Phylotree extends Component {
 
     this.runSelection();
   }
-
+  /**
+   * Updates after each selection the corresponding views
+   */
   runSelection = () => {
     this.props.tree.selection_callback((selection) => {
       this.props.onSelection(selection);

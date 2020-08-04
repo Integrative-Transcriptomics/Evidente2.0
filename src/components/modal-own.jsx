@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { Modal, Button } from "react-bootstrap";
-
+/**
+ * Basis Modal for different pop-up classes
+ */
 class ModalOwn extends Component {
   state = {};
 

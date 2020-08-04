@@ -3,7 +3,7 @@ import { Accordion, Card, Button, Form, OverlayTrigger, Tooltip } from "react-bo
 import Select, { components } from "react-select";
 import { filter, keys } from "lodash";
 import * as $ from "jquery";
-import * as d3 from "d3";
+import { select } from "d3";
 
 import { Typography, Divider, Grid } from "@material-ui/core";
 
@@ -66,7 +66,10 @@ const selectStates = {
     "text-overflow": "ellipsis",
   }),
 };
-
+/**
+ * Contains all components of the tools menu
+ *
+ */
 class Tools extends Component {
   state = { filterValue: [], selectedFeatures: [] };
 
@@ -95,8 +98,7 @@ class Tools extends Component {
       let svgLegend = document.createElement("div");
       svgLegend.style.minHeight = 30;
 
-      let legend = d3
-        .select("#root")
+      let legend = select("#root")
         .append("svg")
         .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 350 });
       this.props.addLegend(legend, 250, data, true);

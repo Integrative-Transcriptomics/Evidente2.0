@@ -4,6 +4,11 @@ import Legend from "./legend";
 import Tools from "./tools";
 import { round, last, clamp, toPairs } from "lodash";
 import * as d3 from "d3";
+/**
+ * Tools sidebar component
+ * Calls Legend, NodeInformation and Tools
+ *
+ */
 class Toolbox extends Component {
   state = {};
 

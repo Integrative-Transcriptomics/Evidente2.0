@@ -66,18 +66,9 @@ const selectStates = {
     "text-overflow": "ellipsis",
   }),
 };
+
 class VisualizeDataCard extends Component {
   state = {};
-  // componentDidUpdate(prevProp, prevState) {
-  //   Object.entries(this.props).forEach(
-  //     ([key, val]) => prevProp[key] !== val && console.log(`Prop '${key}' changed`)
-  //   );
-  //   if (this.state) {
-  //     Object.entries(this.state).forEach(
-  //       ([key, val]) => prevState[key] !== val && console.log(`State '${key}' changed`)
-  //     );
-  //   }
-  // }
   shouldComponentUpdate(nextProp, nextState) {
     if (
       !isEqual(nextProp.availableMDs, this.props.availableMDs) ||

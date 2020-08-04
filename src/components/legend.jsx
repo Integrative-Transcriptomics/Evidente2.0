@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { makeStyles, withStyles } from "@material-ui/core/styles";
-import * as d3 from "d3";
+import { select } from "d3";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import AnnouncementIcon from "@material-ui/icons/Announcement";
 import {
@@ -87,7 +87,7 @@ class Legend extends Component {
     this.props.availableMDs.forEach((row) => {
       let isSNP = row.type.toLowerCase() === "snp";
 
-      let container = d3.select(`#svg-legend-${row.name.replace(/ /g, "-")}`);
+      let container = select(`#svg-legend-${row.name.replace(/ /g, "-")}`);
       container.style("width", cellWidth + "px").style("height", isSNP ? "40px" : "15px");
       container.selectAll("*").remove();
       this.props.addLegend(container, cellWidth, row);

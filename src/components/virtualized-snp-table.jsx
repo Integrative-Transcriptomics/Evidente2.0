@@ -4,6 +4,7 @@ import { withStyles } from "@material-ui/core/styles";
 import { AutoSizer, Column, Table } from "react-virtualized";
 import { TableCell, Paper, Button, Typography } from "@material-ui/core";
 import { uniq, isEqual } from "lodash";
+
 const styles = (theme) => ({
   flexContainer: {
     display: "flex",
@@ -32,7 +33,9 @@ const styles = (theme) => ({
     cursor: "initial",
   },
 });
-
+/**
+ * Virtualized tables that speeds up the process of rendering long tables.
+ */
 class MuiVirtualizedTable extends React.PureComponent {
   getRowClassName = ({ index }) => {
     const { classes, onRowClick } = this.props;
@@ -143,7 +146,9 @@ class MuiVirtualizedTable extends React.PureComponent {
 }
 
 const VirtualizedTable = withStyles(styles)(MuiVirtualizedTable);
-
+/**
+ * Application of virtualized table to the SNP table
+ */
 class ReactVirtualizedTable extends Component {
   constructor(props) {
     super(props);
