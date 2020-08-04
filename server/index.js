@@ -21,6 +21,16 @@ async function processFiles({ nwk, snp, taxainfo: taxametadata, SNPinfo: snpmeta
   });
   // Read all files
   let newick = fs.readFileSync(nwk.path, "utf8").replace(/[^a-zA-Z0-9.:,()_-]/g, "_");
+  let SNPtable = await readCSV(snp.path, {
+    separator: pathparser.extname(snp.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
+    mapHeaders: ({ header }) =>
+      header === "Ref" ? null : header.toLowerCase() === "position" ? "pos" : header,
+  });
+  let modSNPtable = SNPtable.reduce((acc, { pos, ...rest }) => {
+    let values = _.uniq(Object.values(rest).map((value) => value)).filter((value) => value !== ".");
+    acc[pos] = values;
+    return acc;
+  }, {});
   let taxaInfo = await readCSV(taxametadata.path, {
     separator: pathparser.extname(taxametadata.name) === ".tsv" ? "\t" : ",", // is it tsv or csv?
   });
@@ -29,6 +39,7 @@ async function processFiles({ nwk, snp, taxainfo: taxametadata, SNPinfo: snpmeta
     { SNP: { type: "SNP", extent: ["A", "C", "T", "G", "N"] } },
     metadataInfo
   );
+
   // let snpInfo = await readCSV(snpmetadata.path, {
   //   separator: pathparser.extname(snpmetadata.name) === ".tsv" ? "\t" : ",",
   // });
@@ -57,6 +68,7 @@ async function processFiles({ nwk, snp, taxainfo: taxametadata, SNPinfo: snpmeta
   let processedFiles = {
     newick: newick,
     taxaInfo: taxaInfoMod,
+    snpPerColumn: modSNPtable,
     // snpInfo: snpInfo,
     ids: { numToLabel, labToNum },
     availableSNPs: setOfSnps,
@@ -76,6 +88,7 @@ app.post("/api/init-example", async (req, res, next) => {
       },
       snp: {
         path: "./server/MiniExample/mini_snp.tsv",
+        name: "mini_snp.tsv",
       },
       taxainfo: {
         path: "./server/MiniExample/mini_nodeinfo.csv",

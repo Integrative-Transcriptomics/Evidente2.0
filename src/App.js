@@ -101,6 +101,7 @@ class App extends Component {
 
       this.setState({
         newick: json.newick,
+        snpPerColumn: json.snpPerColumn,
         snpdata: { support: json.support, notsupport: json.notSupport },
         availableSNPs: json.availableSNPs,
         ids: json.ids,
@@ -153,6 +154,7 @@ class App extends Component {
 
       this.setState({
         newick: json.newick,
+        snpPerColumn: json.snpPerColumn,
         snpdata: { support: json.support, notsupport: json.notSupport },
         availableSNPs: json.availableSNPs,
         ids: json.ids,
@@ -603,6 +605,7 @@ class App extends Component {
                   hiddenNodes={this.state.hiddenNodes}
                   collapsedClades={this.state.collapsedClades}
                   selectedNodes={this.state.selectedNodes}
+                  snpPerColumn={this.state.snpPerColumn}
                   ids={this.state.ids}
                   visMd={this.state.visualizedMD}
                   visSNPs={this.state.visualizedSNPs}

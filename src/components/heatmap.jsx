@@ -187,7 +187,9 @@ class Heatmap extends Component {
             this.isSNP,
             typeOfMD === "numerical"
           );
-          let dataDomain = _.get(props.mdinfo, `${x_elem}.extent`, ["A", "C", "T", "G", "N"]);
+          let dataDomain = this.isSNP
+            ? this.props.snpPerColumn[x_elem.split(this.SNPprefix)[1]] // Take only those SNPs present in the column
+            : _.get(props.mdinfo, `${x_elem}.extent`); // Take corresponding extent of metadata
           let onlyClusteredData = finalData.filter(({ clade }) => clade);
           if (typeOfMD === "numerical") {
             let coordForCenter = cellHeight / 4;
@@ -200,7 +202,6 @@ class Heatmap extends Component {
               x_elem
             );
           } else {
-            console.log(onlyClusteredData);
             this.createHistogram(
               onlyClusteredData,
               scales,
