@@ -189,9 +189,9 @@ class Toolbox extends Component {
         if (isStatic) {
           let temp = textWidth.map(ceiledCumulativeSum);
           positionX = [0, ...temp.map((d) => d[0])];
-          positionY = [0, ...temp.map((d) => d[1] * 15)];
+          positionY = [0, ...temp.map((d) => d[1] * elementHeight)];
           d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
-            height: Math.max(positionY.slice(-1)[0] * 1.25, elementHeight),
+            height: Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight),
           });
         }
         shadow.attr(
