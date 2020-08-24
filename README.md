@@ -17,7 +17,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 ## Available Examples
 
 ### Toy Example
-Toy example with 38 taxa and 10 SNPs. The phylogenetic tree is a modified version of the one presented by Yokoyama et al (2008, [Publicataion](http://www.ncbi.nlm.nih.gov/pubmed/18768804)). The SNPs are based on the table of the _Mycobacterim leprae_ by Schuenemann et al (2018, [Publication](https://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006997)). Hence, this example does not show any biological data, but it can still be used to get to know the GUI of Evidente. 
+Toy example with 38 taxa and 10 SNPs. The phylogenetic tree is a modified version of the one presented by Yokoyama et al (2008, [Publication](http://www.ncbi.nlm.nih.gov/pubmed/18768804)). The SNPs are based on the table of the _Mycobacterim leprae_ by Schuenemann et al (2018, [Publication](https://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006997)). Hence, this example does not show any biological data, but it can still be used to get to know the GUI of Evidente. 
 
 ### Mini Example
 Extract of the Toy Example with seven taxa. This example is used to initialize Evidente. 
