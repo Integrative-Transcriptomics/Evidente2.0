@@ -18,7 +18,7 @@ CDC1	TPE/TEN	0.8	sensitive	TPE
 CDC2	TPE/TEN	0.79	sensitive	TPE
 CHI	Nichols	0.98	sensitive	Nichols 
 CZ22	SS14	0.93	resistant (1)	SS14 
-CZ23	TPE/TEN	0.06	resistant1	SS14 
+CZ23	TPE/TEN	0.06	resistant (1)	SS14 
 CZ24	SS14	0.09	sensitive	SS14 
 CZ25	Nichols 	0.07	resistant (2)	SS14 
 CZ26	SS14	0.93	sensitive	SS14 
