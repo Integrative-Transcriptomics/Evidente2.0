@@ -1,0 +1,1 @@
+curl -c kekse -F 'nwk=@/home/sophie/src/javascript/evidente-2/server/MiniExample/mini_nwk.nwk;type=application/octet-stream' -F 'snp=@/home/sophie/src/javascript/evidente-2/server/MiniExample/mini_snp.tsv;type=text/tab-separated-values' -F 'taxainfo="";filename="";type=application/octet-stream' http://localhost:3001/api/upload

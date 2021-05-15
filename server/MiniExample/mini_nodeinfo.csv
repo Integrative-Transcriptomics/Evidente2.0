@@ -1,0 +1,9 @@
+Information,Weight,Lifespan,Class,Size
+Type,Numerical,Numerical,Categorical,Ordinal
+CHAMELEON,0.17,5,Reptilia,Small
+PIGEON,0.9,6,Aves,Medium
+CHICKEN,0.8,10,Aves,Medium
+ZEBRAFINCH,0.012,5,Aves,Small
+BOVINE,1100,22,Mammalia,Large
+DOLPHIN,200,55,Mammalia,Large
+ELEPHANT,6000,70,Mammalia,Huge
