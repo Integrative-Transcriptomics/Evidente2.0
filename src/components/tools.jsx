@@ -210,16 +210,51 @@ class Tools extends Component {
               </Card.Body>
             </Accordion.Collapse>
           </Card>
+          
           <Card>
             <Accordion.Toggle
               as={Card.Header}
               eventKey='1'
+              id='statfiles-card'
+              className='noselect header-accordion'
+            >
+              Load statistic files
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='1'>
+              <Card.Body>
+                <Form id='statfileform' onSubmit={this.props.onStatisticFileUpload}>
+                  {[
+                    { id: "goterm", label: "GO" },
+                    { id: "snp_info", label: "SNP info" },
+                  ].map(({ id, label }) => (
+                    <Form.Group key={id}>
+                      <Form.File
+                        id={id}
+                        label={label}
+                        name={id}
+                        custom
+                        onChange={(el) => this.onFileChange(el, label)}
+                      />
+                    </Form.Group>
+                  ))}
+                  <Button variant='primary' type='submit'>
+                    Submit
+                  </Button>
+                </Form>
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+          
+          <Card>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='2'
               id='metadata-card'
               className='noselect header-accordion'
             >
               Visualize data
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey='1'>
+            <Accordion.Collapse eventKey='2'>
               <VisualizeDataCard
                 availableMDs={this.props.availableMDs}
                 availableSNPs={this.props.availableSNPs}
@@ -231,16 +266,17 @@ class Tools extends Component {
               />
             </Accordion.Collapse>
           </Card>
+          
           <Card>
             <Accordion.Toggle
               as={Card.Header}
-              eventKey='2'
+              eventKey='3'
               id='filtering-card'
               className='noselect header-accordion'
             >
               Filter nodes
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey='2'>
+            <Accordion.Collapse eventKey='3'>
               <Card.Body>
                 <Grid container spacing={2} direction='row' alignItems='center'>
                   <Grid item>
@@ -304,16 +340,17 @@ class Tools extends Component {
               </Card.Body>
             </Accordion.Collapse>
           </Card>
+          
           <Card>
             <Accordion.Toggle
               as={Card.Header}
-              eventKey='3'
+              eventKey='4'
               id='export-card'
               className='noselect header-accordion'
             >
               Export visualization
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey='3'>
+            <Accordion.Collapse eventKey='4'>
               <Card.Body>
                 <Typography variant='h6' gutterBottom={true}>
                   Export visualizations

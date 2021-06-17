@@ -1,4 +1,4 @@
-# File: package_main.py
+# File: backend_prepare_data.py
 # data preparation of Evidente backend
 # takes newick, snp and optionally metadata buffers as input
 # creates all necessary data for visualization
@@ -11,7 +11,7 @@ import os
 import re
 from typing import Tuple
 from flask import request, jsonify
-
+import numpy as np
 # Use path of this script to detect related executables
 ScriptDir = os.path.dirname(os.path.realpath(__file__))
 
@@ -65,6 +65,7 @@ def read_file_content() -> Tuple[str, str, str, str]:
                              taxainfo.mimetype)
 
     return nwk_data, snp_data, taxainfo_data, taxainfo_sep
+
 
 
 # noinspection SpellCheckingInspection,SpellCheckingInspection
@@ -339,3 +340,6 @@ def parse_meta_data(taxainfo_decode, taxainfo_sep, taxainfo_mod, columns,
                     col += 1
                 taxainfo_mod.append(curr_line)
             row += 1
+
+
+

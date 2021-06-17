@@ -124,6 +124,26 @@ class Phylotree extends Component {
       }
     }
   }
+  
+  
+   /**
+   * Sends clade selection for statistical computations to backend.
+   * @param {Object} node selected
+   */
+  getCladeSelection(node) {
+    let node_name = this.props.ids.numToLabel[node.tempid];
+    let descendants = this.props.tree
+      .descendants(node)
+      .filter((d) => d.tempid !== node.tempid)
+      .map((d) => this.props.ids.numToLabel[d.tempid]);
+    this.props.sendStatisticsRequest(node_name,descendants);
+    console.log("node: "+node_name);
+    console.log("subtree: "+descendants);
+    
+  }
+  
+  
+  
   /**
    * Hides selected node and its descendants
    * @param {Object} node
@@ -201,7 +221,14 @@ class Phylotree extends Component {
         () => addTimeoutCursor(() => this.showSNPsfromNode(tnode), 50),
         () => true
       );
-
+    //added to compute clade enrichments
+      d3.layout.phylotree.add_custom_menu(
+        tnode,
+        () => "Compute enrichment for subtree",
+        () => addTimeoutCursor(() => this.getCladeSelection(tnode), 50),
+        () => true
+      );
+      
       d3.layout.phylotree.add_custom_menu(
         tnode,
         (node) => (node["own-collapse"] ? "Decollapse subtree" : "Collapse substree"),

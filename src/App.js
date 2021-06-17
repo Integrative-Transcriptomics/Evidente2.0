@@ -64,6 +64,7 @@ class App extends Component {
     visualizedMD: [],
     visualizedSNPs: [],
     SNPTable: {},
+    snpWithGo: [],
     selectedNodeId: null,
     ordinalModalShow: false,
     renameModalShow: false,
@@ -114,6 +115,113 @@ class App extends Component {
     }
   };
   /**
+  *Sort snpdata by node
+  *TODO: clarify if needed or already sorted by classico 
+  **/
+  sortSnpData() {
+	this.state.snpdata.support.sort((r1,r2) => (r1.node > r2.node) ? 1 : (r1.node < r2.node) ? -1 :0);
+	this.state.snpdata.notsupport.sort((r1,r2) => (r1.node > r2.node) ? 1 : (r1.node < r2.node) ? -1 :0);
+	console.log(this.state.snpdata);	   
+  };
+  
+  
+  
+  /**
+  *get position and allele of all snps in subtree chosen by client
+  *returns list of [pos, allele]-Tuple
+  **/
+  getSnpOfSubtree = (node,subtree) => {
+  	let pos_with_alleles = [];
+  	let chosen = [];
+  	chosen = chosen.concat(this.filter_snps_of_subtree([node],this.state.snpdata.support));
+  	chosen = chosen.concat(this.filter_snps_of_subtree(subtree,this.state.snpdata.support));
+  	chosen = chosen.concat(this.filter_snps_of_subtree([node],this.state.snpdata.notsupport));
+  	chosen = chosen.concat(this.filter_snps_of_subtree(subtree,this.state.snpdata.notsupport));
+  	pos_with_alleles = pos_with_alleles.concat(this.filter_pos_and_alleles(chosen));
+	console.log("pos-alleles: ",pos_with_alleles); 
+	console.log("chosen: ", chosen);
+	return pos_with_alleles
+  };
+  
+  /*
+  filter snp-dictionaries by nodes in subtree(list of nodes) from snp_data (list of {pos: ,allele:, node:} dicts) 
+  */
+  filter_snps_of_subtree = (subtree,snp_data) => {
+  	let chosen = []
+	
+  	subtree.forEach(node => {
+	let curr = snp_data.filter(curr => curr.node == node)
+	if(curr.length > 0){
+		chosen = chosen.concat(curr);
+	}});
+	return chosen; 
+  }
+  
+  /*
+  construct list of [pos, allele]-tuple from list of {node:,pos:,allele:} dicts
+  */
+  filter_pos_and_alleles = (chosen) => {
+  	let pos_with_alleles = []
+	  if(chosen.length > 0){
+	  	chosen.forEach(n => pos_with_alleles.push([n["pos"],n["allele"]]));		
+  		}
+  		return pos_with_alleles 
+  }
+
+
+ /**
+   * Handles extra files being sent to the server for statistical computation.
+   * @param {Event} e sent from the file input form.
+   */
+  handleStatisticSubmit = async (e) => {
+    this.handleLoadingToggle(true);
+    e.preventDefault();
+    const formData = new FormData(document.getElementById("statfileform"));
+    let response = await fetch(`/api/statistic-upload`, {
+      method: "post",
+      body: formData,
+    });
+
+	let json = await response.json();
+    if (response.status === 400) {
+      console.error(json.message);
+      alert("Error by processing files. Please revise the files uploaded. Details in console.");
+    } else {  
+    	this.setState({
+        snpWithGo:json.snp_with_go
+        
+      });
+       $("#metadata-card").click();
+       console.log("filled snp-go: ",this.state.snpWithGo)
+    }
+    this.handleLoadingToggle(false);
+  }
+  /**
+  	Sends Clade selection, preprocessed snp-info data and ids to backend
+	and receives enrichment results
+  **/
+  sendStatisticsRequest = async (node,subtree) => {
+  	console.log("in statistics request");
+  	let pos_and_alleles = this.getSnpOfSubtree(node,subtree);
+  	let data = JSON.stringify({"pos_and_alleles":pos_and_alleles, "snp_with_go":this.state.snpWithGo});
+  	let response = await fetch('/api/statistics-request',{
+  		method: "post",
+  		headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+  		body: data,
+  		});
+  	let json = await response.json();
+    if (response.status === 400) {
+      console.error(json.message);
+      alert("Error by compute enrichment. Details in console.");
+    } else {  
+    console.log("received statistics response");
+    console.log(json);
+  }}  
+  
+  /**
    * Handles the files being sent to the server.
    * @param {Event} e sent from the file input form.
    */
@@ -125,6 +233,7 @@ class App extends Component {
       method: "post",
       body: formData,
     });
+    
 
     let json = await response.json();
     if (response.status === 400) {
@@ -163,9 +272,11 @@ class App extends Component {
         mdinfo: metadataInfo,
       });
 
-      $("#metadata-card").click();
+      $("#statistics-card").click();
     }
     this.handleLoadingToggle(false);
+   this.sortSnpData();
+   
   };
   /**
    * Verifies if the node is a visible End-node
@@ -569,6 +680,7 @@ class App extends Component {
             <div id='div-container-all' className='parent-div'>
               <div id='parent-svg' className='parent-svgs'>
                 <Phylotree
+                	sendStatisticsRequest={this.sendStatisticsRequest}
                   handleLoadingToggle={this.handleLoadingToggle}
                   showRenameModal={this.state.renameModalShow}
                   selectedNodeID={this.state.selectedNodeID}
@@ -639,6 +751,7 @@ class App extends Component {
                 onSNPaddition={this.handleSNPaddition}
                 onMultipleSNPaddition={this.handleMultipleSNPaddition}
                 onFileUpload={this.handleSubmit}
+                onStatisticFileUpload={this.handleStatisticSubmit}
                 onMDChange={this.handleMDChange}
                 onSNPChange={this.handleSNPChange}
                 onColorChange={this.handleColorChange}
