@@ -9,6 +9,11 @@ import Labels from "./components/labels";
 import WelcomeModal from "./components/welcome-modal";
 import RenameModal from "./components/rename-modal";
 import DecideOrdinalModal from "./components/decide-ordinal-modal";
+import StatisticsModal from "./components/statistics-modal";
+import GOModal from "./components/go-modal";
+import UploadFilesModal from "./components/upload-files-modal";
+import UploadGOFilesModal from "./components/upload-go-files-modal";
+import GOResultModal from "./components/go-result-modal";
 // import { PushSpinner } from "react-spinners-kit";
 import LoadingOverlay from "react-loading-overlay";
 
@@ -64,8 +69,26 @@ class App extends Component {
     visualizedMD: [],
     visualizedSNPs: [],
     SNPTable: {},
-    snpWithGo: [],
     selectedNodeId: null,
+    //--------------------------
+    snpsToGene: {},
+	 id_to_go: {},
+	 go_result: [],
+	 tree_size: 0,
+	 tree_snps:0,
+	 subtree_size: 0,
+	 subtree_snps: 5,
+	 numOfSigGoTerms:0,
+    statisticsModalShow: false,
+    goModalShow: false,
+    goResultModalShow:true,
+    uploadFilesModalShow:false,
+    uploadGOFilesModalShow:false,
+    computeStatistics: false,
+    statisticFilesUploaded:false,
+    goFilesUploaded:false,
+    cladeSelection: [],
+    //----------------------------
     ordinalModalShow: false,
     renameModalShow: false,
     createdFilters: [],
@@ -114,6 +137,7 @@ class App extends Component {
       $("#welcome-modal-button").text("Run App");
     }
   };
+  //----------------------------------------------------------------------------------------
   /**
   *Sort snpdata by node
   *TODO: clarify if needed or already sorted by classico 
@@ -121,26 +145,36 @@ class App extends Component {
   sortSnpData() {
 	this.state.snpdata.support.sort((r1,r2) => (r1.node > r2.node) ? 1 : (r1.node < r2.node) ? -1 :0);
 	this.state.snpdata.notsupport.sort((r1,r2) => (r1.node > r2.node) ? 1 : (r1.node < r2.node) ? -1 :0);
-	console.log(this.state.snpdata);	   
+	//console.log(this.state.snpdata);	   
   };
   
+  getTreeSize() {
+	let tree_labeling = this.state.ids["numToLabel"];  
+	let t_size = tree_labeling.length;
+	this.setState({tree_size: t_size });
+	console.log(t_size)
+  }
   
   
   /**
-  *get position and allele of all snps in subtree chosen by client
-  *returns list of [pos, allele]-Tuple
+  *get position of all snps in subtree chosen by client
+  *returns list of positions
   **/
   getSnpOfSubtree = (node,subtree) => {
-  	let pos_with_alleles = [];
+  	let positions = [];
   	let chosen = [];
   	chosen = chosen.concat(this.filter_snps_of_subtree([node],this.state.snpdata.support));
+	console.log("chosen1: ", chosen);
   	chosen = chosen.concat(this.filter_snps_of_subtree(subtree,this.state.snpdata.support));
+	console.log("chosen2: ", chosen);
   	chosen = chosen.concat(this.filter_snps_of_subtree([node],this.state.snpdata.notsupport));
+  	console.log("chosen3: ", chosen);
   	chosen = chosen.concat(this.filter_snps_of_subtree(subtree,this.state.snpdata.notsupport));
-  	pos_with_alleles = pos_with_alleles.concat(this.filter_pos_and_alleles(chosen));
-	console.log("pos-alleles: ",pos_with_alleles); 
-	console.log("chosen: ", chosen);
-	return pos_with_alleles
+  	console.log("chosen4: ", chosen);
+  	positions = positions.concat(this.filter_positions(chosen));
+	console.log("positions: ",positions); 
+	//console.log("chosen: ", chosen);
+	return positions
   };
   
   /*
@@ -148,9 +182,8 @@ class App extends Component {
   */
   filter_snps_of_subtree = (subtree,snp_data) => {
   	let chosen = []
-	
   	subtree.forEach(node => {
-	let curr = snp_data.filter(curr => curr.node == node)
+	let curr = snp_data.filter(curr => curr.node === node)
 	if(curr.length > 0){
 		chosen = chosen.concat(curr);
 	}});
@@ -158,52 +191,126 @@ class App extends Component {
   }
   
   /*
-  construct list of [pos, allele]-tuple from list of {node:,pos:,allele:} dicts
+  construct list of positions from list of {node:,pos:,allele:} dicts
   */
-  filter_pos_and_alleles = (chosen) => {
-  	let pos_with_alleles = []
+  filter_positions = (chosen) => {
+  	let positions = []
 	  if(chosen.length > 0){
-	  	chosen.forEach(n => pos_with_alleles.push([n["pos"],n["allele"]]));		
+	  	chosen.forEach(n => positions.push(n["pos"]));		
   		}
-  		return pos_with_alleles 
+  		return positions 
+  };
+  rememberCladeSelection = (node, descendants) => {
+	this.setState({cladeSelection: [node,descendants]});  
   }
-
-
+  //manage visibility of modals created for statistics-visualization:
+  showStatisticsModal = () => {
+  	this.setState({statisticsModalShow: true});
+  	
+  };  
+  closeStatisticsModal = () => {
+	this.setState({statisticsModalShow:false});  
+  }
+  showGOModal = () => {
+	this.setState({statisticsModalShow:false, goModalShow:true}); 
+  }
+   closeGOModal = () => {
+	this.setState({goModalShow:false});  
+  }
+  showGoResultsModal = () => {
+	this.setState({goModalShow:false, goResultsModalShow:true});  
+  }
+  closeGoResultModal = () => {
+	this.setState({goResultModalShow:false});  
+  }
+  
+  allowComputeStatistics = () => {
+  	this.setState({computeStatistics:true});
+  	} 
+  	showUploadFilesModal = () => {
+		this.setState({uploadFilesModalShow:true});  	
+  	}
+  	 
+  	closeUploadFilesModal = () => {
+		this.setState({uploadFilesModalShow:false});  	
+  	}
+  	closeUploadGOFilesModal = () => {
+		this.setState({uploadGOFilesModalShow:false});  	
+  	}
+  	showUploadGOFilesModal = () => {
+		this.setState({uploadGOFilesModalShow:true, statisticsModalShow:false});  	
+  	}
+  
+  	 
+  	 
  /**
    * Handles extra files being sent to the server for statistical computation.
+     Checks which files have been uploaded and enables statistical computations that are possible now
+     Sends additional all snp-positions within the phylogenetic tree as availableSnps
    * @param {Event} e sent from the file input form.
    */
   handleStatisticSubmit = async (e) => {
+  	//TODO: remove snpinfo part 
+  	 this.setState({computeStatistics:true});
     this.handleLoadingToggle(true);
     e.preventDefault();
-    const formData = new FormData(document.getElementById("statfileform"));
+    //get uploaded files
+    var formData = new FormData(document.getElementById("statfileform"));
+    //check if at least one file has been uploaded and if so, enable compute-statistics
+    if(formData.get("gff")!= null||formData.get("snp_info")!= null || formData.get("goterm")!=null){
+    	this.setState({statisticFilesUploaded:true})
+    	console.log(formData.get("gff"),formData.get("snp_info"), formData.get("goterm"))
+    	//check if data for go-enrichment has been uploaded and if so enable go enrichment
+    	if( formData.get("goterm").length!== 0 &&formData.get("gff").length!==0 ){
+			this.setState({goFilesUploaded:true});    	
+    	}
+    }
+    //add all SNPs available in tree to form data
+    var availableSNPs = this.state.availableSNPs.toString();
+    console.log(availableSNPs);
+	 formData.set("availabel_snps",availableSNPs);
+	 //send request at server to preprocess statistic-files
     let response = await fetch(`/api/statistic-upload`, {
-      method: "post",
-      body: formData,
+     method: "post",
+     body: formData,
     });
-
 	let json = await response.json();
     if (response.status === 400) {
+    	//catch server error from prepocessing statistic-files
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {  
+    	//save preprocessed data for go-enrichment for statisticsRequest
     	this.setState({
-        snpWithGo:json.snp_with_go
-        
+        snpsToGene:json.snps_to_gene,
+        gene_to_go:json.id_to_go,        
       });
-       $("#metadata-card").click();
-       console.log("filled snp-go: ",this.state.snpWithGo)
+       //$("#metadata-card").click();
+       //console.log("filled snp-go: ",this.state.snpWithGo)
     }
     this.handleLoadingToggle(false);
   }
+  testGO = (e) => {
+  	  console.log("in test");
+  	  e.preventDefault();
+  	  return(0);
+  
+  }
+  
   /**
-  	Sends Clade selection, preprocessed snp-info data and ids to backend
+  	Sends Clade selection, preprocessed statistical data and ids to backend
 	and receives enrichment results
   **/
-  sendStatisticsRequest = async (node,subtree) => {
+  sendStatisticsRequest = async (e) => {
   	console.log("in statistics request");
-  	let pos_and_alleles = this.getSnpOfSubtree(node,subtree);
-  	let data = JSON.stringify({"pos_and_alleles":pos_and_alleles, "snp_with_go":this.state.snpWithGo});
+  	e.preventDefault();
+  	let significance_level =document.getElementById("sig-level").value;
+  	let node = this.state.cladeSelection[0];
+  	let subtree = this.state.cladeSelection[1];
+  	console.log(node,subtree)
+
+  	let positions = this.getSnpOfSubtree(node,subtree);
+  	let data = JSON.stringify({"positions":positions, "snps_to_gene":this.state.snpsToGene, "gene_to_go":this.state.gene_to_go, "sig_level":significance_level});
   	let response = await fetch('/api/statistics-request',{
   		method: "post",
   		headers: {
@@ -218,7 +325,7 @@ class App extends Component {
       alert("Error by compute enrichment. Details in console.");
     } else {  
     console.log("received statistics response");
-    console.log(json);
+    this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result});
   }}  
   
   /**
@@ -278,6 +385,7 @@ class App extends Component {
    this.sortSnpData();
    
   };
+  //----------------------------------------------------------------------------------------
   /**
    * Verifies if the node is a visible End-node
    * @param {Object} node of Phylotree library
@@ -612,11 +720,9 @@ class App extends Component {
 
   handleSelection = (selection) => {
     let filteredSelection = selection.filter((node) => {
-      return (
-        (d3.layout.phylotree.is_leafnode(node) || node.collapsed) &&
-        d3.layout.phylotree.is_node_visible(node)
-      );
-    });
+      return ((d3.layout.phylotree.is_leafnode(node) || node.collapsed) &&
+        d3.layout.phylotree.is_node_visible(node));
+       });
     this.setState({ selectedNodes: filteredSelection });
   };
 
@@ -666,6 +772,10 @@ class App extends Component {
     );
   }
 
+
+
+
+
   render() {
     let shownNodes = this.tree
       .get_nodes()
@@ -683,7 +793,12 @@ class App extends Component {
                 	sendStatisticsRequest={this.sendStatisticsRequest}
                   handleLoadingToggle={this.handleLoadingToggle}
                   showRenameModal={this.state.renameModalShow}
-                  selectedNodeID={this.state.selectedNodeID}
+                  allowComputeStatistics={this.allowComputeStatistics}
+                  computeStatistics={this.state.computeStatistics}
+		 				showStatisticsModal = {this.showStatisticsModal}
+		 				rememberCladeSelection = {this.rememberCladeSelection}
+		 				showUploadFilesModal = {this.showUploadFilesModal}
+		  				selectedNodeID={this.state.selectedNodeID}
                   updateSNPTable={this.updateSNPTable}
                   tree={this.tree}
                   onShowMyNodes={this.handleShowNodes}
@@ -700,6 +815,7 @@ class App extends Component {
                   ids={this.state.ids}
                   dialog={this.dialog}
                 />
+             
                 <Labels
                   divID={"labels_viz"}
                   shownNodes={shownNodes}
@@ -770,6 +886,54 @@ class App extends Component {
                 handleLoadingToggle={this.handleLoadingToggle}
               ></Toolbox>
             </div>
+            {this.state.statisticsModalShow && (
+             <StatisticsModal
+             	id = 'statistics-modal'
+             	show = {this.state.statisticsModalShow}
+             	goFilesUploaded = {this.state.goFilesUploaded}
+             	showGOModal = {this.showGOModal}
+             	showUploadGOFilesModal = {this.showUploadGOFilesModal}
+             	handleClose = {this.closeStatisticsModal}             	
+             	/>
+             	)}
+           {this.state.goModalShow && (
+            <GOModal
+            	id = 'go-modal'
+            	show = {this.state.goModalShow}
+            	showGOModal = {this.showGOModal}
+            	handleClose = {this.closeGOModal}
+            	testGO = {this.testGO}
+            	sendStatisticsRequest = {this.sendStatisticsRequest}             	
+           	/>
+           	)}
+            {this.state.uploadFilesModalShow && (
+             <UploadFilesModal
+             	id = 'upload-files-modal'
+             	show = {this.state.uploadFilesModalShow}
+             	handleClose = {this.closeUploadFilesModal}             	
+             	/>
+             	)}
+             {this.state.uploadGOFilesModalShow && (
+             <UploadGOFilesModal
+             	id = 'upload-files-modal'
+             	show = {this.state.uploadGOFilesModalShow}
+             	handleClose = {this.closeUploadGOFilesModal}             	
+             	/>
+             	)}
+             {this.state.goResultModalShow && (
+             	<GOResultModal
+             		id = 'go-result-modal'
+             		show = {this.state.goResultModalShow}
+             		handleClose = {this.closeGoResultModal}
+             		numOfSigGoTerms = {this.numOfSigGoTerms}
+             		go_result = {this.state.go_result}
+             		tree_size = {this.state.tree_size}
+             		tree_snps = {this.state.tree_snps}
+             		subtree_size = {this.state.subtree_size}
+             		subtree_snps = {this.state.subtree_snps}
+             		showSNPs = {Array.from({length:this.state.subtree_snps}).map(x => true)}
+             	/>
+             	)}
             {this.state.ordinalModalShow && (
               <OrdinalModal
                 id='ordinal-modal'
@@ -787,7 +951,6 @@ class App extends Component {
                 handleClose={this.handleColorScaleCloseModal}
               />
             )}
-
             {this.state.filterModalShow && (
               <FilterModal
                 id='filter-modal'
@@ -813,7 +976,6 @@ class App extends Component {
                 handleClose={this.handleDecisionOrdinalCloseModal}
               />
             )}
-
             <WelcomeModal id='welcome-modal' />
           </div>
         </LoadingOverlay>
@@ -821,5 +983,4 @@ class App extends Component {
     );
   }
 }
-
 export default App;

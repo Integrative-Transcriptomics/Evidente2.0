@@ -174,6 +174,7 @@ def fill_support(support, filename, ids):
 
     with open(filename) as tsv:
         for line in csv.reader(tsv, delimiter="\t"):
+            #TODO solve root case (no -> in line)
             node = ids["numToLabel"][line[0].split("->")[1]]
             for pos, allele in re.findall(r"([0-9]+):\[(.)\]", line[2]):
                 support.append({"node": node, "pos": pos, "allele": allele})

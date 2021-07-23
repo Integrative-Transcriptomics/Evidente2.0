@@ -5,9 +5,11 @@
 from os import abort
 from backend_prepare_data import prepare_data, read_file_content
 from backend_prepare_statistics import read_statistic_file_content, prepare_statistics
+from backend_compute_statistics import go_enrichment
 from flask import Flask, request, session, jsonify
 from markupsafe import escape
 import sys
+#TODO: remove all test prints
 
 
 # we are using flask for RESTful communication
@@ -60,10 +62,10 @@ def prepare_statistics_data():
     try:
         print("in prepare_statistics_data")
         # todo! all data must be given in input
-        go_data,go_sep,snp_info_data,snp_sep = read_statistic_file_content()
+        go_data,go_sep,snp_info_data,snp_sep,gff_data,gff_sep,available_snps = read_statistic_file_content()
         #print("type: ",type(str(snp_info_data)))
         #print("snp-info: ",str(snp_info_data))
-        return prepare_statistics(snp_info_data.decode('utf-8'),snp_sep,go_data.decode('utf-8'),go_sep)
+        return prepare_statistics(gff_data.decode('utf8'),gff_sep,snp_info_data.decode('utf-8'),snp_sep,go_data.decode('utf-8'),go_sep,available_snps)
         # nwk = session.get('nwk')
         # return compute_statistics(nwk_data, snp_data, taxainfo_data)
     except ValueError as e:
@@ -78,13 +80,13 @@ def compute_statistics():
     #TODO  handle statistiqs-request without statistics upload before
     data = request.get_json()
     #print(request.get_json())
-    pos_and_alleles = data["pos_and_alleles"]
-    snp_with_go = data["snp_with_go"]
-    dummy_response = dict()
-    dummy_response["pos_and_alleles"] = pos_and_alleles
-    dummy_response["snp_with_go"] = snp_with_go
-    print("dummy-response: ",dummy_response)
-    return jsonify(dummy_response)
+    positions = data["positions"]
+    snps_to_gene = data["snps_to_gene"]
+    gene_to_go = data["gene_to_go"]
+    sig_level = data["sig_level"]
+
+    return go_enrichment(positions,snps_to_gene,gene_to_go,float(sig_level))
+  
 
 # just for debugging purposes:
 @app.route('/<path:subpath>', methods=['POST'])
