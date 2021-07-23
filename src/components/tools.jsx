@@ -225,6 +225,7 @@ class Tools extends Component {
                 <Form id='statfileform' onSubmit={this.props.onStatisticFileUpload}>
                   {[
                     { id: "goterm", label: "GO" },
+                    { id: "gff", label: "gff"},
                     { id: "snp_info", label: "SNP info" },
                   ].map(({ id, label }) => (
                     <Form.Group key={id}>

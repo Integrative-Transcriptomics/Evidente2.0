@@ -12,6 +12,7 @@ class Phylotree extends Component {
    * @param {HTMLElement} container
    * @param {Object} node
    */
+
   nodeStyler = (container, node) => {
     let div = d3.select("#tooltip");
     let lookFor = node.collapsed ? node["show-name"] : node.name; // Either clade or leaf
@@ -125,24 +126,45 @@ class Phylotree extends Component {
     }
   }
   
+  //---------------------------------------------------------
   
-   /**
-   * Sends clade selection for statistical computations to backend.
-   * @param {Object} node selected
+    /** Get clade selection and remeber for statistial        computation.  
+   * 
    */
-  getCladeSelection(node) {
-    let node_name = this.props.ids.numToLabel[node.tempid];
-    let descendants = this.props.tree
+  remberCladeSelection(node){
+       let node_name =    this.props.ids.numToLabel[node.tempid];
+        let descendants = this.props.tree
       .descendants(node)
       .filter((d) => d.tempid !== node.tempid)
       .map((d) => this.props.ids.numToLabel[d.tempid]);
-    this.props.sendStatisticsRequest(node_name,descendants);
-    console.log("node: "+node_name);
-    console.log("subtree: "+descendants);
-    
+      this.props.rememberCladeSelection(node_name, descendants);
   }
   
+   /**
+   * Starts statistics dialog to allow user to specify wanted statistical computation. Remebers clade selection for statistical computations for server-request .
+   * @param {Object} node selected
+   */
+  startStatisticsDialog(node) {
+    console.log("in statistics dialog");
+    console.log("dialog should be visible");
+        this.props.showStatisticsModal();
+        this.remberCladeSelection(node);
+  }
+
+  /**
+   * starts statistics dialog if statistic files have been uploaded, asks for files otherwise
+   * 
+   */
+  isStatisticPossible(node){
+      if(this.props.computeStatistics){
+        this.startStatisticsDialog(node)
+        }
+        else{
+            this.props.showUploadFilesModal();
+        }
+  }
   
+//-----------------------------------------------------------
   
   /**
    * Hides selected node and its descendants
@@ -221,13 +243,16 @@ class Phylotree extends Component {
         () => addTimeoutCursor(() => this.showSNPsfromNode(tnode), 50),
         () => true
       );
+    //--------------------------------------------------
     //added to compute clade enrichments
-      d3.layout.phylotree.add_custom_menu(
-        tnode,
-        () => "Compute enrichment for subtree",
-        () => addTimeoutCursor(() => this.getCladeSelection(tnode), 50),
-        () => true
-      );
+        d3.layout.phylotree.add_custom_menu(
+            tnode,
+            () => "Compute statistics for subtree",
+            () => addTimeoutCursor(() => this.isStatisticPossible(tnode), 1),
+            () => true
+        );
+    //---------------------------------------------------
+    
       
       d3.layout.phylotree.add_custom_menu(
         tnode,

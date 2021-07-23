@@ -32,7 +32,7 @@
   },
   "scripts": {
     "server": "node-env-run server --exec nodemon | pino-colada",
-    "server2": "cd server && python3 backend_main.py",
+    "server2": "cd server && ../env/bin/python3 backend_main.py",
     "evidente": "run-p server2 start",
     "start": "react-scripts start",
     "build": "react-scripts build",
