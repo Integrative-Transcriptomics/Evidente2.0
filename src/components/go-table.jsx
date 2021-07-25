@@ -2,38 +2,46 @@ import React, {Component} from "react";
 import Button from "react-bootstrap/Button";
 
 class Table extends Component {
- 
   render() {
     console.log(this.props.input)
     return (
       <div>
-        <GOTable showSnps={this.props.showSnps}  rows={this.props.input} />
+        <GOTable handleMultipleSNPadditon = {this.props.handleMultipleSNPadditon} showSNPsforGoTerm={() => this.showSNPsforGoTerm} snpsShow={this.props.snpsShow}  rows={this.props.input} />
       </div>
     );
 
   }
 
 }
-class GOTable extends React.Component {
-
-  render() {
-    var showSnps = this.props.showSnps
-    var row = this.props.rows.map(function(row) {
-      return (<GORow showSnps={showSnps} row={row} key = {row.id}/>)
-    });
+class GOTable extends React.Component { 
+     constructor (props) {
+          super(props);
+      }
+    createRow(row){
+        return (
+            <GORow handleMultipleSNPadditon = {() => this.props.handleMultipleSNPadditon} showSNPsforGoTerm={()=>this.props.showSNPsforGoTerm()} snpsShow={this.props.snpsShow} row={row} key = {row.id}/>
+        );
+    }
+    
+    render() {
+    var rows = new Set();
+    var snpsShow = this.props.snpsShow;
+    for (var r=0; r<this.props.rows.length; r++){
+            console.log("row: ",this.props.rows[r]);
+            var row = <GORow  handleMultipleSNPadditon = {() => this.props.handleMultipleSNPadditon} showSNPsforGoTerm={()=>this.props.showSNPsforGoTerm} snpsShow={this.props.snpsShow} row={this.props.rows[r]} key = {11}/>;
+            rows.add(row);            
+    }
+    console.log("rows: ", rows);
+   // var row = this.props.rows.map(function(row) {
+    //  return(<GORow handleMultipleSNPadditon = {() => this.props.handleMultipleSNPadditon} showSNPsforGoTerm={()=>this.props.showSNPsforGoTerm()} snpsShow={snpsShow} row={row} key = {row.id}/>)
+    //});
     return (  
       <div>
-        <table id="table" style = {{marginTop:15, height: 50}} >
-          <thead>
-            <tr>
-              <th>GO-Term</th>
-              <th>Description</th>
-              <th>P-Value</th>
-              <th></th>
-            </tr>
-          </thead>
+        <table id="table" style = {{ height: 40, overflow:'auto'}} >
           <tbody>
-            {row}
+        {rows}
+           <Button onClick={()=>{this.props.handleMultipleSNPadditon(["73"])}} variant='light'style = {{margin:5}}> show SNPs </Button>    
+           
           </tbody>
         </table>
       </div>
@@ -44,7 +52,7 @@ class GOTable extends React.Component {
 class GORow extends React.Component {
 
   render() {
-    console.log(this.props.showSnps);
+    //console.log(this.props.showSnps);
     return (
       <tr className="eachRow">
       <td style = {{width:90}}>
@@ -57,9 +65,8 @@ class GORow extends React.Component {
         {this.props.row.p_value}
       </td>
       <td style = {{width:50}}>
-        {this.props.showSnps[this.props.row.id]&&(
-            <ShowSNPButton/>
-        )}
+        {this.props.snpsShow[this.props.row.id]&&(        
+            <Button onClick={()=>{this.props.handleMultipleSNPadditon(["73"])}} variant='light'style = {{margin:5}}> show SNPs </Button>        )}
       </td>
       </tr>
     );

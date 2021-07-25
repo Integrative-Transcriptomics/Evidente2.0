@@ -5,7 +5,6 @@ import Button from "react-bootstrap/Button";
 
 
 
-
 //Statistical Dialog. Allows user to select statistical computations and adapt details for chosen statistic test.
 //Checks if requirements for chosen computation are given, asks for upload of needed data if not.
 //Can be extended by other statistical tests/computations, currently only GO enrichment possible
@@ -38,6 +37,7 @@ class StatisticsModal extends Component{
         backdrop="static"
         keyboard={false}
         centered
+
       >
         <Modal.Header closeButton>
           <Modal.Title>Compute Statistics for Subtree</Modal.Title>

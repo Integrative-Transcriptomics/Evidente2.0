@@ -1,11 +1,22 @@
 import React, {Component} from "react";
 import Modal from 'react-bootstrap/Modal';
+import ModalDialog from 'react-bootstrap/ModalDialog';
 import Button from "react-bootstrap/Button";
 import Table from './go-table';
+import TableHeader from './go-table-header';
+import MyButton from './my-button';
+import "./test_styles.css"
 
 
 
 class GOResultModal extends Component{
+    constructor () {
+        super();
+        this.showGoTerms = this.showGoTerms.bind(this)
+        this.hideGoTerms = this.hideGoTerms.bind(this)
+        this.showSNPsforGoTerm = this.showSNPsforGoTerm.bind(this)
+
+        }
 	state = {
         tableInput: [{id: 0, go_term: "GO22222", description: "this is a test", p_value: 0.004},
         {id: 1, go_term: "GO22222", description: "this is a test", p_value : 0.004},
@@ -19,58 +30,88 @@ class GOResultModal extends Component{
         {id: 9, go_term: "GO22222", description: "this is a test", p_value : 0.004},
         {id: 10, go_term: "GO22222", description: "this is a test", p_value : 0.004}],
         //this.createTableInputFormat(this.props.go_result),
-        goTermsShow : true,
-        pValuesShow : Array.from({lenght:10}).map(x => true),//Array.from({length:this.props.go_result.length+1}).map(x => true),
-        snpsShow :Array.from({length:11}).map(x => true)
+        goTermsShow : false,
+        pValuesShow : Array.from({lenght:12}).map(x => true),//Array.from({length:this.props.go_result.length+1}).map(x => true),
+        snpsShow :Array.from({length:12}).map(x => true),
     };
-  createTableInputFormat(go_result){
-      var id = 0;
-      var input = [];
-      go_result.forEach(go => {
-        var row_dict = {};
-        row_dict["id"] = id;
-        row_dict["go_term"] = go[0];
-        row_dict["description"] = go[2];
-        row_dict["p_value"] = Math.round(go[1] * 10000) / 10000  // 3.14go[1];
-        id++;
-        input.push(row_dict)
-      });
-      console.log(input);
-      return input;
+    
+    createTableInputFormat(go_result){
+        var id = 0;
+        var input = [];
+        go_result.forEach(go => {
+            var row_dict = {};
+            row_dict["id"] = id;
+            row_dict["go_term"] = go[0];
+            row_dict["description"] = go[2];
+            row_dict["p_value"] = Math.round(go[1] * 10000) / 10000  // 3.14go[1];
+            id++;
+            input.push(row_dict)
+        });
+        console.log(input);
+        return input;
       
   }
+  showGoTerms () {
+      this.setState({goTermsShow:true});
+  }
+  hideGoTerms () {
+      this.setState({goTermsShow:false});
+  }
+  showSNPsforGoTerm(go_term){
+      console.log("in show Snps: ");
+      var snps = ["73"];//this.props.go_to_snps[go_term];
+        console.log("snps? ",this.props.go_to_snps[go_term]);
+
+      if (snps != null){
+        this.props.handleMultipleSNPadditon(snps);
+      }
+  }
+          
+      
 
    render() {
-       console.log("go-result-modal:",this.state.tableInput);
+    
+    console.log("go-terms?",this.state.goTermsShow);
 	
     return (
         //statistics dialog
         //can be extended by adding additional modals as shown for GO enrichment
-    <div>
-      <Modal
-
+    <div className="container">
+   
+    <Modal
         id = "go-result-modal"
         subtree_size = {this.props.subtree_size}
         show={this.props.show}
         onHide={this.props.handleClose}
         backdrop="static"
-        keyboard={false}
+        //keyboard={false}
         centered
         scrollable
-        size = 'fixed'
-        position = 'fixed'
-        fullscreen = 'lg-down'
-        >
+        dialogClassName = 'custom-dialog'
+       >
         <Modal.Header closeButton>
           <Modal.Title>GO enrichment result</Modal.Title>
         </Modal.Header>
-        <Modal.Body >
-        Found {this.props.numOfSigGoTerms} significant GO terms
-         <Button id= "go-terms" variant= "light" onClick={this.props.showGoTerms} style={{float:'right'}}>
-         show terms
-         </Button>
-         <Table showSnps={this.state.snpsShow} input = {this.state.tableInput}/>
-         </Modal.Body>
+        <div style={{margin:15}} >
+           Found {this.props.numOfSigGoTerms} significant GO terms
+            {! (this.state.goTermsShow)&&(
+             <MyButton onClick={this.showGoTerms} text='show terms'/>
+            )}
+             {this.state.goTermsShow&&(
+                <Button id= "go-terms" variant= "light" onClick={this.hideGoTerms} style={{float:'right'}}>
+                hide terms
+                </Button>
+            )}
+        </div>
+        {this.state.goTermsShow&&(
+            <TableHeader/> 
+            )}
+        
+        <Modal.Body className = "body">
+            {this.state.goTermsShow&&(
+                <Table handleMultipleSNPadditon = {this.props.handleMultipleSNPadditon} showSNPsforGoTerm= {this.showSNPsforGoTerm} snpsShow={this.state.snpsShow} input = {this.state.tableInput}/>
+            )}
+        </Modal.Body>
         <Modal.Footer>
         <div id='container'style={{marginTop:0, marginBottom:10, padding:0}}>
             <div id='subtree'style={{ float:'left', marginRight:100}}>
@@ -88,11 +129,8 @@ class GOResultModal extends Component{
            
         </div>
         </Modal.Footer>
-
-        </Modal>
-        
-
-      </div>
+    </Modal>
+</div>
     
 );
        

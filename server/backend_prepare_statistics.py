@@ -84,12 +84,14 @@ def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, a
     :return: json: json containing snp_with_go as :type dict
     """
     #snps_to_gene = parse_snp_info(snp_info,snp_info_sep)
-    id_to_go= parse_go_terms(go_terms,go_sep)
     gene_range_with_locus_tag = parse_gff(gff, gff_sep)
-    snps_to_gene = get_gene_for_snp(available_snps, gene_range_with_locus_tag)
+    snps_to_gene, gene_to_snp = get_gene_for_snp(available_snps, gene_range_with_locus_tag)
+    id_to_go, go_to_snp= parse_go_terms(go_terms,go_sep, gene_to_snp)
+
     json = dict()
     #print("snps-to-gene ", snps_to_gene)
     json["snps_to_gene"] = snps_to_gene
+    json["go_to_snp_pos"] = gene_to_snp
     json["id_to_go"] = id_to_go
     #print(json)
     return jsonify(json)
@@ -144,6 +146,7 @@ def get_gene_for_snp(snps_per_column, gene_range_with_locus_tag ):
     """
     #print("in get_gene_for_snp: ")
     snp_to_locus_tag = dict()
+    locus_tag_to_snp = dict()
     #get all positions containing any snp
     snps = snps_per_column.split(",")
     #find gene for each position with snp:
@@ -152,8 +155,9 @@ def get_gene_for_snp(snps_per_column, gene_range_with_locus_tag ):
         #print(snp,gene)
         if gene != False:
             snp_to_locus_tag[snp] = gene
+            locus_tag_to_snp[gene] = snp
     #print("snp_to_locus_tag: ", snp_to_locus_tag)
-    return snp_to_locus_tag
+    return snp_to_locus_tag, locus_tag_to_snp
 
 
 def search_gene_binary(gene_range_with_locus_tag,snp_pos):
@@ -184,7 +188,7 @@ def search_gene_binary(gene_range_with_locus_tag,snp_pos):
                 return search_gene_binary(gene_range_with_locus_tag[middle+1:], snp_pos)
 
 
-def parse_go_terms(go_terms, go_sep):
+def parse_go_terms(go_terms, go_sep, locus_tag_to_snp):
     """Parses go-terms into dictonary: gene id -> go-term
 
     :param go_terms: go_term file as :type str
@@ -192,13 +196,21 @@ def parse_go_terms(go_terms, go_sep):
     :return: id_to_go: gene id to go-term mapping as :type dict
     """
     id_to_go = dict()
+    go_to_snp = dict()
     for line in csv.reader(go_terms.split('\n'), delimiter=go_sep):
         if len(line) >= 2:
             #print(line[1], type(line[1]))
             if (line[1])!= None:
                 #print(line[1])
                 id_to_go[line[0]] = line[1].split(';')
-    return id_to_go
+                for go in line[1].split(';'):
+                    if(locus_tag_to_snp.__contains__(line[0])):
+                        snp = locus_tag_to_snp[line[0]]
+                        if go_to_snp.__contains__(go):
+                            go_to_snp[go].append(snp)
+                        else:
+                            go_to_snp[go] = [locus_tag_to_snp[line[0]]]
+    return id_to_go, go_to_snp
 
 #TODO adjust parsing of snp_info for new use case if needed or remove
 def parse_snp_info(snp_info, snp_info_sep) -> dict:

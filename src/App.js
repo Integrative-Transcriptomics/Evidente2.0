@@ -73,6 +73,7 @@ class App extends Component {
     //--------------------------
     snpsToGene: {},
 	 id_to_go: {},
+	 go_to_snp_pos:{},
 	 go_result: [],
 	 tree_size: 0,
 	 tree_snps:0,
@@ -283,7 +284,8 @@ class App extends Component {
     	//save preprocessed data for go-enrichment for statisticsRequest
     	this.setState({
         snpsToGene:json.snps_to_gene,
-        gene_to_go:json.id_to_go,        
+        gene_to_go:json.id_to_go,  
+        go_to_snp_pos: json.go_to_snp_pos,      
       });
        //$("#metadata-card").click();
        //console.log("filled snp-go: ",this.state.snpWithGo)
@@ -327,7 +329,7 @@ class App extends Component {
     console.log("received statistics response");
     this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result});
   }}  
-  
+  //---------------------------------------------------------------------------------------------------
   /**
    * Handles the files being sent to the server.
    * @param {Event} e sent from the file input form.
@@ -385,7 +387,7 @@ class App extends Component {
    this.sortSnpData();
    
   };
-  //----------------------------------------------------------------------------------------
+
   /**
    * Verifies if the node is a visible End-node
    * @param {Object} node of Phylotree library
@@ -461,6 +463,7 @@ class App extends Component {
     });
   };
   handleMultipleSNPaddition = (listOfSnps) => {
+  	console.log(listOfSnps);
     document.body.style.cursor = "wait !important";
     setTimeout(() => {
       this.setState({
@@ -925,13 +928,15 @@ class App extends Component {
              		id = 'go-result-modal'
              		show = {this.state.goResultModalShow}
              		handleClose = {this.closeGoResultModal}
-             		numOfSigGoTerms = {this.numOfSigGoTerms}
+             		numOfSigGoTerms = {this.state.numOfSigGoTerms}
              		go_result = {this.state.go_result}
              		tree_size = {this.state.tree_size}
              		tree_snps = {this.state.tree_snps}
              		subtree_size = {this.state.subtree_size}
              		subtree_snps = {this.state.subtree_snps}
-             		showSNPs = {Array.from({length:this.state.subtree_snps}).map(x => true)}
+             		go_to_snps = {this.state.go_to_snp_pos}
+             		handleMultipleSNPadditon = {this.handleMultipleSNPaddition}
+
              	/>
              	)}
             {this.state.ordinalModalShow && (
