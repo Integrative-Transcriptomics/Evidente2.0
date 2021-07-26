@@ -10,29 +10,30 @@ import "./test_styles.css"
 
 
 class GOResultModal extends Component{
-    constructor () {
-        super();
+    constructor (props) {
+        super(props);
         this.showGoTerms = this.showGoTerms.bind(this)
         this.hideGoTerms = this.hideGoTerms.bind(this)
         this.showSNPsforGoTerm = this.showSNPsforGoTerm.bind(this)
 
         }
 	state = {
-        tableInput: [{id: 0, go_term: "GO22222", description: "this is a test", p_value: 0.004},
-        {id: 1, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 2, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 3, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 4, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 5, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 6, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 7, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 8, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 9, go_term: "GO22222", description: "this is a test", p_value : 0.004},
-        {id: 10, go_term: "GO22222", description: "this is a test", p_value : 0.004}],
-        //this.createTableInputFormat(this.props.go_result),
+        tableInput: this.createTableInputFormat(this.props.go_result),
+        // [{id: 0, go_term: "GO22222", description: "this is a test", p_value: 0.004},
+      // {id: 1, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 2, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 3, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 4, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 5, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 6, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 7, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 8, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 9, go_term: "GO22222", description: "this is a test", p_value : 0.004},
+      // {id: 10, go_term: "GO22222", description: "this is a test", p_value : 0.004}],
+       
         goTermsShow : false,
-        pValuesShow : Array.from({lenght:12}).map(x => true),//Array.from({length:this.props.go_result.length+1}).map(x => true),
-        snpsShow :Array.from({length:12}).map(x => true),
+        pValuesShow :Array.from({length:this.props.go_result.length+1}).map(x => false),
+        snpsShow :Array.from({length:this.props.go_result.length+1}).map(x => false),
     };
     
     createTableInputFormat(go_result){
@@ -57,12 +58,19 @@ class GOResultModal extends Component{
   hideGoTerms () {
       this.setState({goTermsShow:false});
   }
+  showPValue(id){
+      this.setState({pValuesShow[id]:true});
+  }
+  hidePValue(id){
+      this.setState({pValuesShow[id]:false});
+  }
+  
   showSNPsforGoTerm(go_term){
       console.log("in show Snps: ");
-      var snps = ["73"];//this.props.go_to_snps[go_term];
+      var snps = this.props.go_to_snps[go_term];
         console.log("snps? ",this.props.go_to_snps[go_term]);
 
-      if (snps != null){
+      if (snps != undefined){
         this.props.handleMultipleSNPadditon(snps);
       }
   }
