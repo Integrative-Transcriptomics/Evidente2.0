@@ -233,10 +233,13 @@ class App extends Component {
   	}
   	 
   	closeUploadFilesModal = () => {
+  		$("#statfiles-card").click();
 		this.setState({uploadFilesModalShow:false});  	
   	}
   	closeUploadGOFilesModal = () => {
-		this.setState({uploadGOFilesModalShow:false});  	
+		$("#statfiles-card").click();
+  		//$("#statfiles-card").click();
+		this.setState({uploadGOFilesModalShow:false});
   	}
   	showUploadGOFilesModal = () => {
 		this.setState({uploadGOFilesModalShow:true, statisticsModalShow:false});  	
@@ -287,7 +290,7 @@ class App extends Component {
         gene_to_go:json.id_to_go,  
         go_to_snp_pos: json.go_to_snp_pos,      
       });
-       //$("#metadata-card").click();
+       //$("#statfiles-card").click();
        //console.log("filled snp-go: ",this.state.snpWithGo)
     }
     this.handleLoadingToggle(false);
@@ -381,7 +384,7 @@ class App extends Component {
         mdinfo: metadataInfo,
       });
 
-      $("#statistics-card").click();
+      $("#statfiles-card").click();
     }
     this.handleLoadingToggle(false);
    this.sortSnpData();

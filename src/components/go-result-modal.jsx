@@ -59,14 +59,20 @@ class GOResultModal extends Component{
       this.setState({goTermsShow:false});
   }
   showPValue(id){
-      this.setState({pValuesShow[id]:true});
+      var curr_state = this.state.pValuesShow;
+      curr_state[id] = true;
+      this.setState({pValuesShow:curr_state});
   }
   hidePValue(id){
-      this.setState({pValuesShow[id]:false});
+      var curr_state = this.state.pValuesShow;
+      curr_state[id] = false;
+      this.setState({pValuesShow:curr_state})
   }
   
   showSNPsforGoTerm(go_term){
       console.log("in show Snps: ");
+      console.log(this.props.go_to_snps);
+      console.log("go term", go_term);
       var snps = this.props.go_to_snps[go_term];
         console.log("snps? ",this.props.go_to_snps[go_term]);
 

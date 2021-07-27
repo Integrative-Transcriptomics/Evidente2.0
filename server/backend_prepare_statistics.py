@@ -87,11 +87,14 @@ def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, a
     gene_range_with_locus_tag = parse_gff(gff, gff_sep)
     snps_to_gene, gene_to_snp = get_gene_for_snp(available_snps, gene_range_with_locus_tag)
     id_to_go, go_to_snp= parse_go_terms(go_terms,go_sep, gene_to_snp)
+    print("go to snp?",go_to_snp)
+    print("gene to snp?",gene_to_snp)
+
 
     json = dict()
     #print("snps-to-gene ", snps_to_gene)
     json["snps_to_gene"] = snps_to_gene
-    json["go_to_snp_pos"] = gene_to_snp
+    json["go_to_snp_pos"] = go_to_snp
     json["id_to_go"] = id_to_go
     #print(json)
     return jsonify(json)
