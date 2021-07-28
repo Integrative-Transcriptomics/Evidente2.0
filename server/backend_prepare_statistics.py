@@ -9,6 +9,7 @@ import csv
 import numpy as np
 from typing import Tuple
 from flask import request, jsonify
+from backend_compute_statistics import propagate_to_parents, load_go_basic
 import collections
 
 #TODO: remove all test prints
@@ -87,6 +88,7 @@ def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, a
     gene_range_with_locus_tag = parse_gff(gff, gff_sep)
     snps_to_gene, gene_to_snp = get_gene_for_snp(available_snps, gene_range_with_locus_tag)
     id_to_go, go_to_snp= parse_go_terms(go_terms,go_sep, gene_to_snp)
+    go_to_snp = add_all_propagated_terms_to_snp(go_to_snp)
     print("go to snp?",go_to_snp)
     print("gene to snp?",gene_to_snp)
 
@@ -214,6 +216,53 @@ def parse_go_terms(go_terms, go_sep, locus_tag_to_snp):
                         else:
                             go_to_snp[go] = [locus_tag_to_snp[line[0]]]
     return id_to_go, go_to_snp
+
+def add_all_propagated_terms_to_snp (go_to_snp):
+    go_hierarchy = load_go_basic()
+
+    go_terms = go_to_snp.keys()
+    go_snp = dict()
+    for go in go_terms:
+        parents = propagate_to_parents(go, go_hierarchy)
+        for term in parents:
+            if go_to_snp.__contains__(term):
+                go_snp[term] = set(go_to_snp[term])
+                go_snp[term].update(set(go_to_snp[go]))
+            else:
+                go_snp[term] = set(go_to_snp[go])
+            go_snp[term] = list(go_snp[term])
+    return go_snp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #TODO adjust parsing of snp_info for new use case if needed or remove
 def parse_snp_info(snp_info, snp_info_sep) -> dict:

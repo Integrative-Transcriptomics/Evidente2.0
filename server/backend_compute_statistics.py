@@ -12,6 +12,14 @@ import wget
 #TODO: write installation script, that installs virtual environment with flask and goatools automaticly when installing evidente
 #TODO: remove all test prints
 
+def propagate_to_parents(go_id, go_hierarchy):
+    try:
+        parents = go_hierarchy[go_id].get_all_parents()
+    except:
+        parents = []
+
+    return parents
+
 def go_enrichment(positions, snps_to_gene,gene_to_go, sig_level):
     """compute go-enrichment for chosen subtree using goatools
 

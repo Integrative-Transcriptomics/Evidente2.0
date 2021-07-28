@@ -14,6 +14,7 @@ import GOModal from "./components/go-modal";
 import UploadFilesModal from "./components/upload-files-modal";
 import UploadGOFilesModal from "./components/upload-go-files-modal";
 import GOResultModal from "./components/go-result-modal";
+
 // import { PushSpinner } from "react-spinners-kit";
 import LoadingOverlay from "react-loading-overlay";
 
@@ -475,7 +476,11 @@ class App extends Component {
       document.body.style.cursor = "";
     }, 5);
   };
-
+	handleHideSNPs = (list_of_snps) => {
+		const curr = this.state.visualizedSNPs;
+		var next = curr.filter( snp => !list_of_snps.includes(snp))
+		this.setState({visualizedSNPs: next});	
+	}
   handleChangeOrder = () => {
     this.setState({ ordinalModalShow: true });
   };
@@ -939,6 +944,7 @@ class App extends Component {
              		subtree_snps = {this.state.subtree_snps}
              		go_to_snps = {this.state.go_to_snp_pos}
              		handleMultipleSNPadditon = {this.handleMultipleSNPaddition}
+             		handleHideSNPs = {this.handleHideSNPs}
 
              	/>
              	)}

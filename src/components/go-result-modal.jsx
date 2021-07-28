@@ -1,13 +1,24 @@
-import React, {Component} from "react";
+import React from "react";
+import {Component} from "react";
 import Modal from 'react-bootstrap/Modal';
 import ModalDialog from 'react-bootstrap/ModalDialog';
+import Draggable from "react-draggable";
+
 import Button from "react-bootstrap/Button";
 import Table from './go-table';
 import TableHeader from './go-table-header';
 import MyButton from './my-button';
 import "./test_styles.css"
 
-
+class DraggableModalDialog extends React.Component {
+  render() {
+    return (
+      <Draggable handle=".modal-header">
+        <ModalDialog                        {...this.props} />
+      </Draggable>
+    );
+  }
+}
 
 class GOResultModal extends Component{
     constructor (props) {
@@ -15,6 +26,7 @@ class GOResultModal extends Component{
         this.showGoTerms = this.showGoTerms.bind(this)
         this.hideGoTerms = this.hideGoTerms.bind(this)
         this.showSNPsforGoTerm = this.showSNPsforGoTerm.bind(this)
+        this.hideSNPsforGoTerm = this.hideSNPsforGoTerm.bind(this)
 
         }
 	state = {
@@ -69,7 +81,7 @@ class GOResultModal extends Component{
       this.setState({pValuesShow:curr_state})
   }
   
-  showSNPsforGoTerm(go_term){
+  showSNPsforGoTerm(go_term, id){
       console.log("in show Snps: ");
       console.log(this.props.go_to_snps);
       console.log("go term", go_term);
@@ -79,7 +91,23 @@ class GOResultModal extends Component{
       if (snps != undefined){
         this.props.handleMultipleSNPadditon(snps);
       }
+      
+      var curr_state = this.state.snpsShow;
+      curr_state[id] = true;
+      this.setState({snpsShow:curr_state})
   }
+  
+  hideSNPsforGoTerm(go_term, id){
+      console.log("in hide SNPs");
+      var snps = this.props.go_to_snps[go_term];
+      if (snps != undefined){
+        this.props.handleHideSNPs(snps)
+      }
+      var curr_state = this.state.snpsShow;
+      curr_state[id] = false;
+      this.setState({snpsShow:curr_state})
+  }
+      
           
       
 
@@ -91,13 +119,13 @@ class GOResultModal extends Component{
         //statistics dialog
         //can be extended by adding additional modals as shown for GO enrichment
     <div className="container">
-   
     <Modal
+        dialogAs={DraggableModalDialog}
         id = "go-result-modal"
         subtree_size = {this.props.subtree_size}
         show={this.props.show}
         onHide={this.props.handleClose}
-        backdrop="static"
+        backdrop={'static'}
         //keyboard={false}
         centered
         scrollable
@@ -123,7 +151,7 @@ class GOResultModal extends Component{
         
         <Modal.Body className = "body">
             {this.state.goTermsShow&&(
-                <Table handleMultipleSNPadditon = {this.props.handleMultipleSNPadditon} showSNPsforGoTerm= {this.showSNPsforGoTerm} snpsShow={this.state.snpsShow} input = {this.state.tableInput}/>
+                <Table hideSNPsforGoTerm = {this.hideSNPsforGoTerm} handleMultipleSNPadditon = {this.props.handleMultipleSNPadditon} showSNPsforGoTerm= {this.showSNPsforGoTerm} snpsShow={this.state.snpsShow} input = {this.state.tableInput}/>
             )}
         </Modal.Body>
         <Modal.Footer>
@@ -145,6 +173,7 @@ class GOResultModal extends Component{
         </Modal.Footer>
     </Modal>
 </div>
+
     
 );
        

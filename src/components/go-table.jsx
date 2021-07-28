@@ -6,7 +6,7 @@ class Table extends Component {
     console.log(this.props.input)
     return (
       <div>
-        <GOTable handleMultipleSNPadditon = {this.props.handleMultipleSNPadditon} showSNPsforGoTerm={this.props.showSNPsforGoTerm} snpsShow={this.props.snpsShow}  rows={this.props.input} />
+        <GOTable hideSNPsforGoTerm={this.props.hideSNPsforGoTerm} handleMultipleSNPadditon = {this.props.handleMultipleSNPadditon} showSNPsforGoTerm={this.props.showSNPsforGoTerm} snpsShow={this.props.snpsShow}  rows={this.props.input} />
       </div>
     );
 
@@ -26,13 +26,18 @@ class GOTable extends React.Component {
     for (var r=0; r<this.props.rows.length; r++){
             console.log("row: ",this.props.rows[r]);
             const go_term = this.props.rows[r].go_term;
+            const id = this.props.rows[r].id;
             const row = <GORow  
                         handleMultipleSNPadditon = {() => this.props.handleMultipleSNPadditon} showSNPsforGoTerm={()=>this.props.showSNPsforGoTerm} snpsShow={this.props.snpsShow} 
                         row={this.props.rows[r]} 
                         key = {this.props.rows[r].id} 
                         button={ <Button 
-                                    onClick={()=>{this.props.showSNPsforGoTerm(go_term)}} variant='light'
+                                    onClick={()=>{this.props.showSNPsforGoTerm(go_term, id)}} variant='light'
                                     style = {{margin:5}}> show SNPs 
+                                </Button>  }
+                        hidebutton={ <Button 
+                                    onClick={()=>{this.props.hideSNPsforGoTerm(go_term, id)}} variant='light'
+                                    style = {{margin:5}}> hide SNPs 
                                 </Button>  }
                         />;
 
@@ -72,6 +77,8 @@ class GORow extends React.Component {
       <td style = {{width:50}}>
         {!this.props.snpsShow[this.props.row.id]&&(        
                 this.props.button)}
+        {this.props.snpsShow[this.props.row.id]&&(        
+                this.props.hidebutton)}
       </td>
       </tr>
     );
