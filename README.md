@@ -6,7 +6,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
-### `npm ci`
+### setup.sh
 Runs a clean install of all needed modules
 
 ### `npm run evidente`
