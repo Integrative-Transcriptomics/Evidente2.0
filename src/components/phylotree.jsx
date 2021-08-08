@@ -128,7 +128,7 @@ class Phylotree extends Component {
   
   //---------------------------------------------------------
   
-    /** Get clade selection and remeber for statistial        computation.  
+    /** Get clade selection and remember for statistial computation.  
    * 
    */
   remberCladeSelection(node){
@@ -136,8 +136,9 @@ class Phylotree extends Component {
         let descendants = this.props.tree
       .descendants(node)
       .filter((d) => d.tempid !== node.tempid)
-      .map((d) => this.props.ids.numToLabel[d.tempid]);
-      this.props.rememberCladeSelection(node_name, descendants);
+      //.map((d) => this.props.ids.numToLabel[d.tempid]);
+      //console.log("phlyo-desc", descendants);
+      this.props.rememberCladeSelection(node, descendants);
   }
   
    /**
@@ -156,6 +157,7 @@ class Phylotree extends Component {
    * 
    */
   isStatisticPossible(node){
+      console.log("node?",node);
       if(this.props.computeStatistics){
         this.startStatisticsDialog(node)
         }

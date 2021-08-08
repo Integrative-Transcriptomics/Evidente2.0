@@ -11,6 +11,7 @@ import os
 import re
 from typing import Tuple
 from flask import request, jsonify
+from nwk_parser import Tree,Snps
 import numpy as np
 # Use path of this script to detect related executables
 ScriptDir = os.path.dirname(os.path.realpath(__file__))
@@ -111,6 +112,10 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
     # not already existing
     metadatainfo.setdefault("SNP", {"type": "SNP",
                                     "extent": ["A", "C", "T", "G", "N"]})
+    # propagate SNPs from Classico assignement down to leaves
+    # needed for statistical computations
+    node_to_snps, tree_size, num_snps, all_snps = propagate_snps_to_leaves(support,not_support,ids["numToLabel"],nwk.decode('UTF-8'))
+
 
     # prepare data format for response to frontend:
     data = dict()
@@ -122,6 +127,10 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
     data["snpPerColumn"] = snp_per_column
     data["availableSNPs"] = available_snps
     data["taxaInfo"] = taxainfo_mod
+    data["node_to_snps"] = node_to_snps
+    data["tree_size"] = tree_size
+    data["num_snps"] = num_snps
+    data["all_snps"] = all_snps
 
     # convert data to json and send back to frontend
     return jsonify(data)
@@ -147,7 +156,7 @@ def call_classico(tmpdir, nwk, snp):
         subprocess.run(["java", "-jar", ScriptDir + "/main.jar", fp_snp.name,
                         fp_nwk.name, tmpdir])
         # noinspection SpellCheckingInspection
-        print(os.listdir(tmpdir + "/Ergebnis"))
+        #print(os.listdir(tmpdir + "/Ergebnis"))
 
 
 def create_number_label_mapping(ids, filename):
@@ -342,5 +351,23 @@ def parse_meta_data(taxainfo_decode, taxainfo_sep, taxainfo_mod, columns,
                 taxainfo_mod.append(curr_line)
             row += 1
 
+
+
+def propagate_snps_to_leaves(support,not_support, ids,nwk):
+    """Propagates SNPs from last common ancestor down tto all descendants.
+
+    :param support: supportive snps as :type dict
+    :param not_support: not-supportive snps as :type dict
+    :param ids: number-label-mapping as :type dict
+    :param nwk: newick-tree as :type str
+    :return: node_to_snp: node-snp-mapping for all nodes in nwk as :type dict
+    """
+    tree = Tree()
+    snp = Snps(support, not_support, ids)
+    tree.parse_nwk_string(nwk)
+    tree.traverse_tree(snp)
+    #print(snp.get_number_of_nodes(), "nodes")
+    #print(snp.get_node_to_snps())
+    return snp.get_node_to_snps(), snp.get_number_of_nodes(), snp.get_num_snps(), snp.get_all_snps()
 
 

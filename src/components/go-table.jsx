@@ -72,7 +72,7 @@ class GORow extends React.Component {
         {this.props.row.description}
       </td>
       <td style = {{width:100}}>
-        {this.props.row.p_value}
+        {this.props.row.p_value.toExponential(3)}
       </td>
       <td style = {{width:50}}>
         {!this.props.snpsShow[this.props.row.id]&&(        

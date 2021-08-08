@@ -3,6 +3,7 @@
 # Written by Sophie Pesch 2021
 
 from os import abort
+from time import perf_counter
 from backend_prepare_data import prepare_data, read_file_content
 from backend_prepare_statistics import read_statistic_file_content, prepare_statistics
 from backend_compute_statistics import go_enrichment
@@ -62,10 +63,16 @@ def prepare_statistics_data():
     try:
         print("in prepare_statistics_data")
         # todo! all data must be given in input
+        start = perf_counter()
+
         go_data,go_sep,snp_info_data,snp_sep,gff_data,gff_sep,available_snps = read_statistic_file_content()
         #print("type: ",type(str(snp_info_data)))
         #print("snp-info: ",str(snp_info_data))
-        return prepare_statistics(gff_data.decode('utf8'),gff_sep,snp_info_data.decode('utf-8'),snp_sep,go_data.decode('utf-8'),go_sep,available_snps)
+        response = prepare_statistics(gff_data.decode('utf8'),gff_sep,snp_info_data.decode('utf-8'),snp_sep,go_data.decode('utf-8'),go_sep,available_snps)
+        end = perf_counter()
+        time_needed = end - start
+        print(f"Needed {time_needed:0.4f} seconds for statistics data preparation")
+        return response
         # nwk = session.get('nwk')
         # return compute_statistics(nwk_data, snp_data, taxainfo_data)
     except ValueError as e:
@@ -84,8 +91,10 @@ def compute_statistics():
     snps_to_gene = data["snps_to_gene"]
     gene_to_go = data["gene_to_go"]
     sig_level = data["sig_level"]
+    all_snps = data["all_snps"]
+    #go_to_description = data["go_to_description"]
 
-    return go_enrichment(positions,snps_to_gene,gene_to_go,float(sig_level))
+    return go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
   
 
 # just for debugging purposes:

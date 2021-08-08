@@ -1,3 +1,10 @@
+// File: App.js
+// Center of Evidente-Frontend
+// Component coordianation, interface to Evidente-Backend
+// Written by Mathias Witte Paz
+// Extended by Sophie Pesch 2021
+
+
 // Own components or files
 import Phylotree from "./components/phylotree";
 import Heatmap from "./components/heatmap";
@@ -71,11 +78,22 @@ class App extends Component {
     visualizedSNPs: [],
     SNPTable: {},
     selectedNodeId: null,
-    //--------------------------
+    ordinalModalShow: false,
+    renameModalShow: false,
+    createdFilters: [],
+    nameOfFilters: [],
+    activeFilters: [],
+    orderChanged: false,
+    loadAnimationShow: false,
+    //-------------------------------------------------
+    // added for holding preprocessed statistical data 
+	 // and go-enrichment result:
     snpsToGene: {},
 	 id_to_go: {},
 	 go_to_snp_pos:{},
 	 go_result: [],
+	 all_snps: [],
+	 node_to_snps: {},
 	 tree_size: 0,
 	 tree_snps:0,
 	 subtree_size: 0,
@@ -84,20 +102,13 @@ class App extends Component {
     statisticsModalShow: false,
     goModalShow: false,
     goResultModalShow:false,
-    uploadFilesModalShow:false,
+    uploadFilesModalShow:false, 
     uploadGOFilesModalShow:false,
     computeStatistics: false,
     statisticFilesUploaded:false,
     goFilesUploaded:false,
     cladeSelection: [],
     //----------------------------
-    ordinalModalShow: false,
-    renameModalShow: false,
-    createdFilters: [],
-    nameOfFilters: [],
-    activeFilters: [],
-    orderChanged: false,
-    loadAnimationShow: false,
   };
   constructor() {
     super();
@@ -140,6 +151,11 @@ class App extends Component {
     }
   };
   //----------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------
+  // All methods in this section have been added in order to process statistical input data,
+  // perform an enrichment analysis and visualize the results.
+  
   /**
   *Sort snpdata by node
   *TODO: clarify if needed or already sorted by classico 
@@ -150,62 +166,37 @@ class App extends Component {
 	//console.log(this.state.snpdata);	   
   };
   
-  getTreeSize() {
-	let tree_labeling = this.state.ids["numToLabel"];  
-	let t_size = tree_labeling.length;
-	this.setState({tree_size: t_size });
-	console.log(t_size)
-  }
-  
-  
   /**
   *get position of all snps in subtree chosen by client
+  *sets State variables subtree_snps, subtree_size to 
+	number of snps and number of nodes
   *returns list of positions
   **/
   getSnpOfSubtree = (node,subtree) => {
-  	let positions = [];
   	let chosen = [];
-  	chosen = chosen.concat(this.filter_snps_of_subtree([node],this.state.snpdata.support));
+  	console.log(node.id);
+  	console.log("node-snps: ",this.state.node_to_snps);
+  	console.log(this.state.node_to_snps[node.id]);
+  	chosen = chosen.concat(this.state.node_to_snps[node.id]);
 	console.log("chosen1: ", chosen);
-  	chosen = chosen.concat(this.filter_snps_of_subtree(subtree,this.state.snpdata.support));
+	subtree.forEach(sub_node => {chosen = chosen.concat(this.state.node_to_snps[sub_node.id])})
 	console.log("chosen2: ", chosen);
-  	chosen = chosen.concat(this.filter_snps_of_subtree([node],this.state.snpdata.notsupport));
-  	console.log("chosen3: ", chosen);
-  	chosen = chosen.concat(this.filter_snps_of_subtree(subtree,this.state.snpdata.notsupport));
-  	console.log("chosen4: ", chosen);
-  	positions = positions.concat(this.filter_positions(chosen));
-	console.log("positions: ",positions); 
-	//console.log("chosen: ", chosen);
-	return positions
+	console.log("st-size",(subtree.length)+1);
+	console.log("st-snps",(chosen.length));
+	this.setState({subtree_size: (subtree.length)+1});
+	this.setState({subtree_snps: (chosen.length)});
+	return chosen
   };
   
   /*
-  filter snp-dictionaries by nodes in subtree(list of nodes) from snp_data (list of {pos: ,allele:, node:} dicts) 
+  saves clade selection in state variable, used for result visualization and export
   */
-  filter_snps_of_subtree = (subtree,snp_data) => {
-  	let chosen = []
-  	subtree.forEach(node => {
-	let curr = snp_data.filter(curr => curr.node === node)
-	if(curr.length > 0){
-		chosen = chosen.concat(curr);
-	}});
-	return chosen; 
-  }
-  
-  /*
-  construct list of positions from list of {node:,pos:,allele:} dicts
-  */
-  filter_positions = (chosen) => {
-  	let positions = []
-	  if(chosen.length > 0){
-	  	chosen.forEach(n => positions.push(n["pos"]));		
-  		}
-  		return positions 
-  };
   rememberCladeSelection = (node, descendants) => {
 	this.setState({cladeSelection: [node,descendants]});  
   }
+  
   //manage visibility of modals created for statistics-visualization:
+  
   showStatisticsModal = () => {
   	this.setState({statisticsModalShow: true});
   	
@@ -256,6 +247,7 @@ class App extends Component {
    */
   handleStatisticSubmit = async (e) => {
   	//TODO: remove snpinfo part 
+  	 var start = performance.now();
   	 this.setState({computeStatistics:true});
     this.handleLoadingToggle(true);
     e.preventDefault();
@@ -285,11 +277,14 @@ class App extends Component {
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {  
+    	var end = performance.now();
+    	console.log("statitics-upload: ",(end-start)/1000.0, "seconds");
     	//save preprocessed data for go-enrichment for statisticsRequest
+    	console.log("received statistics response");
     	this.setState({
         snpsToGene:json.snps_to_gene,
         gene_to_go:json.id_to_go,  
-        go_to_snp_pos: json.go_to_snp_pos,      
+        go_to_snp_pos: json.go_to_snp_pos, 
       });
        //$("#statfiles-card").click();
        //console.log("filled snp-go: ",this.state.snpWithGo)
@@ -309,14 +304,15 @@ class App extends Component {
   **/
   sendStatisticsRequest = async (e) => {
   	console.log("in statistics request");
+  	 var start = performance.now();
   	e.preventDefault();
   	let significance_level =document.getElementById("sig-level").value;
   	let node = this.state.cladeSelection[0];
   	let subtree = this.state.cladeSelection[1];
-  	console.log(node,subtree)
+  	//console.log(node,subtree)
 
-  	let positions = this.getSnpOfSubtree(node,subtree);
-  	let data = JSON.stringify({"positions":positions, "snps_to_gene":this.state.snpsToGene, "gene_to_go":this.state.gene_to_go, "sig_level":significance_level});
+  	let snp_positions = this.getSnpOfSubtree(node,subtree);
+  	let data = JSON.stringify({"all_snps":this.state.all_snps, "positions":snp_positions, "snps_to_gene":this.state.snpsToGene, "gene_to_go":this.state.gene_to_go, "sig_level":significance_level});
   	let response = await fetch('/api/statistics-request',{
   		method: "post",
   		headers: {
@@ -330,10 +326,17 @@ class App extends Component {
       console.error(json.message);
       alert("Error by compute enrichment. Details in console.");
     } else {  
+     var end = performance.now();
+     console.log("statitics-request: ",(end-start)/1000.0, "seconds");
     console.log("received statistics response");
-    this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result});
+    this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result, 
+    numOfSigGoTerms:json.go_result.length});
   }}  
-  //---------------------------------------------------------------------------------------------------
+  
+  //----------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------
+  
   /**
    * Handles the files being sent to the server.
    * @param {Event} e sent from the file input form.
@@ -383,6 +386,10 @@ class App extends Component {
         taxamd: json.taxaInfo || [],
         snpmd: json.snpInfo || [],
         mdinfo: metadataInfo,
+        node_to_snps: json.node_to_snps,
+        tree_size: json.tree_size,
+        tree_snps: json.num_snps,
+        all_snps: json.all_snps,
       });
 
       $("#statfiles-card").click();

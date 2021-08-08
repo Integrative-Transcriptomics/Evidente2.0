@@ -9,7 +9,7 @@ import csv
 import numpy as np
 from typing import Tuple
 from flask import request, jsonify
-from backend_compute_statistics import propagate_to_parents, load_go_basic
+from backend_go_enrichment import load_go_basic
 import collections
 
 #TODO: remove all test prints
@@ -62,7 +62,7 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
             gff_data = gff.read()
 
 
-    available_snps = request.form['availabel_snps']
+    available_snps = request.form['availabel_snps'].split(',')
     return  go_data, go_sep,snp_info_data, snp_info_sep,gff_data,gff_sep,available_snps
 
 
@@ -85,13 +85,16 @@ def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, a
     :return: json: json containing snp_with_go as :type dict
     """
     #snps_to_gene = parse_snp_info(snp_info,snp_info_sep)
+    go_hierarchy = load_go_basic()
+
     gene_range_with_locus_tag = parse_gff(gff, gff_sep)
     snps_to_gene, gene_to_snp = get_gene_for_snp(available_snps, gene_range_with_locus_tag)
-    id_to_go, go_to_snp= parse_go_terms(go_terms,go_sep, gene_to_snp)
-    go_to_snp = add_all_propagated_terms_to_snp(go_to_snp)
-    print("go to snp?",go_to_snp)
-    print("gene to snp?",gene_to_snp)
-
+    id_to_go, go_to_snp = parse_go_terms(go_terms,go_sep, gene_to_snp)
+    id_to_go, go_to_snp = add_all_propagated_terms(go_hierarchy,id_to_go, go_to_snp)
+    #print("go to snp?",go_to_snp)
+    #print("snps for 0004349:", go_to_snp["GO:0004349"])
+    #print("gene to snp?",gene_to_snp)
+    print("go-snp",go_to_snp.keys().__len__())
 
     json = dict()
     #print("snps-to-gene ", snps_to_gene)
@@ -110,7 +113,8 @@ def parse_gff(gff, gff_sep):
     :return: gene_range_with_locus_tag: all gene-ranges and corresponding locus-tags
              as :type list of [start-pos,end-pos,locus-tag]-lists sorted by start-pos
     """
-    print("in parse-gff:")
+    #print("in parse-gff:")
+    #print("gff:",gff)
     gene_range_with_locus_tag = list()
     for line in csv.reader(gff.split('\n'), delimiter= gff_sep):
         #print(line)
@@ -120,8 +124,9 @@ def parse_gff(gff, gff_sep):
             if line[2].lower() == "gene":
                 gene_range_with_locus_tag.append([line[3],line[4],get_locus_tag(line[8])])
     #sort by start position
-    gene_range_with_locus_tag_sorted = sorted(gene_range_with_locus_tag,key=lambda x:int(x[0]))
+    #gene_range_with_locus_tag_sorted = sorted(gene_range_with_locus_tag,key=lambda x:int(x[0]))
     #print("sorted? ", gene_range_with_locus_tag_sorted)
+    print("locus-tags: ", gene_range_with_locus_tag.__len__())
     return gene_range_with_locus_tag
 
 def get_locus_tag(col):
@@ -137,31 +142,37 @@ def get_locus_tag(col):
             return record[1]
     return None
 
-def get_gene_for_snp(snps_per_column, gene_range_with_locus_tag ):
+def get_gene_for_snp(available_snps, gene_range_with_locus_tag):
     """Computes mapping from snp-position to locus-tag for all snps in genes.
 
     Performs a binary search on the list of genes by position for all snps.
 
-    :param snps_per_column: all positions with snps in the whole phylogenetic tree
-           as :type list(dict()) : [1:[A,C], 2:[T],...]
+    :param available_snps: all positions with snps in the whole phylogenetic
+    tree as :type list
     :param gene_range_with_locus_tag: start,end positions and locus-tags as
            :type list([],[],...)
 
     :return: mapping from snp-position to locus-tag as :type dict()
     """
     #print("in get_gene_for_snp: ")
+    #print("number of snp-positions: ", snps_per_column.__len__())
     snp_to_locus_tag = dict()
     locus_tag_to_snp = dict()
-    #get all positions containing any snp
-    snps = snps_per_column.split(",")
     #find gene for each position with snp:
-    for snp in snps:
+    for snp in available_snps:
+        #print("snp: ", snp)
         gene = search_gene_binary(gene_range_with_locus_tag,int(snp))
         #print(snp,gene)
-        if gene != False:
+        if gene:
             snp_to_locus_tag[snp] = gene
-            locus_tag_to_snp[gene] = snp
+            if locus_tag_to_snp.__contains__(gene):
+                locus_tag_to_snp[gene].append(snp)
+            else:
+                locus_tag_to_snp[gene] = [snp]
     #print("snp_to_locus_tag: ", snp_to_locus_tag)
+    sum = 0
+    for item in locus_tag_to_snp.items():
+        sum += item[1].__len__()
     return snp_to_locus_tag, locus_tag_to_snp
 
 
@@ -193,53 +204,88 @@ def search_gene_binary(gene_range_with_locus_tag,snp_pos):
                 return search_gene_binary(gene_range_with_locus_tag[middle+1:], snp_pos)
 
 
-def parse_go_terms(go_terms, go_sep, locus_tag_to_snp):
+def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
     """Parses go-terms into dictonary: gene id -> go-term
 
     :param go_terms: go_term file as :type str
     :param go_sep: separator tp parse go terms as :type str
     :return: id_to_go: gene id to go-term mapping as :type dict
     """
+    print("genes with snps: ", locus_tag_to_snps.keys().__len__())
     id_to_go = dict()
-    go_to_snp = dict()
+    go_to_snps = dict()
     for line in csv.reader(go_terms.split('\n'), delimiter=go_sep):
         if len(line) >= 2:
-            #print(line[1], type(line[1]))
-            if (line[1])!= None:
-                #print(line[1])
-                id_to_go[line[0]] = line[1].split(';')
-                for go in line[1].split(';'):
-                    if(locus_tag_to_snp.__contains__(line[0])):
-                        snp = locus_tag_to_snp[line[0]]
-                        if go_to_snp.__contains__(go):
-                            go_to_snp[go].append(snp)
+            locus_tag = line[0]
+            line_go_terms = line[1].split(';')
+
+            if line_go_terms:
+                if id_to_go.__contains__(locus_tag):
+                    id_to_go[locus_tag].extend(line_go_terms)
+                else:
+                    id_to_go[locus_tag] = line_go_terms
+                #
+                if (locus_tag_to_snps.__contains__(locus_tag)):
+                    snps = locus_tag_to_snps[locus_tag]
+                    for go in line_go_terms:
+                        if go_to_snps.__contains__(go):
+                            go_to_snps[go].extend(snps)
                         else:
-                            go_to_snp[go] = [locus_tag_to_snp[line[0]]]
-    return id_to_go, go_to_snp
+                            go_to_snps[go] = snps
+    #print("go-snp?", go_to_snps)
+    return id_to_go, go_to_snps
 
-def add_all_propagated_terms_to_snp (go_to_snp):
-    go_hierarchy = load_go_basic()
-
-    go_terms = go_to_snp.keys()
-    go_snp = dict()
+def add_all_propagated_terms_to_snps (go_hierarchy, go_to_snp):
+    go_terms = list(go_to_snp.keys()).copy()
+    go_to_snp2 = dict()
     for go in go_terms:
-        parents = propagate_to_parents(go, go_hierarchy)
-        for term in parents:
-            if go_to_snp.__contains__(term):
-                go_snp[term] = set(go_to_snp[term])
-                go_snp[term].update(set(go_to_snp[go]))
+        if go in go_to_snp2:
+            go_to_snp2[go].extend(go_to_snp[go])
+        else:
+            go_to_snp2[go] = go_to_snp[go]
+        parents = collect_parents(go, go_hierarchy)
+        for parent in parents:
+            if go_to_snp2.__contains__(parent):
+                go_to_snp2[parent].extend(go_to_snp[go])
+                snps = list(set(go_to_snp2[parent]))
+                go_to_snp2[parent] = snps
             else:
-                go_snp[term] = set(go_to_snp[go])
-            go_snp[term] = list(go_snp[term])
-    return go_snp
+                go_to_snp2[parent] = go_to_snp[go]
+    return go_to_snp2
 
 
+def add_all_propagated_terms (go_hierarchy,id_to_go, go_to_snp):
+    snps = add_all_propagated_terms_to_snps(go_hierarchy, go_to_snp.copy())
+    # snps = go_to_snp.copy()
+
+    id_to_go_ext = dict()
+    for id in id_to_go.keys():
+        gos = id_to_go[id]
+        go_set = set(gos)
+        for go in gos:
+            parents = collect_parents(go, go_hierarchy)
+            go_set.update(parents)
+        id_to_go_ext[id] = list(go_set)
+    return id_to_go_ext, snps
 
 
+def all_descriptions(go_terms, go_hierarchy):
+    go_to_description = dict()
+    for go in go_terms:
+        go_to_description[go] = go_description(go,go_hierarchy)
+    return go_to_description
+
+def go_description(go_term_id, go_hierarchy):
+    return go_hierarchy[go_term_id].name
 
 
+def collect_parents(go_id, go_hierarchy):
+    try:
+        parents = go_hierarchy[go_id].get_all_parents()
+    except:
+        parents = []
 
-
+    return parents
 
 
 
