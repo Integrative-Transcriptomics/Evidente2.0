@@ -11,7 +11,7 @@ import os
 import re
 from typing import Tuple
 from flask import request, jsonify
-from nwk_parser import Tree,Snps
+from backend_nwk_parser import Tree,Snps
 import numpy as np
 # Use path of this script to detect related executables
 ScriptDir = os.path.dirname(os.path.realpath(__file__))

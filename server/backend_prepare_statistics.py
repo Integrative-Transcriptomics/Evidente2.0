@@ -9,7 +9,7 @@ import csv
 import numpy as np
 from typing import Tuple
 from flask import request, jsonify
-from backend_go_enrichment import load_go_basic
+from backend_compute_statistics import load_go_basic
 import collections
 
 #TODO: remove all test prints
@@ -101,6 +101,8 @@ def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, a
     json["snps_to_gene"] = snps_to_gene
     json["go_to_snp_pos"] = go_to_snp
     json["id_to_go"] = id_to_go
+    print("test tree-enrichment")
+
     #print(json)
     return jsonify(json)
 

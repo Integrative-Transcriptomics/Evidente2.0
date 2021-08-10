@@ -145,6 +145,10 @@ class App extends Component {
         taxamd: json.taxaInfo || [],
         snpmd: json.snpInfo || [],
         mdinfo: metadataInfo,
+        node_to_snps: json.node_to_snps,
+        tree_size: json.tree_size,
+        tree_snps: json.num_snps,
+        all_snps: json.all_snps,
       });
 
       $("#welcome-modal-button").text("Run App");
@@ -332,6 +336,71 @@ class App extends Component {
     this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result, 
     numOfSigGoTerms:json.go_result.length});
   }}  
+  
+  fetchWithTimeout = async (resource, options = {}) => {
+  const { timeout = 3600000 } = options;
+  
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  const response = await fetch(resource, {
+    ...options,
+    signal: controller.signal  
+  });
+  const body = await response.json()
+  clearTimeout(id);
+  return body;
+}
+  /**
+  	Sends Clade selection, preprocessed statistical data and ids to backend
+	and receives enrichment results
+  **/
+  sendStatisticsRequestTree = async (e) => {
+  	console.log("in statistics tree request");
+  	 var start = performance.now();
+  	e.preventDefault();
+  	let significance_level = 0.05 //document.getElementById("sig-level").value;
+  	let data = JSON.stringify({"nwk":this.state.newick,
+  										"support": this.state.snpdata.support,
+  										"num_to_label":this.state.ids["numToLabel"],
+  										"snps_to_gene":this.state.snpsToGene, 
+  										"node_to_snps":this.state.node_to_snps,
+  										"gene_to_go":this.state.gene_to_go, 
+  										"sig_level":significance_level,
+  										"all_snps":this.state.all_snps});
+  	try {
+  	let json = await this.fetchWithTimeout('/api/tree-statistics-request',{
+  		timeout: 3600000,
+  		method: "post",
+  		headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+  		body: data,
+  		});
+  	//let response = await fetch('/api/tree-statistics-request',{
+  	//	method: "post",
+  	//	headers: {
+   //         'Accept': 'application/json',
+   //         'Content-Type': 'application/json',
+   //     },
+  	//	body: data,
+  	//	});
+  	//let json = await response.json();
+    //if (response.status === 400) {
+     // console.error(json.message);      
+     // alert("Error by compute enrichment. Details in console.");
+    //} else {  
+     var end = performance.now();
+     console.log("statitics-tree-request: ",(end-start)/1000.0, "seconds");
+     console.log("received statistics tree response");
+    //this.setState({goModalShow:false,goResultModalShow:true, go_tree_result:json.go_tree_result, 
+    //numOfSigClades:json.go_result.length});
+  //}
+  } catch (error) {
+	  console.log(error.name === 'AbortError');
+  }
+  }  
   
   //----------------------------------------------------------------------------------------
   //----------------------------------------------------------------------------------------
@@ -921,7 +990,7 @@ class App extends Component {
             	showGOModal = {this.showGOModal}
             	handleClose = {this.closeGOModal}
             	testGO = {this.testGO}
-            	sendStatisticsRequest = {this.sendStatisticsRequest}             	
+            	sendStatisticsRequest = {this.sendStatisticsRequestTree}             	
            	/>
            	)}
             {this.state.uploadFilesModalShow && (

@@ -1,4 +1,5 @@
 import re
+from backend_tree_enrichment import FindClades
 
 # Parses a NWK tree and provides tree traversal
 class Tree:
@@ -224,11 +225,14 @@ if __name__ == "__main__":
                   {"node":"DOLPHIN","pos":"73","allele":"T"},{"node":"DOLPHIN","pos":"2251","allele":"C"},
                   {"node":"DOLPHIN","pos":"4513","allele":"A"},{"node":"ELEPHANT","pos":"2251","allele":"T"}]
     snp = Snps(support, not_support,ids)
-    tree.traverse_tree(snp)
-    print("still", snp.get_number_of_nodes(), "nodes")
-    print(snp.get_num_snps() ,"snps")
-    print(snp.get_node_to_snps())
-    print(snp.get_all_snps())
+    clades = FindClades(support, ids)
+    tree.traverse_tree(clades)
+    for clade in clades.get_clades().items():
+        print(clade[0],clade[1])
+    #print("still", snp.get_number_of_nodes(), "nodes")
+    #print(snp.get_num_snps() ,"snps")
+    #print(snp.get_node_to_snps())
+    #print(snp.get_all_snps())
 # corresponds to:
 #                                               ; 
 #                  /                                                \

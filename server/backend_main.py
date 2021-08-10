@@ -6,7 +6,7 @@ from os import abort
 from time import perf_counter
 from backend_prepare_data import prepare_data, read_file_content
 from backend_prepare_statistics import read_statistic_file_content, prepare_statistics
-from backend_compute_statistics import go_enrichment
+from backend_compute_statistics import go_enrichment, tree_enrichment
 from flask import Flask, request, session, jsonify
 from markupsafe import escape
 import sys
@@ -49,7 +49,7 @@ def load_init_example():
         #print(nwk_data)
         snp_data = bytes(open("./MiniExample/mini_snp.tsv", "r").read(),'utf-8')
         taxainfo_data = bytes(open("./MiniExample/mini_nodeinfo.csv", "r").read(),'utf-8')
-        return prepare_data(nwk_data,snp_data,taxainfo_data,",")
+        return prepare_data(nwk_data, snp_data, taxainfo_data, ",")
     except ValueError as e:
         print("error", e.args)
         abort(500)
@@ -84,7 +84,6 @@ def prepare_statistics_data():
 
 @app.route('/api/statistics-request', methods=['POST'])
 def compute_statistics():
-    #TODO  handle statistiqs-request without statistics upload before
     data = request.get_json()
     #print(request.get_json())
     positions = data["positions"]
@@ -95,7 +94,23 @@ def compute_statistics():
     #go_to_description = data["go_to_description"]
 
     return go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
-  
+
+
+@app.route('/api/tree-statistics-request', methods=['POST'])
+def compute_tree_statitics():
+    data = request.get_json()
+    # print(request.get_json())
+    nwk = data["nwk"]
+    support = data["support"]
+    num_to_lab = data["num_to_label"]
+    snps_to_gene = data["snps_to_gene"]
+    node_to_snps = data["node_to_snps"]
+    gene_to_go = data["gene_to_go"]
+    sig_level = data["sig_level"]
+    all_snps = data["all_snps"]
+    # go_to_description = data["go_to_description"]
+    response = tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snps, snps_to_gene, gene_to_go, sig_level)
+    return response
 
 # just for debugging purposes:
 @app.route('/<path:subpath>', methods=['POST'])
