@@ -3,7 +3,7 @@
 # Written by Sophie Pesch 2021
 
 from os import abort
-from time import perf_counter
+from time import perf_counter,sleep
 from backend_prepare_data import prepare_data, read_file_content
 from backend_prepare_statistics import read_statistic_file_content, prepare_statistics
 from backend_compute_statistics import go_enrichment, tree_enrichment
@@ -138,6 +138,13 @@ def show_get_subpath(subpath):
     print('Subpath %s' % escape(subpath))
     print(session)
     abort(501)
+
+
+@app.route('/test_timeout', methods=['GET'])
+def test_timeout():
+    print("start sleep")
+    sleep(301)
+    return jsonify("done")
 
 
 if __name__ == "__main__":

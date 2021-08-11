@@ -285,6 +285,7 @@ class Toolbox extends Component {
           availableSNPs={this.props.availableSNPs}
           onFileUpload={this.props.onFileUpload}
           onStatisticFileUpload={this.props.onStatisticFileUpload}
+          onStatisticsTreeRequest={this.props.onStatisticsTreeRequest}
           onMDChange={this.props.onMDChange}
           onSNPChange={this.props.onSNPChange}
           visMd={this.props.visMd}

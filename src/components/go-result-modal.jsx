@@ -29,6 +29,7 @@ class GOResultModal extends Component{
         this.hideSNPsforGoTerm = this.hideSNPsforGoTerm.bind(this)
         this.downloadCSV = this.downloadCSV.bind(this)
         this.exportGoResult = this.exportGoResult.bind(this)
+        this.hideSNPs = this.hideSNPs.bind(this)
 
     }
     state = {
@@ -87,30 +88,40 @@ class GOResultModal extends Component{
     }
     
     showSNPsforGoTerm(go_term, id){
-	console.log("in show Snps: ");
-	console.log(this.props.go_to_snps);
-	console.log("go term", go_term);
-	var snps = this.props.go_to_snps[go_term];
-        console.log("snps? ",this.props.go_to_snps[go_term]);
+        console.log("in show Snps: ");
+        console.log(this.props.go_to_snps);
+        console.log("go term", go_term);
+        var snps = this.props.go_to_snps[go_term];
+            console.log("snps? ",this.props.go_to_snps[go_term]);
 
-	if (snps != undefined){
+        if (snps != undefined){
             this.props.handleMultipleSNPadditon(snps);
-	}
-	
-	var curr_state = this.state.snpsShow;
-	curr_state[id] = true;
-	this.setState({snpsShow:curr_state})
+        }
+        
+        var curr_state = this.state.snpsShow;
+        curr_state[id] = true;
+        this.setState({snpsShow:curr_state})
     }
     
     hideSNPsforGoTerm(go_term, id){
-	console.log("in hide SNPs");
-	var snps = this.props.go_to_snps[go_term];
-	if (snps != undefined){
-            this.props.handleHideSNPs(snps)
-	}
-	var curr_state = this.state.snpsShow;
-	curr_state[id] = false;
-	this.setState({snpsShow:curr_state})
+        console.log("in hide SNPs");
+        var snps = this.props.go_to_snps[go_term];
+        if (snps != undefined){
+                this.props.handleHideSNPs(snps)
+        }
+        var curr_state = this.state.snpsShow;
+        curr_state[id] = false;
+        this.setState({snpsShow:curr_state})
+    }
+    
+    hideSNPs(){
+        console.log("in hide all SNPs");
+        var snps = this.props.visualizedSNPs;
+        if (snps != undefined){
+                this.props.handleHideSNPs(snps);
+        }
+       var snpsShow = Array.from({length:this.props.go_result.length+1}).map(x => false);
+       this.setState({snpsShow:snpsShow});
     }
     
     
@@ -179,7 +190,7 @@ class GOResultModal extends Component{
             )}
             </div>
 		{this.state.goTermsShow&&(
-			<TableHeader/> 
+			<TableHeader hideSNPs = {this.hideSNPs}/> 
 		)}
             
 		<Modal.Body className = "body">

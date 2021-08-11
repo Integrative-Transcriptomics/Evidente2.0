@@ -342,16 +342,46 @@ class Tools extends Component {
             </Accordion.Collapse>
           </Card>
           
+          
+          
           <Card>
             <Accordion.Toggle
               as={Card.Header}
               eventKey='4'
+              id='tree-card'
+              className='noselect header-accordion'
+            >
+             Analyse Tree
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='4'>
+              <Card.Body>
+              <Form id="tree-enrichment">
+                <Form.Group id = "group">
+                    <Form.Label>Significance Level:</Form.Label>
+                    <Form.Control id= "sig-level-tree" type="text" defaultValue = "0.05"/>
+                    </Form.Group>
+               </Form>     
+                <Button variant= 'primary' onClick={() => {
+                    fetch("/test_timeout",)
+    		.then((response) => {
+       console.log(response);
+    });
+                }}>
+                    Find enriched Clades
+                    </Button>
+            </Card.Body>
+            </Accordion.Collapse>
+                </Card>
+                <Card>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='5'
               id='export-card'
               className='noselect header-accordion'
             >
               Export visualization
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey='4'>
+            <Accordion.Collapse eventKey='5'>
               <Card.Body>
                 <Typography variant='h6' gutterBottom={true}>
                   Export visualizations

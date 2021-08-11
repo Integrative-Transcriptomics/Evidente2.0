@@ -62,16 +62,20 @@ class GOTable extends React.Component {
 class GORow extends React.Component {
 
   render() {
+      var color = 'white';
+      if((this.props.row.id % 2) == 0){
+          color = 'e9e9e9'
+      }
     //console.log(this.props.showSnps);
     return (
-      <tr className="eachRow">
+      <tr className="eachRow" bgcolor={color}>
       <td style = {{width:90}}>
         {this.props.row.go_term}
       </td>
       <td style = {{width:170}}>
         {this.props.row.description}
       </td>
-      <td style = {{width:100}}>
+      <td style = {{width:100, marginLeft:15}}>
         {this.props.row.p_value.toExponential(3)}
       </td>
       <td style = {{width:50}}>

@@ -27,7 +27,6 @@ import LoadingOverlay from "react-loading-overlay";
 
 // Important libraries
 import React, { Component } from "react";
-
 import * as d3 from "d3";
 import * as $ from "jquery";
 import * as _ from "lodash";
@@ -310,7 +309,7 @@ class App extends Component {
   	console.log("in statistics request");
   	 var start = performance.now();
   	e.preventDefault();
-  	let significance_level =document.getElementById("sig-level").value;
+  	let significance_level = document.getElementById("sig-level").value;
   	let node = this.state.cladeSelection[0];
   	let subtree = this.state.cladeSelection[1];
   	//console.log(node,subtree)
@@ -357,10 +356,15 @@ class App extends Component {
   **/
   sendStatisticsRequestTree = async (e) => {
   	console.log("in statistics tree request");
-  	 var start = performance.now();
+  	var start = performance.now();
   	e.preventDefault();
-  	let significance_level = 0.05 //document.getElementById("sig-level").value;
-  	let data = JSON.stringify({"nwk":this.state.newick,
+  	let significance_level =0.05//document.getElementById("sig-level-tree").value;
+  	if (!this.state.statisticFilesUploaded || !this.state.goFilesUploaded) {
+  		this.setState({uploadGOFilesModalShow:true});
+  		return null;
+  	}
+  	else{
+  		let data = JSON.stringify({"nwk":this.state.newick,
   										"support": this.state.snpdata.support,
   										"num_to_label":this.state.ids["numToLabel"],
   										"snps_to_gene":this.state.snpsToGene, 
@@ -368,39 +372,46 @@ class App extends Component {
   										"gene_to_go":this.state.gene_to_go, 
   										"sig_level":significance_level,
   										"all_snps":this.state.all_snps});
-  	try {
-  	let json = await this.fetchWithTimeout('/api/tree-statistics-request',{
-  		timeout: 3600000,
-  		method: "post",
-  		headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-  		body: data,
-  		});
-  	//let response = await fetch('/api/tree-statistics-request',{
-  	//	method: "post",
-  	//	headers: {
-   //         'Accept': 'application/json',
-   //         'Content-Type': 'application/json',
-   //     },
-  	//	body: data,
-  	//	});
-  	//let json = await response.json();
-    //if (response.status === 400) {
-     // console.error(json.message);      
-     // alert("Error by compute enrichment. Details in console.");
-    //} else {  
-     var end = performance.now();
-     console.log("statitics-tree-request: ",(end-start)/1000.0, "seconds");
-     console.log("received statistics tree response");
-    //this.setState({goModalShow:false,goResultModalShow:true, go_tree_result:json.go_tree_result, 
-    //numOfSigClades:json.go_result.length});
-  //}
-  } catch (error) {
-	  console.log(error.name === 'AbortError');
-  }
-  }  
+  		try {
+  		let json = await this.fetchWithTimeout('/api/tree-statistics-request',{
+	  		timeout: 3600000,
+  			method: "post",
+  			headers: {
+         	   'Accept': 'application/json',
+            	'Content-Type': 'application/json',
+        	},
+  			body: data,
+  			});
+  		//let response = await fetch('/api/tree-statistics-request',{
+  		//	method: "post",
+  		//	headers: {
+   	//         'Accept': 'application/json',
+   	//         'Content-Type': 'application/json',
+   	//     },
+  		//	body: data,
+  		//	});
+  		//let json = await response.json();
+    	//if (response.status === 400) {
+     	// console.error(json.message);      
+     	// alert("Error by compute enrichment. Details in console.");
+    	//} else {  
+     	var end = performance.now();
+     	console.log("statitics-tree-request: ",(end-start)/1000.0, "seconds");
+     	console.log("received statistics tree response");
+    	//this.setState({goModalShow:false,goResultModalShow:true, go_tree_result:json.go_tree_result, 
+    	//numOfSigClades:json.go_result.length});
+  	//}
+  	} catch (error) {
+		  console.log(error.name === 'AbortError');
+  	}
+  }}  
+  
+	sendTestRequest(){
+		fetch("/test_timeout",)
+    		.then((response) => {
+       console.log(response);
+    });
+ }
   
   //----------------------------------------------------------------------------------------
   //----------------------------------------------------------------------------------------
@@ -955,6 +966,7 @@ class App extends Component {
                 onMultipleSNPaddition={this.handleMultipleSNPaddition}
                 onFileUpload={this.handleSubmit}
                 onStatisticFileUpload={this.handleStatisticSubmit}
+                onStatisticsTreeRequest = {this.sendTestRequest}
                 onMDChange={this.handleMDChange}
                 onSNPChange={this.handleSNPChange}
                 onColorChange={this.handleColorChange}
@@ -990,7 +1002,7 @@ class App extends Component {
             	showGOModal = {this.showGOModal}
             	handleClose = {this.closeGOModal}
             	testGO = {this.testGO}
-            	sendStatisticsRequest = {this.sendStatisticsRequestTree}             	
+            	sendStatisticsRequest = {this.sendStatisticsRequest}             	
            	/>
            	)}
             {this.state.uploadFilesModalShow && (
@@ -1020,6 +1032,7 @@ class App extends Component {
              		subtree_snps = {this.state.subtree_snps}
              		go_to_snps = {this.state.go_to_snp_pos}
              		handleMultipleSNPadditon = {this.handleMultipleSNPaddition}
+             		visualizedSNPs = {this.state.visualizedSNPs}
              		handleHideSNPs = {this.handleHideSNPs}
 
              	/>
