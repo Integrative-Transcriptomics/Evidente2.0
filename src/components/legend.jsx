@@ -73,8 +73,8 @@ class Legend extends Component {
   shouldComponentUpdate(nextProp) {
     return (
       !isEqual(this.props.availableMDs, nextProp.availableMDs) ||
-      !isEqual(this.props.visMd, nextProp.visMd) ||
-      !isEqual(this.props.visSNPs, nextProp.visSNPs)
+	!isEqual(this.props.visMd, nextProp.visMd) ||
+	!isEqual(this.props.visSNPs, nextProp.visSNPs)
     );
   }
   someOrdinalPresent(el) {
@@ -113,106 +113,106 @@ class Legend extends Component {
                         {this.header.map((title) => (
                           <TableCell key={title}>{title} </TableCell>
                         ))}
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filter(this.props.availableMDs, (v) => {
-                        return accountForLegend.includes(v.name);
-                      }).map((row) => {
-                        let viewLegend =
-                          row.extent.length <= 12 ? (
-                            <React.Fragment>
-                              <TableCell align='left'>
-                                <svg id={`svg-legend-${row.name.replace(/ /g, "-")}`} />
-                              </TableCell>
-                              <TableCell>
-                                <Button
-                                  size='small'
-                                  variant='outlined'
-                                  style={{ color: "black" }}
-                                  onClick={() => {
-                                    this.props.onChange(row.name);
-                                  }}
-                                >
-                                  Change
-                                </Button>
-                              </TableCell>
-                            </React.Fragment>
-                          ) : (
-                            <TableCell align='center' colSpan={2}>
-                              <Button
-                                size='small'
-                                variant='outlined'
-                                style={{ color: "black" }}
-                                onClick={() => {
-                                  this.props.onChange(row.name);
-                                }}
-                              >
-                                Show/Change Scale
-                              </Button>
-                            </TableCell>
-                          );
-                        return (
-                          <TableRow key={row.name}>
-                            <TableCell scope='row' style={{ alignItems: "center" }}>
-                              <div style={{ display: "flex" }}>
-                                <OverlayTrigger
-                                  placement='left'
-                                  overlay={rowNameTooltip(row.name, this.props)}
-                                >
-                                  <span
-                                    style={{
-                                      maxWidth: this.cell.offsetWidth / 4,
-                                      overflow: "hidden",
-                                      textOverflow: "ellipsis",
-                                      whiteSpace: "nowrap",
-                                      display: "block",
-                                      cursor: "default",
-                                    }}
-                                  >
-                                    {row.name}
-                                  </span>
-                                </OverlayTrigger>
-                                {!this.props.orderChanged && row.type === "ordinal" && (
-                                  <OverlayTrigger
-                                    placement='top'
-                                    overlay={warningTooltip(row.name, this.props)}
-                                  >
-                                    <AnnouncementIcon
-                                      style={{ display: "inline-block", marginLeft: "5px" }}
-                                    />
-                                  </OverlayTrigger>
-                                )}
-                              </div>
-                            </TableCell>
+      </TableRow>
+        </TableHead>
+        <TableBody>
+        {filter(this.props.availableMDs, (v) => {
+          return accountForLegend.includes(v.name);
+        }).map((row) => {
+          let viewLegend =
+              row.extent.length <= 12 ? (
+                <React.Fragment>
+                  <TableCell align='left'>
+                    <svg id={`svg-legend-${row.name.replace(/ /g, "-")}`} />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size='small'
+                      variant='outlined'
+                      style={{ color: "black" }}
+                      onClick={() => {
+                        this.props.onChange(row.name);
+                      }}
+                      >
+            Change
+</Button>
+</TableCell>
+</React.Fragment>
+              ) : (
+                <TableCell align='center' colSpan={2}>
+                  <Button
+                    size='small'
+                    variant='outlined'
+                    style={{ color: "black" }}
+                    onClick={() => {
+                      this.props.onChange(row.name);
+                    }}
+                    >
+                    Show/Change Scale
+                  </Button>
+                </TableCell>
+              );
+          return (
+            <TableRow key={row.name}>
+              <TableCell scope='row' style={{ alignItems: "center" }}>
+                <div style={{ display: "flex" }}>
+                  <OverlayTrigger
+                    placement='left'
+                    overlay={rowNameTooltip(row.name, this.props)}
+                    >
+                    <span
+                      style={{
+                        maxWidth: this.cell.offsetWidth / 4,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        display: "block",
+                        cursor: "default",
+                      }}
+                      >
+                      {row.name}
+                    </span>
+                  </OverlayTrigger>
+                  {!this.props.orderChanged && row.type === "ordinal" && (
+                    <OverlayTrigger
+                      placement='top'
+                      overlay={warningTooltip(row.name, this.props)}
+                      >
+                      <AnnouncementIcon
+                        style={{ display: "inline-block", marginLeft: "5px" }}
+                        />
+                    </OverlayTrigger>
+                  )}
+            </div>
+              </TableCell>
 
-                            {viewLegend}
-                          </TableRow>
-                        );
-                      })}
+            {viewLegend}
+            </TableRow>
+          );
+        })}
 
-                      {this.props.availableMDs.some(this.someOrdinalPresent) && (
-                        <TableRow>
-                          <TableCell align='center' colSpan={3}>
-                            <Button
-                              size='small'
-                              variant='outlined'
-                              style={{ color: "black" }}
-                              onClick={this.props.onChangeOrder}
-                            >
-                              Change order of Ordinal values
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Paper>
-            </Collapse>
-          </div>
+      {this.props.availableMDs.some(this.someOrdinalPresent) && (
+        <TableRow>
+          <TableCell align='center' colSpan={3}>
+            <Button
+              size='small'
+              variant='outlined'
+              style={{ color: "black" }}
+              onClick={this.props.onChangeOrder}
+              >
+              Change order of Ordinal values
+            </Button>
+          </TableCell>
+        </TableRow>
+      )}
+      </TableBody>
+        </Table>
+        </TableContainer>
+        </Paper>
+        </Collapse>
         </div>
-      </React.Fragment>
+        </div>
+	</React.Fragment>
     );
   }
 }

@@ -15,7 +15,7 @@ class WelcomeModal extends Component {
         buttonName={"Loading..."}
         buttonId={"welcome-modal-button"}
         title='Evidente'
-      >
+	>
         <p>
           Evidente is loaded with a default toy example with seven taxa, five SNPs and four
           different metadata, in order for you to get to know this tool. In order to upload your own

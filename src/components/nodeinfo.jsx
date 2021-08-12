@@ -29,8 +29,8 @@ class NodeInformation extends Component {
 
   static getDerivedStateFromProps(props) {
     const getIfShow = (props, type) =>
-      get(props, `SNPTable.${type}.actualNode.length`, 0) > 0 ||
-      get(props, `SNPTable.${type}.descendants.length`, 0) > 0;
+	  get(props, `SNPTable.${type}.actualNode.length`, 0) > 0 ||
+	  get(props, `SNPTable.${type}.descendants.length`, 0) > 0;
     return {
       showSupport: getIfShow(props, "support"),
       showNonSupport: getIfShow(props, "notsupport"),
@@ -53,7 +53,7 @@ class NodeInformation extends Component {
                 }`}
                 onMouseOver={!this.state.showSupport ? enterMouse : undefined}
                 onMouseOut={!this.state.showSupport ? outMouse : undefined}
-              >
+		>
                 Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='0' id='supportingSNPs-card'>
@@ -64,14 +64,14 @@ class NodeInformation extends Component {
                     type={"node"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></VirtualizedTable>
+                    ></VirtualizedTable>
                   <VirtualizedTable
                     rows={get(this.props.SNPTable, `support.descendants`, [])}
                     title={"SNPs among the actual subtree"}
                     type={"subtree"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></VirtualizedTable>
+                    ></VirtualizedTable>
                 </Card.Body>
               </Accordion.Collapse>
             </Card>
@@ -85,7 +85,7 @@ class NodeInformation extends Component {
                 }`}
                 onMouseOver={!this.state.showSupport ? enterMouse : undefined}
                 onMouseOut={!this.state.showSupport ? outMouse : undefined}
-              >
+		>
                 Non Supporting SNPs
               </Accordion.Toggle>
               <Accordion.Collapse eventKey='1' id='nonSupportingSNPs-card'>
@@ -96,7 +96,7 @@ class NodeInformation extends Component {
                     type={"node"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></VirtualizedTable>
+                    ></VirtualizedTable>
 
                   <VirtualizedTable
                     rows={get(this.props.SNPTable, `notsupport.descendants`, [])}
@@ -104,7 +104,7 @@ class NodeInformation extends Component {
                     type={"subtree"}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                     onSNPaddition={this.props.onSNPaddition}
-                  ></VirtualizedTable>
+                    ></VirtualizedTable>
                 </Card.Body>
               </Accordion.Collapse>
             </Card>

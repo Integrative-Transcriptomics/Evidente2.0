@@ -44,7 +44,7 @@ class Phylotree extends Component {
     }
     if (
       this.props.selectedNodeID &&
-      this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
+	this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
     ) {
       container.selectAll("circle").style({ fill: "purple" }).attr({ r: 5 });
     }
@@ -79,23 +79,23 @@ class Phylotree extends Component {
   showSNPsfromNode(node) {
     let node_name = this.props.ids.numToLabel[node.tempid];
     let descendants = this.props.tree
-      .descendants(node)
-      .filter((d) => d.tempid !== node.tempid)
-      .map((d) => this.props.ids.numToLabel[d.tempid]);
+	.descendants(node)
+	.filter((d) => d.tempid !== node.tempid)
+	.map((d) => this.props.ids.numToLabel[d.tempid]);
     let supportSNPs = this.props.snpdata.support;
     let notSupportSNPs = this.props.snpdata.notsupport;
     const modifyListOfSNPs = (listSNPs, listNames) =>
-      _.uniqWith(
-        listSNPs
-          .filter((snp) => listNames.includes(snp.node))
-          .map((snp) => ({
-            pos: snp.pos,
-            allele: snp.allele,
-            inActualNode: snp.node === listNames[0],
-          }))
-          .sort((a, b) => d3.ascending(parseInt(a.pos), parseInt(b.pos))),
-        _.isEqual
-      );
+	  _.uniqWith(
+            listSNPs
+              .filter((snp) => listNames.includes(snp.node))
+              .map((snp) => ({
+		pos: snp.pos,
+		allele: snp.allele,
+		inActualNode: snp.node === listNames[0],
+              }))
+              .sort((a, b) => d3.ascending(parseInt(a.pos), parseInt(b.pos))),
+            _.isEqual
+	  );
     let uniqSupportSNPs = modifyListOfSNPs(supportSNPs, [node_name, ...descendants]);
     let groupedSupport = _.groupBy(uniqSupportSNPs, "inActualNode");
     let uniqNonSupportSNPs = modifyListOfSNPs(notSupportSNPs, [node_name, ...descendants]);
@@ -128,28 +128,28 @@ class Phylotree extends Component {
   
   //---------------------------------------------------------
   
-    /** Get clade selection and remember for statistial computation.  
+  /** Get clade selection and remember for statistial computation.  
    * 
    */
   remberCladeSelection(node){
-       let node_name =    this.props.ids.numToLabel[node.tempid];
-        let descendants = this.props.tree
-      .descendants(node)
-      .filter((d) => d.tempid !== node.tempid)
-      //.map((d) => this.props.ids.numToLabel[d.tempid]);
-      //console.log("phlyo-desc", descendants);
-      this.props.rememberCladeSelection(node, descendants);
+    //let node_name =    this.props.ids.numToLabel[node.tempid];
+    let descendants = this.props.tree
+	.descendants(node)
+	.filter((d) => d.tempid !== node.tempid)
+    //.map((d) => this.props.ids.numToLabel[d.tempid]);
+    //console.log("phlyo-desc", descendants);
+    this.props.rememberCladeSelection(node, descendants);
   }
   
-   /**
+  /**
    * Starts statistics dialog to allow user to specify wanted statistical computation. Remebers clade selection for statistical computations for server-request .
    * @param {Object} node selected
    */
   startStatisticsDialog(node) {
     console.log("in statistics dialog");
     console.log("dialog should be visible");
-        this.props.showStatisticsModal();
-        this.remberCladeSelection(node);
+    this.props.showStatisticsModal();
+    this.remberCladeSelection(node);
   }
 
   /**
@@ -157,16 +157,16 @@ class Phylotree extends Component {
    * 
    */
   isStatisticPossible(node){
-      console.log("node?",node);
-      if(this.props.computeStatistics){
-        this.startStatisticsDialog(node)
-        }
-        else{
-            this.props.showUploadFilesModal();
-        }
+    console.log("node?",node);
+    if(this.props.computeStatistics){
+      this.startStatisticsDialog(node)
+    }
+    else{
+      this.props.showUploadFilesModal();
+    }
   }
   
-//-----------------------------------------------------------
+  //-----------------------------------------------------------
   
   /**
    * Hides selected node and its descendants
@@ -245,16 +245,16 @@ class Phylotree extends Component {
         () => addTimeoutCursor(() => this.showSNPsfromNode(tnode), 50),
         () => true
       );
-    //--------------------------------------------------
-    //added to compute clade enrichments
-        d3.layout.phylotree.add_custom_menu(
-            tnode,
-            () => "Compute statistics for subtree",
-            () => addTimeoutCursor(() => this.isStatisticPossible(tnode), 1),
-            () => true
-        );
-    //---------------------------------------------------
-    
+      //--------------------------------------------------
+      //added to compute clade enrichments
+      d3.layout.phylotree.add_custom_menu(
+        tnode,
+        () => "Compute statistics for subtree",
+        () => addTimeoutCursor(() => this.isStatisticPossible(tnode), 1),
+        () => true
+      );
+      //---------------------------------------------------
+      
       
       d3.layout.phylotree.add_custom_menu(
         tnode,

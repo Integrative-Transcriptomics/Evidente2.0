@@ -25,7 +25,7 @@ const popover = (valueFilter, props) => (
             <Paper className='paper-tooltip'>
               {get(props, `availableMDs["${key}"].type`, undefined) === "numerical"
                 ? `from ${parseFloat(value[0].toFixed(3))} to ${parseFloat(value[1].toFixed(3))}`
-                : `Includes: [${value.join(", ")}]`}
+              : `Includes: [${value.join(", ")}]`}
             </Paper>
           </Grid>
         </Grid>
@@ -60,30 +60,30 @@ class FilterList extends Component {
                     edge='end'
                     aria-label='delete'
                     onClick={() => this.props.onDeleteFilter(it)}
-                  >
+                    >
                     <DeleteIcon />
                   </IconButton>
                 </ListItemSecondaryAction>
               </ListItem>
             ))}
-        </List>
+      </List>
         <Grid container spacing={4} direction='row' alignItems='center' justify='center'>
-          <Grid item>
-            <Button
-              variant='primary'
-              onClick={this.props.onApplyAllFilters}
-              disabled={this.props.remainingNodes === 0}
-            >
-              Apply filters
-            </Button>
-          </Grid>
-          <Grid item>
-            <Button variant='warning' onClick={this.props.onDeleteAllFilters}>
-              Remove filters
-            </Button>
-          </Grid>
+        <Grid item>
+        <Button
+      variant='primary'
+      onClick={this.props.onApplyAllFilters}
+      disabled={this.props.remainingNodes === 0}
+        >
+        Apply filters
+      </Button>
         </Grid>
-      </React.Fragment>
+        <Grid item>
+        <Button variant='warning' onClick={this.props.onDeleteAllFilters}>
+        Remove filters
+      </Button>
+        </Grid>
+        </Grid>
+	</React.Fragment>
     );
   }
 }

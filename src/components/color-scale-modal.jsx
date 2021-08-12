@@ -42,7 +42,7 @@ class ColorScaleModal extends Component {
         show={this.props.show}
         onClose={this.props.handleClose}
         title={`Select new color scale for metadata ${this.props.chosenMD}`}
-      >
+	>
         <Popover
           id={"popover"}
           open={Boolean(this.state.anchorEl)}
@@ -56,7 +56,7 @@ class ColorScaleModal extends Component {
             vertical: "top",
             horizontal: "center",
           }}
-        >
+          >
           <MyColorPicker element={this.state.anchorEl || null} />
         </Popover>
         <Paper elevation={4} className={this.classes.paper}>
@@ -67,29 +67,29 @@ class ColorScaleModal extends Component {
                   {this.header.map((title) => (
                     <TableCell key={title}>{title} </TableCell>
                   ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {get(this.props.mdinfo, `${this.props.chosenMD}.extent`, []).map((value, i) => {
-                  return (
-                    <TableRow key={value}>
-                      <TableCell component='th' scope='row'>
-                        {value}
-                      </TableCell>
-                      <TableCell align='left'>
-                        <MyColorPicker
-                          passID={i}
-                          fill={get(this.props.mdinfo, `${this.props.chosenMD}.colorScale`)(value)}
-                        />
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+      </TableRow>
+        </TableHead>
+        <TableBody>
+        {get(this.props.mdinfo, `${this.props.chosenMD}.extent`, []).map((value, i) => {
+          return (
+            <TableRow key={value}>
+              <TableCell component='th' scope='row'>
+                {value}
+              </TableCell>
+              <TableCell align='left'>
+                <MyColorPicker
+                  passID={i}
+                  fill={get(this.props.mdinfo, `${this.props.chosenMD}.colorScale`)(value)}
+                  />
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+        </Table>
+        </TableContainer>
         </Paper>
-      </ModalOwn>
+	</ModalOwn>
     );
   }
 }

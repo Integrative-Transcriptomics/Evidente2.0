@@ -15,7 +15,7 @@ class ModalOwn extends Component {
         onHide={() => {
           this.props.onClose(false);
         }}
-      >
+	>
         <Modal.Header className='ModalHeaderBody' closeButton>
           <Modal.Title>{this.props.title}</Modal.Title>
         </Modal.Header>
@@ -27,22 +27,22 @@ class ModalOwn extends Component {
               onClick={() => {
                 this.props.onClose(false);
               }}
-            >
+              >
               {" "}
               {this.props.secondButtonName}
             </Button>
           )}
-          <Button
-            id={this.props.buttonId || undefined}
-            variant='primary'
-            onClick={() => {
-              this.props.onClose(true);
-            }}
-          >
-            {this.props.buttonName ? this.props.buttonName : "Save Changes"}
-          </Button>
+        <Button
+      id={this.props.buttonId || undefined}
+      variant='primary'
+      onClick={() => {
+        this.props.onClose(true);
+      }}
+        >
+        {this.props.buttonName ? this.props.buttonName : "Save Changes"}
+      </Button>
         </Modal.Footer>
-      </Modal>
+	</Modal>
     );
   }
 }

@@ -2,6 +2,7 @@ from time import perf_counter
 from flask import jsonify
 import wget
 import os
+import time
 from goatools import obo_parser
 from backend_go_enrichment import GOEnrichment
 from backend_nwk_parser import Tree
@@ -79,35 +80,31 @@ def clade_snps (clade_nodes, node_to_snp):
 
 
 def load_go_basic():
-    """Download go-hierarchy file from website if needed
+    """Gets go-hierarchy-file from filesytem or downloads from website
 
+    Download is executed only if last download has been more than a week ago
+    or if hierarchy has never been downloaded bevor.
     :return: go: parsed obo-file
     """
-    # TODO update file automaticly from time to time
 
     go_obo_url = 'http://purl.obolibrary.org/obo/go/go-basic.obo'
     data_folder = os.getcwd() + '/data'
     # Check if we have the ./data directory already
-    if (not os.path.isfile(data_folder)):
-        # Emulate mkdir -p (no error if folder exists)
+    if (not os.path.isdir(data_folder)):
         try:
             os.mkdir(data_folder)
         except OSError as e:
             if (e.errno != 17):
                 raise e
-    else:
-        raise Exception('Data path (' + data_folder + ') exists as a file. '
-                                                      'Please rename, remove '
-                                                      'or change the desired '
-                                                      'location of the data '
-                                                      'path.')
-
-    # Check if the file exists already
+    # Check if we have the .obo file already
     if (not os.path.isfile(data_folder + '/go-basic.obo')):
         go_obo = wget.download(go_obo_url, data_folder + '/go-basic.obo')
     else:
-        go_obo = data_folder + '/go-basic.obo'
-
-    # print(go_obo)
+        time_since_last_modified = time.time() - os.path.getmtime(data_folder+'/go-basic.obo')
+        if time_since_last_modified > 400:
+            os.remove(data_folder + '/go-basic.obo')
+            go_obo = wget.download(go_obo_url, data_folder + '/go-basic.obo')
+        else:
+            go_obo = data_folder + '/go-basic.obo'
     go = obo_parser.GODag(go_obo)
     return go

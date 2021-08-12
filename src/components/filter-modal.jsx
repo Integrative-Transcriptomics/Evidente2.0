@@ -14,7 +14,7 @@ const CustomValueContainer = ({ children, ...props }) => {
         {props.selectProps.placeholder}
       </Placeholder>
       {React.Children.map(children, (child) =>
-        child && child.type !== Placeholder ? child : null
+			  child && child.type !== Placeholder ? child : null
       )}
     </ValueContainer>
   );
@@ -68,7 +68,7 @@ class FilterModal extends Component {
           this.setState({ filter: {} });
         }}
         title={`Select features for the filter`}
-      >
+	>
         <Typography variant='subtitle1'>
           A filter group defines all the characteristics a certain node should contain in order to
           be shown (AND-junction). Within filter groups, the nodes need to belong to at least one
@@ -84,41 +84,41 @@ class FilterModal extends Component {
           margin='dense'
           variant='outlined'
           inputRef={(el) => (this.nameInput = el)}
-        />
+          />
 
-        <Typography variant='h6'>Data for filter: </Typography>
+          <Typography variant='h6'>Data for filter: </Typography>
 
-        {toPairs(this.props.mdinfo).map((arr) => {
-          let k = arr[0],
-            v = arr[1];
-          if (this.props.filterFeatures.includes(k)) {
-            let type = v.type.toLowerCase();
-            if (type === "numerical") {
-              return <OwnSlider key={k} onChange={this.onChange} name={k} initValue={v.extent} />;
-            } else if (["categorical", "ordinal"].includes(type)) {
-              return (
-                <Select
-                  key={k}
-                  onChange={(e) => {
-                    this.onChange(
-                      k,
-                      e.map((v) => v.value)
-                    );
-                  }}
-                  options={v.extent.map((d) => ({ value: d, label: d }))}
-                  isMulti
-                  placeholder={`Filter for ${k}`}
-                  components={{
-                    ValueContainer: CustomValueContainer,
-                  }}
-                  menuPortalTarget={document.getElementsByTagName("body")[0]}
-                  styles={selectStates}
-                ></Select>
-              );
+          {toPairs(this.props.mdinfo).map((arr) => {
+            let k = arr[0],
+		v = arr[1];
+            if (this.props.filterFeatures.includes(k)) {
+              let type = v.type.toLowerCase();
+              if (type === "numerical") {
+		return <OwnSlider key={k} onChange={this.onChange} name={k} initValue={v.extent} />;
+              } else if (["categorical", "ordinal"].includes(type)) {
+		return (
+                  <Select
+                    key={k}
+                    onChange={(e) => {
+                      this.onChange(
+			k,
+			e.map((v) => v.value)
+                      );
+                    }}
+                    options={v.extent.map((d) => ({ value: d, label: d }))}
+                    isMulti
+                    placeholder={`Filter for ${k}`}
+                    components={{
+                      ValueContainer: CustomValueContainer,
+                    }}
+                    menuPortalTarget={document.getElementsByTagName("body")[0]}
+                    styles={selectStates}
+                    ></Select>
+		);
+              }
             }
-          }
-          return null;
-        })}
+            return null;
+          })}
       </ModalOwn>
     );
   }

@@ -19,7 +19,7 @@ function Option(props) {
         fontWeight: props.isSelected ? 500 : 400,
       }}
       {...newInnerProps}
-    >
+      >
       {props.children}
     </MenuItem>
   );
@@ -34,7 +34,7 @@ const CustomValueContainer = ({ children, ...props }) => {
         {props.selectProps.placeholder}
       </Placeholder>
       {React.Children.map(children, (child) =>
-        child && child.type !== Placeholder ? child : null
+			  child && child.type !== Placeholder ? child : null
       )}
     </ValueContainer>
   );
@@ -72,9 +72,9 @@ class VisualizeDataCard extends Component {
   shouldComponentUpdate(nextProp, nextState) {
     if (
       !isEqual(nextProp.availableMDs, this.props.availableMDs) ||
-      !isEqual(nextProp.availableSNPs, this.props.availableSNPs) ||
-      !isEqual(nextProp.visMd, this.props.visMd) ||
-      !isEqual(nextProp.visSNPs, this.props.visSNPs)
+	!isEqual(nextProp.availableSNPs, this.props.availableSNPs) ||
+	!isEqual(nextProp.visMd, this.props.visMd) ||
+	!isEqual(nextProp.visSNPs, this.props.visSNPs)
     ) {
       return true;
     } else {
@@ -100,7 +100,7 @@ class VisualizeDataCard extends Component {
           menuPosition={"fixed"}
           menuPortalTarget={document.getElementById("tools")}
           styles={selectStates}
-        ></Select>
+          ></Select>
         <Select
           id='metadatashow'
           options={this.props.getMetadata(this.props.availableMDs)}
@@ -114,7 +114,7 @@ class VisualizeDataCard extends Component {
           menuPosition={"fixed"}
           menuPortalTarget={document.getElementById("tools")}
           styles={selectStates}
-        ></Select>
+          ></Select>
       </Card.Body>
     );
   }

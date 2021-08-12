@@ -8,11 +8,11 @@ import Button from "react-bootstrap/Button";
 
 
 class UploadFilesModal extends Component{
-	state = { };
-	
+  state = { };
+  
+  
+  render() {
     
-   render() {
-       
     return (
       <Modal
         
@@ -22,25 +22,25 @@ class UploadFilesModal extends Component{
         //backdrop="static"
         keyboard={false}
         centered
-      >
+	>
         <Modal.Header>
-         <Modal.Title>File Upload required</Modal.Title>
+          <Modal.Title>File Upload required</Modal.Title>
         </Modal.Header>
         
         <Modal.Body>
-        Please upload statistic files in the menu on the right to compute statistics
+          Please upload statistic files in the menu on the right to compute statistics
         </Modal.Body>
         <Modal.Footer>
-         <Button id= "go" variant= "primary" onClick={this.props.handleClose} style={{float: 'right'}}>
+          <Button id= "go" variant= "primary" onClick={this.props.handleClose} style={{float: 'right'}}>
             Okay
-         </Button>
-         </Modal.Footer>
-         
-       
+          </Button>
+        </Modal.Footer>
+        
+	
       </Modal>
     );
-     
-}}
+    
+  }}
 
 
 export default UploadFilesModal

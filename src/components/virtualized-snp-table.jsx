@@ -55,7 +55,7 @@ class MuiVirtualizedTable extends React.PureComponent {
         })}
         variant='body'
         style={{ height: rowHeight }}
-      >
+	>
         {columns[columnIndex].label === "Actions" ? (
           <Button
             size='small'
@@ -64,7 +64,7 @@ class MuiVirtualizedTable extends React.PureComponent {
             onClick={() => {
               this.props.onSNPaddition(cellData);
             }}
-          >
+            >
             Visualize
           </Button>
         ) : (
@@ -84,7 +84,7 @@ class MuiVirtualizedTable extends React.PureComponent {
         className={clsx(classes.tableCell, classes.flexContainer, classes.noClick)}
         variant='head'
         style={{ height: headerHeight }}
-      >
+	>
         {columns[columnIndex].label === "Actions" ? (
           <Button
             size='small'
@@ -93,7 +93,7 @@ class MuiVirtualizedTable extends React.PureComponent {
             onClick={() => {
               this.props.onMultipleSNPaddition(SNPs);
             }}
-          >
+            >
             Show all {SNPs.length} SNPs
           </Button>
         ) : (
@@ -118,23 +118,23 @@ class MuiVirtualizedTable extends React.PureComponent {
               className={classes.table}
               {...tableProps}
               rowClassName={this.getRowClassName}
-            >
+              >
               {columns.map(({ dataKey, label }, index) => {
                 return (
                   <Column
                     key={dataKey}
                     headerRenderer={(headerProps) =>
-                      this.headerRenderer({
-                        ...headerProps,
-                        columnIndex: index,
-                      })
-                    }
-                    width={width}
-                    className={classes.flexContainer}
-                    cellRenderer={this.cellRenderer}
-                    dataKey={dataKey}
-                    label={label}
-                  />
+				    this.headerRenderer({
+				      ...headerProps,
+				      columnIndex: index,
+				      })
+				    }
+				    width={width}
+				    className={classes.flexContainer}
+				    cellRenderer={this.cellRenderer}
+				    dataKey={dataKey}
+				    label={label}
+				    />
                 );
               })}
             </Table>
@@ -188,7 +188,7 @@ class ReactVirtualizedTable extends Component {
             width: "100%",
             margin: 5,
           }}
-        >
+          >
           <Typography variant='h6' align='center' gutterBottom={true}>
             SNPs within the actual {this.props.type}
           </Typography>
@@ -203,7 +203,7 @@ class ReactVirtualizedTable extends Component {
               onSNPaddition={this.props.onSNPaddition}
               onMultipleSNPaddition={this.props.onMultipleSNPaddition}
               data={this.props.rows}
-            />
+              />
           </div>
         </Paper>
       );

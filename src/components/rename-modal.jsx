@@ -22,7 +22,7 @@ class RenameModal extends Component {
           this.props.handleClose(save, this.props.changingCladeNode, this.state.name);
         }}
         title={`Rename cluster: ${this.props.name}`}
-      >
+	>
         <TextField
           id='rename-clade-text'
           label='New Name for cluster'
@@ -31,7 +31,7 @@ class RenameModal extends Component {
           margin='dense'
           variant='outlined'
           inputRef={(el) => (this.nameInput = el)}
-        />
+          />
       </ModalOwn>
     );
   }

@@ -33,7 +33,7 @@ const CustomValueContainer = ({ children, ...props }) => {
         {props.selectProps.placeholder}
       </Placeholder>
       {React.Children.map(children, (child) =>
-        child && child.type !== Placeholder ? child : null
+			  child && child.type !== Placeholder ? child : null
       )}
     </ValueContainer>
   );
@@ -99,8 +99,8 @@ class Tools extends Component {
       svgLegend.style.minHeight = 30;
 
       let legend = select("#root")
-        .append("svg")
-        .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 350 });
+          .append("svg")
+          .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 350 });
       this.props.addLegend(legend, 250, data, true);
       svgLegend.appendChild(legend.node());
       blockLegendLabel.appendChild(labelLegend);
@@ -181,7 +181,7 @@ class Tools extends Component {
               eventKey='0'
               id='files-card'
               className='noselect header-accordion'
-            >
+              >
               Load files
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
@@ -192,217 +192,230 @@ class Tools extends Component {
                     { id: "snp", label: "SNP Table" },
                     { id: "taxainfo", label: "Taxa metadata" },
                     // { id: "SNPinfo", label: "SNP metadata" },
-                  ].map(({ id, label }) => (
-                    <Form.Group key={id}>
-                      <Form.File
-                        id={id}
-                        label={label}
-                        name={id}
-                        custom
-                        onChange={(el) => this.onFileChange(el, label)}
-                      />
-                    </Form.Group>
-                  ))}
-                  <Button variant='primary' type='submit'>
-                    Submit
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-          
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='1'
-              id='statfiles-card'
-              className='noselect header-accordion'
-            >
-              Load statistic files
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='1'>
-              <Card.Body>
-                <Form id='statfileform' onSubmit={this.props.onStatisticFileUpload}>
-                  {[
-                    { id: "goterm", label: "GO" },
-                    { id: "gff", label: "gff"},
-                    { id: "snp_info", label: "SNP info" },
-                  ].map(({ id, label }) => (
-                    <Form.Group key={id}>
-                      <Form.File
-                        id={id}
-                        label={label}
-                        name={id}
-                        custom
-                        onChange={(el) => this.onFileChange(el, label)}
-                      />
-                    </Form.Group>
-                  ))}
-                  <Button variant='primary' type='submit'>
-                    Submit
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-          
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='2'
-              id='metadata-card'
-              className='noselect header-accordion'
-            >
-              Visualize data
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='2'>
-              <VisualizeDataCard
-                availableMDs={this.props.availableMDs}
-                availableSNPs={this.props.availableSNPs}
-                visSNPs={this.props.visSNPs}
-                visMd={this.props.visMd}
-                onSNPChange={this.props.onSNPChange}
-                onMDChange={this.props.onMDChange}
-                getMetadata={this.getMetadata}
+                    ].map(({ id, label }) => (
+                      <Form.Group key={id}>
+			<Form.File
+                          id={id}
+                          label={label}
+                          name={id}
+                          custom
+                          onChange={(el) => this.onFileChange(el, label)}
+			  />
+                      </Form.Group>
+                    ))}
+        <Button variant='primary' type='submit'>
+        Submit
+      </Button>
+        </Form>
+        </Card.Body>
+        </Accordion.Collapse>
+        </Card>
+        
+        <Card>
+        <Accordion.Toggle
+      as={Card.Header}
+      eventKey='1'
+      id='statfiles-card'
+      className='noselect header-accordion'
+        >
+        Load statistic files
+      </Accordion.Toggle>
+        <Accordion.Collapse eventKey='1'>
+        <Card.Body>
+        <Form id='statfileform' onSubmit={this.props.onStatisticFileUpload}>
+        {[
+          { id: "goterm", label: "GO" },
+          { id: "gff", label: "gff"},
+          { id: "snp_info", label: "SNP info" },
+        ].map(({ id, label }) => (
+          <Form.Group key={id}>
+            <Form.File
+              id={id}
+              label={label}
+              name={id}
+              custom
+              onChange={(el) => this.onFileChange(el, label)}
               />
-            </Accordion.Collapse>
-          </Card>
-          
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='3'
-              id='filtering-card'
-              className='noselect header-accordion'
-            >
-              Filter nodes
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='3'>
-              <Card.Body>
-                <Grid container spacing={2} direction='row' alignItems='center'>
-                  <Grid item>
-                    <Typography variant='h6'>Create a filter group with metadata</Typography>
-                  </Grid>
-                  <Grid item>
-                    <OverlayTrigger placement='top' overlay={helpTooltip}>
-                      <HelpIcon style={{ display: "flex" }} />
-                    </OverlayTrigger>
-                  </Grid>
-                </Grid>
+          </Form.Group>
+        ))}
+        <Button variant='primary' type='submit'>
+        Submit
+      </Button>
+        </Form>
+        </Card.Body>
+        </Accordion.Collapse>
+        </Card>
+        
+        <Card>
+        <Accordion.Toggle
+      as={Card.Header}
+      eventKey='2'
+      id='metadata-card'
+      className='noselect header-accordion'
+        >
+        Visualize data
+      </Accordion.Toggle>
+        <Accordion.Collapse eventKey='2'>
+        <VisualizeDataCard
+      availableMDs={this.props.availableMDs}
+      availableSNPs={this.props.availableSNPs}
+      visSNPs={this.props.visSNPs}
+      visMd={this.props.visMd}
+      onSNPChange={this.props.onSNPChange}
+      onMDChange={this.props.onMDChange}
+      getMetadata={this.getMetadata}
+        />
+        </Accordion.Collapse>
+        </Card>
+        
+        <Card>
+        <Accordion.Toggle
+      as={Card.Header}
+      eventKey='3'
+      id='filtering-card'
+      className='noselect header-accordion'
+        >
+        Filter nodes
+      </Accordion.Toggle>
+        <Accordion.Collapse eventKey='3'>
+        <Card.Body>
+        <Grid container spacing={2} direction='row' alignItems='center'>
+        <Grid item>
+        <Typography variant='h6'>Create a filter group with metadata</Typography>
+        </Grid>
+        <Grid item>
+        <OverlayTrigger placement='top' overlay={helpTooltip}>
+        <HelpIcon style={{ display: "flex" }} />
+        </OverlayTrigger>
+        </Grid>
+        </Grid>
 
-                <Form.Group key='metadatafilter'>
-                  <Select
-                    id='select-filter'
-                    options={this.getMetadata(this.props.availableMDs)}
-                    isMulti
-                    value={this.state.filterValue}
-                    onChange={this.onChangeFilter}
-                    placeholder={"Select metadata for filter group"}
-                    components={{
-                      ValueContainer: CustomValueContainer,
-                    }}
-                    menuPortalTarget={document.getElementById("tools")}
-                    menuPosition={"fixed"}
-                    styles={selectStates}
-                  ></Select>
-                </Form.Group>
-                <Button
-                  variant='primary'
-                  disabled={this.state.selectedFeatures.length === 0}
-                  onClick={() => {
-                    this.setState({ filterValue: null, selectedFeatures: [] });
-                    this.props.onOpenFilter(this.state.selectedFeatures);
-                  }}
-                >
-                  Create filter group
-                </Button>
-                {this.props.createdFilters.length > 0 && (
-                  <React.Fragment>
-                    <Divider variant='middle' style={{ marginTop: "5px", marginBottom: "5px" }} />
-                    <Typography variant='h6'>Created filter groups</Typography>
-                    <Typography variant='h6' style={{ fontWeight: "normal" }}>
-                      Applying following filter would result in {this.props.remainingNodes}{" "}
-                      {this.props.remainingNodes > 1 || this.props.remainingNodes === 0
-                        ? "nodes"
-                        : "node"}
-                    </Typography>
+        <Form.Group key='metadatafilter'>
+        <Select
+      id='select-filter'
+      options={this.getMetadata(this.props.availableMDs)}
+      isMulti
+      value={this.state.filterValue}
+      onChange={this.onChangeFilter}
+      placeholder={"Select metadata for filter group"}
+      components={{
+        ValueContainer: CustomValueContainer,
+      }}
+      menuPortalTarget={document.getElementById("tools")}
+      menuPosition={"fixed"}
+      styles={selectStates}
+        ></Select>
+        </Form.Group>
+        <Button
+      variant='primary'
+      disabled={this.state.selectedFeatures.length === 0}
+      onClick={() => {
+        this.setState({ filterValue: null, selectedFeatures: [] });
+        this.props.onOpenFilter(this.state.selectedFeatures);
+      }}
+        >
+        Create filter group
+      </Button>
+        {this.props.createdFilters.length > 0 && (
+          <React.Fragment>
+            <Divider variant='middle' style={{ marginTop: "5px", marginBottom: "5px" }} />
+            <Typography variant='h6'>Created filter groups</Typography>
+            <Typography variant='h6' style={{ fontWeight: "normal" }}>
+              Applying following filter would result in {this.props.remainingNodes}{" "}
+              {this.props.remainingNodes > 1 || this.props.remainingNodes === 0
+                ? "nodes"
+              : "node"}
+            </Typography>
 
-                    <FilterList
-                      remainingNodes={this.props.remainingNodes}
-                      availableMDs={this.props.availableMDs}
-                      onApplyAllFilters={this.props.onApplyAllFilters}
-                      nameOfFilters={this.props.nameOfFilters}
-                      createdFilters={this.props.createdFilters}
-                      onDeleteFilter={this.props.onDeleteFilter}
-                      onDeleteAllFilters={this.props.onDeleteAllFilters}
-                    />
-                  </React.Fragment>
-                )}
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-          
-          
-          
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='4'
-              id='tree-card'
-              className='noselect header-accordion'
-            >
-             Analyse Tree
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='4'>
-              <Card.Body>
-              <Form id="tree-enrichment">
-                <Form.Group id = "group">
-                    <Form.Label>Significance Level:</Form.Label>
-                    <Form.Control id= "sig-level-tree" type="text" defaultValue = "0.05"/>
-                    </Form.Group>
-               </Form>     
-                <Button variant= 'primary' onClick={() => {
-                    fetch("/test_timeout",)
-    		.then((response) => {
-       console.log(response);
-    });
-                }}>
-                    Find enriched Clades
-                    </Button>
-            </Card.Body>
-            </Accordion.Collapse>
-                </Card>
-                <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='5'
-              id='export-card'
-              className='noselect header-accordion'
-            >
-              Export visualization
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='5'>
-              <Card.Body>
-                <Typography variant='h6' gutterBottom={true}>
-                  Export visualizations
-                </Typography>
-                <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
-                  {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
-                    <Grid key={typeOfExport} item>
-                      <Button
-                        variant='primary'
-                        onClick={() => this.onExport(typeOfExport.toLowerCase())}
-                      >
-                        As {typeOfExport}
-                      </Button>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
+            <FilterList
+              remainingNodes={this.props.remainingNodes}
+              availableMDs={this.props.availableMDs}
+              onApplyAllFilters={this.props.onApplyAllFilters}
+              nameOfFilters={this.props.nameOfFilters}
+              createdFilters={this.props.createdFilters}
+              onDeleteFilter={this.props.onDeleteFilter}
+              onDeleteAllFilters={this.props.onDeleteAllFilters}
+              />
+          </React.Fragment>
+        )}
+      </Card.Body>
+        </Accordion.Collapse>
+        </Card>
+        <Card>
+        <Accordion.Toggle
+          as={Card.Header}
+          eventKey='4'
+          id='tree-card'
+          className='noselect header-accordion'
+         >
+        Analyse Tree
+      </Accordion.Toggle>
+        <Accordion.Collapse eventKey='4'>
+        <Card.Body>
+        <Form id="tree-enrichment">
+        <Form.Group id = "group">
+        <Form.Label>Significance Level:</Form.Label>
+        <Form.Control id= "sig-level-tree" type="text" defaultValue = "0.05"/>
+        </Form.Group>
+        </Form>     
+        <Button variant= 'primary' onClick={this.props.onStatisticsTreeRequest}>
+        Find enriched Clades
+      </Button>
+        </Card.Body>
+        </Accordion.Collapse>
+        </Card>
+
+
+        <Card>
+        <Accordion.Toggle
+          as={Card.Header}
+          eventKey='5'
+          id='result-card'
+          className='noselect header-accordion'
+         >
+        Enrichment Result
+      </Accordion.Toggle>
+        <Accordion.Collapse eventKey='5'>
+        <Card.Body>
+        <Form/>
+        <Button id='results' variant= 'primary' onClick={this.props.showLatestResults}>
+        Show latest results
+      </Button>
+        </Card.Body>
+        </Accordion.Collapse>
+        </Card>
+
+        <Card>
+        <Accordion.Toggle
+      as={Card.Header}
+      eventKey='6'
+      id='export-card'
+      className='noselect header-accordion'
+        >
+        Export visualization
+      </Accordion.Toggle>
+        <Accordion.Collapse eventKey='6'>
+        <Card.Body>
+        <Typography variant='h6' gutterBottom={true}>
+        Export visualizations
+      </Typography>
+        <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
+        {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
+          <Grid key={typeOfExport} item>
+            <Button
+              variant='primary'
+              onClick={() => this.onExport(typeOfExport.toLowerCase())}
+              >
+              As {typeOfExport}
+            </Button>
+          </Grid>
+        ))}
+      </Grid>
+        </Card.Body>
+        </Accordion.Collapse>
+        </Card>
         </Accordion>
-      </div>
+	</div>
     );
   }
 }

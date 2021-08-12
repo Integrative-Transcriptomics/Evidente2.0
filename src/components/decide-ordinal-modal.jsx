@@ -14,7 +14,7 @@ class DecideOrdinalModal extends Component {
         buttonName={"Yes"}
         secondButtonName={"No"}
         title={`Sort Ordinal values?`}
-      >
+	>
         <Typography variant='body1'>
           Some ordinal values were detected within your metadata input. These are sorted
           alphabetically by default. Would you like to sort them yourself?

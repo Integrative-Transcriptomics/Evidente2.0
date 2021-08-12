@@ -16,8 +16,8 @@ const SortableList = SortableContainer(({ collections }) => {
               {items[1].map((item, i) => (
                 <SortableItem key={item} value={`${item}`} index={i} collection={index} />
               ))}
-            </ul>
-          </React.Fragment>
+          </ul>
+            </React.Fragment>
         );
       })}
     </div>
@@ -60,12 +60,12 @@ class OrdinalModal extends Component {
           this.setState({ collections: [] });
         }}
         title='Select order for ordinal values'
-      >
+	>
         <SortableList
           className='SortableList'
           collections={this.state.collections}
           onSortEnd={this.onSortEnd}
-        />
+          />
       </ModalOwn>
     );
   }

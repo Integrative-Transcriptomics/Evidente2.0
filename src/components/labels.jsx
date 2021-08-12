@@ -22,23 +22,23 @@ class Labels extends Component {
     let props = this.props;
     let shownNodes = props.shownNodes;
     let yScale = d3.scale
-      .ordinal()
-      .domain(shownNodes)
-      .rangeBands([0, height - margin_top]);
+	.ordinal()
+	.domain(shownNodes)
+	.rangeBands([0, height - margin_top]);
     let cellHeight = (height - margin_top) / shownNodes.length;
     let yAxis = d3.svg
-      .axis()
-      .scale(yScale)
-      .tickFormat((d) => d)
-      .orient("left");
+	.axis()
+	.scale(yScale)
+	.tickFormat((d) => d)
+	.orient("left");
     let svg = d3.select("#container-labels");
     let ticks = svg
-      .select(".own-label.y.axis")
-      .call(yAxis)
-      .call((g) => g.select(".domain").remove())
-      .style("font-size", `${Math.min(cellHeight, 12)}px`)
-      .style("cursor", "default")
-      .selectAll(".tick");
+	.select(".own-label.y.axis")
+	.call(yAxis)
+	.call((g) => g.select(".domain").remove())
+	.style("font-size", `${Math.min(cellHeight, 12)}px`)
+	.style("cursor", "default")
+	.selectAll(".tick");
 
     ticks
       .selectAll("text")
@@ -104,15 +104,15 @@ class Labels extends Component {
 
   componentDidMount() {
     let svg = d3
-      .select(`#${this.props.divID}`)
-      .append("svg")
-      .attr("width", this.container.offsetWidth)
-      .attr("height", this.container.offsetHeight)
-      .attr("id", `display_${this.props.divID}`)
-      .append("g")
-      .attr("id", "adds-margin")
-      .append("g")
-      .attr("id", "container-labels");
+	.select(`#${this.props.divID}`)
+	.append("svg")
+	.attr("width", this.container.offsetWidth)
+	.attr("height", this.container.offsetHeight)
+	.attr("id", `display_${this.props.divID}`)
+	.append("g")
+	.attr("id", "adds-margin")
+	.append("g")
+	.attr("id", "container-labels");
 
     svg
       .append("g")
