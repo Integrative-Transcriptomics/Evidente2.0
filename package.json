@@ -19,7 +19,6 @@
     "neat-csv": "^5.2.0",
     "phylotree": "github:mwittep/phylotree.js",
     "puppeteer": "^3.3.0",
-    "re-resizable": "^6.9.0",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
     "react-color": "^2.18.1",

@@ -131,10 +131,15 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
     data["tree_size"] = tree_size
     data["num_snps"] = num_snps
     data["all_snps"] = all_snps
-
+    #support_nodes = []
+    #support_nodes += map(helper,support)
+    #support_nodes = set(support_nodes)
+    #print("support", support_nodes, support_nodes.__len__())
     # convert data to json and send back to frontend
     return jsonify(data)
 
+#def helper(sup_dict):
+#    return sup_dict["node"]
 
 # noinspection SpellCheckingInspection
 def call_classico(tmpdir, nwk, snp):

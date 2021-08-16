@@ -21,7 +21,9 @@ import GOModal from "./components/go-modal";
 import UploadFilesModal from "./components/upload-files-modal";
 import UploadGOFilesModal from "./components/upload-go-files-modal";
 import GOResultModal from "./components/go-result-modal";
-import ResizableModal from "./components/resizable";
+import TreeResultModal from "./components/tree-result-modal";
+
+//import ResizableModal from "./components/resizable";
 
 // import { PushSpinner } from "react-spinners-kit";
 import LoadingOverlay from "react-loading-overlay";
@@ -93,6 +95,7 @@ class App extends Component {
     id_to_go: {},
     go_to_snp_pos:{},
     go_result: [],
+    tree_result: {},//{7:{"subtree":1, "result":[],"subtree_size":5, "num_snps":20, "num_go_terms":200}},//{},
     all_snps: [],
     node_to_snps: {},
     tree_size: 0,
@@ -103,6 +106,7 @@ class App extends Component {
     statisticsModalShow: false,
     goModalShow: false,
     goResultModalShow:false,
+    treeResultModalShow:false,
     uploadFilesModalShow:false, 
     uploadGOFilesModalShow:false,
     computeStatistics: false,
@@ -220,6 +224,9 @@ class App extends Component {
   showLatestResults = () => {
     this.setState({goResultModalShow:true});
   }
+  showLatestResultsTree = () => {
+    this.setState({treeResultModalShow:true});
+  }
   closeGoResultModal = () => {
     this.setState({goResultModalShow:false});  
   }
@@ -242,6 +249,13 @@ class App extends Component {
   }
   showUploadGOFilesModal = () => {
     this.setState({uploadGOFilesModalShow:true, statisticsModalShow:false});  	
+  }
+
+  showTreeResultModal = () => {
+    this.setState({treeResultModalShow:true});
+  }
+  closeTreeResultModal = () => {
+    this.setState({treeResultModalShow:false});
   }
   
   
@@ -310,6 +324,7 @@ class App extends Component {
      and receives enrichment results
   **/
   sendStatisticsRequest = async (e) => {
+     this.handleLoadingToggle(true);
     console.log("in statistics request");
     var start = performance.now();
     e.preventDefault();
@@ -336,7 +351,8 @@ class App extends Component {
       var end = performance.now();
       console.log("statitics-request: ",(end-start)/1000.0, "seconds");
       console.log("received statistics response");
-      this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result, 
+      this.handleLoadingToggle(false);
+      this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result,
 		     numOfSigGoTerms:json.go_result.length});
     }}  
 
@@ -354,6 +370,7 @@ class App extends Component {
       return null;
     }
     else{
+      this.handleLoadingToggle(true);
       let data = JSON.stringify({"nwk":this.state.newick,
   				 "support": this.state.snpdata.support,
   				 "num_to_label":this.state.ids["numToLabel"],
@@ -374,11 +391,13 @@ class App extends Component {
       if (response.status === 400) {
      	console.error(json.message);      
      	alert("Error by compute enrichment. Details in console.");
-      } else {  
-     	var end = performance.now();
+      } else {
+         this.handleLoadingToggle(false);
+    	var end = performance.now();
      	console.log("statitics-tree-request: ",(end-start)/1000.0, "seconds");
      	console.log("received statistics tree response");
      	console.log(json);
+     	this.setState({tree_result:json.tree_go_result, treeResultModalShow:true});
       }
     }  
   }
@@ -943,6 +962,7 @@ class App extends Component {
       onStatisticFileUpload={this.handleStatisticSubmit}
       onStatisticsTreeRequest = {this.sendStatisticsRequestTree}
       showLatestResults = {this.showLatestResults}
+      showLatestResultsTree = {this.showLatestResultsTree}
       onMDChange={this.handleMDChange}
       onSNPChange={this.handleSNPChange}
       onColorChange={this.handleColorChange}
@@ -988,13 +1008,6 @@ class App extends Component {
         handleClose = {this.closeUploadFilesModal}             	
           />
       )}
-       {this.state.test && (
-	  <ResizableModal
-        id = 'upload-files-modal'
-        show = {this.state.uploadFilesModalShow}
-        handleClose = {this.closeUploadFilesModal}
-          />
-      )}
       {this.state.uploadGOFilesModalShow && (
 	  <UploadGOFilesModal
         id = 'upload-files-modal'
@@ -1017,8 +1030,26 @@ class App extends Component {
         handleMultipleSNPadditon = {this.handleMultipleSNPaddition}
         visualizedSNPs = {this.state.visualizedSNPs}
         handleHideSNPs = {this.handleHideSNPs}
-
+        tree={this.tree}
+        clade = {this.state.cladeSelection}
+        root = {this.state.cladeSelection[0]}
           />
+      )}
+      {this.state.treeResultModalShow && (
+        <TreeResultModal
+            show = {this.state.treeResultModalShow}
+            tree_result = {this.state.tree_result}
+            handleClose = {this.closeTreeResultModal}
+            handleShow = {this.showTreeResultModal}
+            tree_size = {this.state.tree_size}
+            tree_snps = {this.state.tree_snps}
+            go_to_snps = {this.state.go_to_snp_pos}
+            handleMultipleSNPadditon = {this.handleMultipleSNPaddition}
+            visualizedSNPs = {this.state.visualizedSNPs}
+            handleHideSNPs = {this.handleHideSNPs}
+            tree={this.tree}
+
+        />
       )}
       {this.state.ordinalModalShow && (
 	  <OrdinalModal

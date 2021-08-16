@@ -9,3 +9,10 @@
     height: 200px;
     max-height: 200px;
 }
+.tree-result-dialog{
+    width: 400px;
+    max-width: none;
+    height: 100px;
+    max-height: 100px !important;
+    top:20%;
+}

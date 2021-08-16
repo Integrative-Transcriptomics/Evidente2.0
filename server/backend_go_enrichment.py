@@ -24,7 +24,7 @@ class GOEnrichment:
                 results.append((go_term, fishers_exact, description))
                 # todo: add e/p !!!
         #print(results.__len__())
-        return results
+        return results, set(clade_go_terms).__len__()
 
     def __go_to_description(self, go_term):
         if go_term in self.__go_hierarchy:

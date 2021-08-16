@@ -110,7 +110,7 @@ class Tree:
 
  #---------------------------------------------------------------------------
  #---------------------------------------------------------------------------
-# propagating SNPs down to leaves by traversing tree
+# class for propagating SNPs down to leaves while traversing the tree
 class Snps:
     def __init__(self, support, not_support, ids):
         self.__node_to_snps = dict()
@@ -163,7 +163,9 @@ class Snps:
     #---------------------------------------------------------------------------
     #---------------------------------------------------------------------------
 
-    
+
+
+
 if __name__ == "__main__":
     # example printing the tree:
     def print_node_enter(node, prefix):

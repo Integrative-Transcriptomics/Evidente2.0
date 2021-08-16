@@ -127,7 +127,8 @@ class Phylotree extends Component {
   }
   
   //---------------------------------------------------------
-  
+
+
   /** Get clade selection and remember for statistial computation.  
    * 
    */
@@ -146,8 +147,8 @@ class Phylotree extends Component {
    * @param {Object} node selected
    */
   startStatisticsDialog(node) {
-    console.log("in statistics dialog");
-    console.log("dialog should be visible");
+    //console.log("in statistics dialog");
+    //console.log("dialog should be visible");
     this.props.showStatisticsModal();
     this.remberCladeSelection(node);
   }

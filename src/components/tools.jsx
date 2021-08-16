@@ -4,6 +4,8 @@ import Select, { components } from "react-select";
 import { filter, keys } from "lodash";
 import * as $ from "jquery";
 import { select } from "d3";
+import * as d3 from "d3";
+
 
 import { Typography, Divider, Grid } from "@material-ui/core";
 
@@ -11,6 +13,29 @@ import HelpIcon from "@material-ui/icons/Help";
 
 import FilterList from "./filter-list";
 import VisualizeDataCard from "./visualize-card";
+
+/**
+* Helper Function for showing an information text box by hovering over "analyse tree"
+* option in toolbox
+*/
+const enterMouse = (event) => {
+  const div = d3.select("#tooltip");
+  div
+    .transition()
+    .duration(200)
+    .style("max-width", "150px")
+    .style("opacity", 0.9)
+    .style("display", "flex");
+  div
+    .html("Perform an GO-Enrichment for all clades owning supporting SNPs and receive all significant results")
+    .style("left", event.pageX + "px")
+    .style("top", event.pageY - 28 + "px");
+};
+
+const outMouse = () => {
+  const div = d3.select("#tooltip");
+  div.transition().duration(500).style("opacity", 0).style("max-width", "");
+};
 
 /**
  * Helper function for the filter tooltip
@@ -169,6 +194,15 @@ class Tools extends Component {
         .html(`${label}: ${fileName}`);
     }
   };
+
+  onLatestResult = (type) => {
+    if(type === "tree"){
+        this.props.showLatestResultsTree();
+    }
+    else if (type === "clade"){
+        this.props.showLatestResults();
+    }
+  }
 
   render() {
     return (
@@ -347,6 +381,8 @@ class Tools extends Component {
           eventKey='4'
           id='tree-card'
           className='noselect header-accordion'
+          onMouseOver={enterMouse}
+          onMouseOut={ outMouse }
          >
         Analyse Tree
       </Accordion.Toggle>
@@ -373,14 +409,25 @@ class Tools extends Component {
           id='result-card'
           className='noselect header-accordion'
          >
-        Enrichment Result
+        Enrichment Results
       </Accordion.Toggle>
         <Accordion.Collapse eventKey='5'>
         <Card.Body>
-        <Form/>
-        <Button id='results' variant= 'primary' onClick={this.props.showLatestResults}>
-        Show latest results
-      </Button>
+          <Typography variant='h6' gutterBottom={true}>
+            Latest Results
+          </Typography>
+            <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
+            {["Clade", "Tree"].map((typeOfResult) => (
+              <Grid key={typeOfResult} item>
+                <Button
+                  variant='primary'
+                  onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
+                  >
+                   {typeOfResult} analysis
+                </Button>
+              </Grid>
+            ))}
+          </Grid>
         </Card.Body>
         </Accordion.Collapse>
         </Card>
