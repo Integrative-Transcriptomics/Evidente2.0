@@ -49,8 +49,14 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
         goterm = request.files['goterm']
         if goterm != '':
             go_data = goterm.read()
-        #TODO check file type
-        #TODO handle wrong file uploads, missing file uploads
+        print(goterm.mimetype)
+        if goterm.mimetype == "text/csv":
+            go_sep = ','
+        elif goterm.mimetype != "text/tab-separated-values" \
+                and goterm.mimetype != "application/octet-stream":
+            raise ValueError("unexpected taxainfofile type ",
+                             goterm.mimetype)
+
 
     gff_data = ""
     gff_sep = '\t'
@@ -128,7 +134,7 @@ def parse_gff(gff, gff_sep):
     #sort by start position
     #gene_range_with_locus_tag_sorted = sorted(gene_range_with_locus_tag,key=lambda x:int(x[0]))
     #print("sorted? ", gene_range_with_locus_tag_sorted)
-    print("locus-tags: ", gene_range_with_locus_tag.__len__())
+    #print("locus-tags: ", gene_range_with_locus_tag.__len__())
     return gene_range_with_locus_tag
 
 def get_locus_tag(col):
@@ -218,9 +224,9 @@ def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
     go_to_snps = dict()
     for line in csv.reader(go_terms.split('\n'), delimiter=go_sep):
         if len(line) >= 2:
-            locus_tag = line[0]
-            line_go_terms = line[1].split(';')
-
+            locus_tag = line[0].strip()
+            line_go_terms_ = line[1].split(';')
+            line_go_terms = [go.strip() for go in line_go_terms_]
             if line_go_terms:
                 if id_to_go.__contains__(locus_tag):
                     id_to_go[locus_tag].extend(line_go_terms)
