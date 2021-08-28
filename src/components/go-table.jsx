@@ -1,3 +1,8 @@
+// File: go-table.jsx
+// Table for listing go-enrichment results
+// Written by Sophie Pesch 2021
+
+
 import React, {Component} from "react";
 import Button from "react-bootstrap/Button";
 

@@ -1,3 +1,7 @@
+// File: go-table-header.jsx
+// Header of go-enrichment result table
+// Written by Sophie Pesch 2021
+
 import React, {Component} from "react";
 import Button from "react-bootstrap/Button";
 

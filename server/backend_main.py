@@ -10,7 +10,6 @@ from backend_compute_statistics import go_enrichment, tree_enrichment
 from flask import Flask, request, session, jsonify
 from markupsafe import escape
 import sys
-#TODO: remove all test prints
 
 
 # we are using flask for RESTful communication
@@ -20,7 +19,11 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 @app.route('/api/upload', methods=['POST'])
 def upload_data():
-    """Parses data uploaded by frontend, invokes classico and returns result"""
+    """Parses data uploaded by frontend, invokes classico and
+    sends result to client.
+
+    :return: Preprocessed phylogenetic data as :type JSON-object
+    """
 
     # noinspection PyPep8,PyBroadException
     print(request.files)
@@ -31,19 +34,25 @@ def upload_data():
         # session['nwk'] = nwk_data
         # session['snp'] = snp_data
         # session['taxainfo'] = taxainfo_data
-        return prepare_data(nwk_data, snp_data, taxainfo_data, taxainfo_sep)
+        response = prepare_data(nwk_data, snp_data, taxainfo_data, taxainfo_sep)
+        print(response)
+        return response #prepare_data(nwk_data, snp_data, taxainfo_data, taxainfo_sep)
 
     except ValueError as e:
         print("error", e.args)
-        abort(500)
+        return jsonify({'error' : 'internal server error'}), 500
         # return redirect(request.url)
 
     except:
         print("Unexpected error:", sys.exc_info())
-        abort(500)
+        return jsonify({'error' : 'internal server error'}), 500
 
 @app.route('/api/init-example', methods=['POST'])
 def load_init_example():
+    """ Loads files evidente-start example from directory, parsed data,
+     invokes classico and sends result to client.
+    :return: preprocessed phylogenetic data as :type Json-object
+    """
     try:
         nwk_data =bytes( open("./MiniExample/mini_nwk.nwk", "r").read(), 'utf-8')
         #print(nwk_data)
@@ -52,65 +61,81 @@ def load_init_example():
         return prepare_data(nwk_data, snp_data, taxainfo_data, ",")
     except ValueError as e:
         print("error", e.args)
-        abort(500)
+        return jsonify({'error': 'internal server error'}), 500
 
 
 @app.route('/api/statistic-upload', methods=['POST'])
 def prepare_statistics_data():
-    """Parses data sent by frontend, computes statistics and returns result"""
+    """Parses data sent by frontend, prepares statistical data and
+    sends result to client.
 
-    # noinspection PyPep8,PyBroadException
+    :return: preprocessed statistical data as :type JSON-object
+    """
     try:
-        print("in prepare_statistics_data")
-        # todo! all data must be given in input
-        start = perf_counter()
+        #print("in prepare_statistics_data")
+        #start = perf_counter()
 
         go_data,go_sep,snp_info_data,snp_sep,gff_data,gff_sep,available_snps = read_statistic_file_content()
-        #print("type: ",type(str(snp_info_data)))
-        #print("snp-info: ",str(snp_info_data))
         response = prepare_statistics(gff_data.decode('utf8'),gff_sep,snp_info_data.decode('utf-8'),snp_sep,go_data.decode('utf-8'),go_sep,available_snps)
-        end = perf_counter()
-        time_needed = end - start
-        print(f"Needed {time_needed:0.4f} seconds for statistics data preparation")
+        #end = perf_counter()
+        #time_needed = end - start
+        #print(f"Needed {time_needed:0.4f} seconds for statistics data preparation")
         return response
-        # nwk = session.get('nwk')
-        # return compute_statistics(nwk_data, snp_data, taxainfo_data)
+
     except ValueError as e:
         print("error ", e.args)
-        abort(500)
+        return jsonify({'error': 'internal server error'}), 500
+
     except:
         print("Unexpected error:", sys.exc_info()[0])
-        abort(500)
+        return jsonify({'error': 'internal server error'}), 500
+
 
 @app.route('/api/statistics-request', methods=['POST'])
 def compute_statistics():
-    data = request.get_json()
-    #print(request.get_json())
-    positions = data["positions"]
-    snps_to_gene = data["snps_to_gene"]
-    gene_to_go = data["gene_to_go"]
-    sig_level = data["sig_level"]
-    all_snps = data["all_snps"]
-    #go_to_description = data["go_to_description"]
+    """Parses data sent by frontend,  computes go-enrichment and
+    sends result to client.
 
-    return go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
+    :return: go_enrichment result as :type JSON-object
+    """
+    try:
+        data = request.get_json()
+        positions = data["positions"]
+        snps_to_gene = data["snps_to_gene"]
+        gene_to_go = data["gene_to_go"]
+        sig_level = data["sig_level"]
+        all_snps = data["all_snps"]
+        result = go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
+        return result #go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+        return jsonify({'error': 'internal server error'}), 500
 
 
 @app.route('/api/tree-statistics-request', methods=['POST'])
 def compute_tree_statitics():
-    data = request.get_json()
-    # print(request.get_json())
-    nwk = data["nwk"]
-    support = data["support"]
-    num_to_lab = data["num_to_label"]
-    snps_to_gene = data["snps_to_gene"]
-    node_to_snps = data["node_to_snps"]
-    gene_to_go = data["gene_to_go"]
-    sig_level = data["sig_level"]
-    all_snps = data["all_snps"]
-    # go_to_description = data["go_to_description"]
-    response = tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snps, snps_to_gene, gene_to_go, sig_level)
-    return response
+    """Parses data sent by frontend,  performs tree-analysis and
+      sends result to client.
+
+      :return: tree-analysis result as :type JSON-object
+      """
+    try:
+        data = request.get_json()
+        # print(request.get_json())
+        nwk = data["nwk"]
+        support = data["support"]
+        num_to_lab = data["num_to_label"]
+        snps_to_gene = data["snps_to_gene"]
+        node_to_snps = data["node_to_snps"]
+        gene_to_go = data["gene_to_go"]
+        sig_level = data["sig_level"]
+        all_snps = data["all_snps"]
+        # go_to_description = data["go_to_description"]
+        response = tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snps, snps_to_gene, gene_to_go, float(sig_level))
+        return response
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+        return jsonify({'error': 'internal server error'}), 500
 
 # just for debugging purposes:
 @app.route('/<path:subpath>', methods=['POST'])

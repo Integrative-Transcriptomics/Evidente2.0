@@ -1,10 +1,11 @@
+// File: go-modal.jsx
+// Pop-Up-window providing go-enrichment request
+// Written by Sophie Pesch 2021
+
 import React, {Component} from "react";
 import Modal from 'react-bootstrap/Modal';
 import Button from "react-bootstrap/Button";
 import Form from 'react-bootstrap/Form';
-
-
-
 
 
 class GOModal extends Component{

@@ -1,3 +1,7 @@
+// File: upload-go-files-modal.jsx
+// Pop-Up-window to inform about needed file uploads for go-analysis
+// Written by Sophie Pesch 2021
+
 import React, {Component} from "react";
 import Modal from 'react-bootstrap/Modal';
 import Button from "react-bootstrap/Button";

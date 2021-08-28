@@ -1,0 +1,184 @@
+This documents gives an example for each data format used for client server communication.
+
+phylogenetic file upload:
+
+server-response for api/upload with MniExample/mini_nwk.nwk, MiniExample/mini_snp.tsv, MiniExample/mini_nodeinfo.csv:
+{    "newick":"((CHAMELEON:1,((PIGEON:1,CHICKEN:1)0.9600:1,ZEBRAFINCH:1)0.9600:1)0.9600:1,((BOVINE:1,DOLPHIN:1)0.9600:1,ELEPHANT:1)0.9600:1)__",
+    "taxaInfo":
+            [
+            {"Information": "CHAMELEON", "Weight": "0.17", "Lifespan": "5", "Class": "Reptilia", "Size": "Small"}, 
+            {"Information": "PIGEON", "Weight": "0.9", "Lifespan": "6", "Class": "Aves", "Size": "Medium"}, 
+            {"Information": "CHICKEN", "Weight": "0.8", "Lifespan": "10", "Class": "Aves", "Size": "Medium"}, 
+            {"Information": "ZEBRAFINCH", "Weight": "0.012", "Lifespan": "5", "Class": "Aves", "Size": "Small"}, 
+            {"Information": "BOVINE", "Weight": "1100", "Lifespan": "22", "Class": "Mammalia", "Size": "Large"}, 
+            {"Information": "DOLPHIN", "Weight": "200", "Lifespan": "55", "Class": "Mammalia", "Size": "Large"}, 
+            {"Information": "ELEPHANT", "Weight": "6000", "Lifespan": "70", "Class": "Mammalia", "Size": "Huge"}
+            ],
+    "snpPerColumn":{"73":["T"],"451":["A","C"],"2251":["C","T"],"4513":["A"],"5869":["G","T"]},
+    "ids":{
+            "numToLabel":{
+                        "1":"CHAMELEON",
+                        "2":"PIGEON",
+                        "3":"CHICKEN",
+                        "4":"2_3_",
+                        "5":"ZEBRAFINCH",
+                        "6":"4_5_",
+                        "7":"1_6_",
+                        "8":"BOVINE",
+                        "9":"DOLPHIN",
+                        "10":"8_9_",
+                        "11":"ELEPHANT",
+                        "12":"10_11_",
+                        "13":"7_12_"
+                        },
+            "labToNum":{
+                        "CHAMELEON":"1",
+                        "PIGEON":"2",
+                        "CHICKEN":"3",
+                        "2_3_":"4",
+                        "ZEBRAFINCH":"5",
+                        "4_5_":"6",
+                        "1_6_":"7",
+                        "BOVINE":"8",
+                        "DOLPHIN":"9",
+                        "8_9_":"10",
+                        "ELEPHANT":"11",
+                        "10_11_":"12",
+                        "7_12_":"13"
+                        }
+            },
+    "availableSNPs": ["73","451","2251","4513","5869"],
+    "support":[
+                {"node":"CHAMELEON","pos":"451","allele":"A"},   
+                {"node":"ZEBRAFINCH","pos":"451","allele":"C"},
+                {"node":"1_6_","pos":"5869","allele":"G"},
+                {"node":"10_11_","pos":"5869","allele":"T"}
+                ],
+    "notSupport":[
+                {"node":"CHAMELEON","pos":"73","allele":"T"},
+                {"node":"PIGEON","pos":"4513","allele":"A"},
+                {"node":"1_6_","pos":"2251","allele":"C"},
+                {"node":"BOVINE","pos":"2251","allele":"T"},
+                {"node":"DOLPHIN","pos":"73","allele":"T"},
+                {"node":"DOLPHIN","pos":"2251","allele":"C"},
+                {"node":"DOLPHIN","pos":"4513","allele":"A"},
+                {"node":"ELEPHANT","pos":"2251","allele":"T"}
+                ],
+    "metadataInfo":
+                {"Information": 
+                            {
+                            "type": "type", 
+                            "extent": ["PIGEON", "ELEPHANT", "CHICKEN", "CHAMELEON", "DOLPHIN", "BOVINE", "ZEBRAFINCH"]
+                            }, 
+                "Weight": 
+                            {
+                            "type": "numerical", 
+                            "extent": [0.012, 6000.0]
+                            }, 
+                "Lifespan": {
+                            "type": "numerical",
+                            "extent": [5.0, 70.0]
+                            }, 
+                "Class":    {
+                            "type": "categorical",
+                            "extent": ["Mammalia", "Reptilia", "Aves"]
+                            }, 
+                "Size":     {
+                            "type": "ordinal",
+                            "extent": ["Large", "Medium", "Huge", "Small"]
+                            }, 
+                "SNP":      {
+                            "type": "SNP", 
+                            "extent": ["A", "C", "T", "G", "N"]
+                            }
+                }
+}
+
+statistics-file upload: 
+
+server-response for api/statistic-upload with ValidationExample/mini_go_terms.csv and ValidationExample/mini_gff.csv after
+api/upload with ValidationExample/mini_nwk.nwk and ValidationExample/mini_snp.tsv
+{
+    "snps_to_gene": {"550": "gene6", "2050": "gene21", "1150": "gene12", "1250": "gene13", 
+                     "250": "gene3", "1450": "gene15", "650": "gene7", "750": "gene8", 
+                     "800": "gene8", "1050": "gene11", "50": "gene1", "850": "gene9", 
+                     "950": "gene10", "1550": "gene16", "350": "gene4", "450": "gene5", 
+                     "1650": "gene17", "1750": "gene18", "1850": "gene19", "150": "gene2", 
+                     "1350": "gene14", "1950": "gene20"}, 
+    "go_to_snp_pos": {"GO:0008150": ["50", "150", "250", "350", "450", "550", "650"], 
+                      "GO:0003674": ["750", "800", "850", "950", "1050", "1150", "1150", "1250", "1350", "1450", "1550", "1650", "1750", "1850", "1950", "2050"]},
+    "id_to_go": {"gene1": ["GO:0008150"], "gene2": ["GO:0008150"], "gene3": ["GO:0008150"], 
+                 "gene4": ["GO:0008150"], "gene5": ["GO:0008150"], "gene6": ["GO:0008150"], 
+                 "gene7": ["GO:0008150"], "gene8": ["GO:0003674"], "gene9": ["GO:0003674"], 
+                 "gene10": ["GO:0003674"], "gene11": ["GO:0003674"], "gene12": ["GO:0003674"], 
+                 "gene13": ["GO:0003674"], "gene14": ["GO:0003674"], "gene15": ["GO:0003674"], 
+                 "gene16": ["GO:0003674"], "gene17": ["GO:0003674"], "gene18": ["GO:0003674"], 
+                 "gene19": ["GO:0003674"], "gene20": ["GO:0003674"], "gene21": ["GO:0003674"], 
+                 "gene22": ["GO:0003674"]}
+}
+
+compute statistics:
+
+api/statitics-request for subtree containing CHAMELEON, PIGEON, CHICKEN, ZEGRAFICH:
+client-request (body):
+{
+    "all_snps":
+        ["750","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","50","150","250","350","450","550","650","50","150","250","350","450","550","650","50","150","250","350","450","550","650","800"],
+    "positions":
+        ["750","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050"],
+    "snps_to_gene":
+        {"50":"gene1","150":"gene2","250":"gene3","350":"gene4","450":"gene5","550":"gene6","650":"gene7","750":"gene8","800":"gene8","850":"gene9","950":"gene10","1050":"gene11","1150":"gene12","1250":"gene13","1350":"gene14","1450":"gene15","1550":"gene16","1650":"gene17","1750":"gene18","1850":"gene19","1950":"gene20","2050":"gene21"},
+    "gene_to_go":
+        {"gene1":["GO:0008150"],"gene10":["GO:0003674"],"gene11":["GO:0003674"],"gene12":["GO:0003674"],"gene13":["GO:0003674"],"gene14":["GO:0003674"],"gene15":["GO:0003674"],"gene16":["GO:0003674"],"gene17":["GO:0003674"],"gene18":["GO:0003674"],"gene19":["GO:0003674"],"gene2":["GO:0008150"],"gene20":["GO:0003674"],"gene21":["GO:0003674"],"gene22":["GO:0003674"],"gene3":["GO:0008150"],"gene4":["GO:0008150"],"gene5":["GO:0008150"],"gene6":["GO:0008150"],"gene7":["GO:0008150"],"gene8":["GO:0003674"],"gene9":["GO:0003674"]},
+    "sig_level":"0.05"
+}
+server-response:
+{
+    "go_result":[("GO:0003674", 2.2101019651215884e-19, "molecular_function")],
+    "in_gene_tree": 88, 
+    "in_gene_clade": 66
+}
+
+
+api/tree-statistics-request for ValidationExample after api/upload with ValidationExample/mini_nwk.nwk, ValidationExample/mini_snp.tsv and api/statistic-upload with ValidationExample/mini_go_terms.csv, ValidationExample/mini_gff.csv
+client-request (body):
+{
+    "nwk":
+        "((CHAMELEON:1,((PIGEON:1,CHICKEN:1)0.9600:1,ZEBRAFINCH:1)0.9600:1)0.9600:1,((BOVINE:1,DOLPHIN:1)0.9600:1,ELEPHANT:1)0.9600:1)__",
+    "support":
+        [{"allele":"A","node":"4_5_","pos":"850"},{"allele":"G","node":"4_5_","pos":"950"},{"allele":"T","node":"4_5_","pos":"1050"},{"allele":"G","node":"4_5_","pos":"1150"},{"allele":"T","node":"4_5_","pos":"1250"},{"allele":"C","node":"4_5_","pos":"1350"},{"allele":"T","node":"4_5_","pos":"1450"},{"allele":"A","node":"4_5_","pos":"1550"},{"allele":"G","node":"4_5_","pos":"1650"},{"allele":"T","node":"4_5_","pos":"1750"},{"allele":"C","node":"4_5_","pos":"1850"},{"allele":"T","node":"4_5_","pos":"1950"},{"allele":"A","node":"4_5_","pos":"2050"},{"allele":"T","node":"8_9_","pos":"50"},{"allele":"A","node":"8_9_","pos":"150"},{"allele":"T","node":"8_9_","pos":"250"},{"allele":"A","node":"8_9_","pos":"350"},{"allele":"G","node":"8_9_","pos":"450"},{"allele":"T","node":"8_9_","pos":"550"},{"allele":"C","node":"8_9_","pos":"650"},{"allele":"T","node":"CHAMELEON","pos":"750"},{"allele":"C","node":"ELEPHANT","pos":"800"}],
+    "num_to_label":
+        {"1":"CHAMELEON","2":"PIGEON","3":"CHICKEN","4":"2_3_","5":"ZEBRAFINCH","6":"4_5_","7":"1_6_","8":"BOVINE","9":"DOLPHIN","10":"8_9_","11":"ELEPHANT","12":"10_11_","13":"7_12_"},
+    "snps_to_gene":
+        {"50":"gene1","150":"gene2","250":"gene3","350":"gene4","450":"gene5","550":"gene6","650":"gene7","750":"gene8","800":"gene8","850":"gene9","950":"gene10","1050":"gene11","1150":"gene12","1250":"gene13","1350":"gene14","1450":"gene15","1550":"gene16","1650":"gene17","1750":"gene18","1850":"gene19","1950":"gene20","2050":"gene21"},
+    "node_to_snps":
+        {"1":["750"],"2":["850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050"],"3":["850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050"],"4":["850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050"],"5":["850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050"],"6":["850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050"],"7":[],"8":["50","150","250","350","450","550","650"],"9":["50","150","250","350","450","550","650"],"10":["50","150","250","350","450","550","650"],"11":["800"],"12":[],"13":[]},
+    "gene_to_go":
+        {"gene1":["GO:0008150"],"gene10":["GO:0003674"],"gene11":["GO:0003674"],"gene12":["GO:0003674"],"gene13":["GO:0003674"],"gene14":["GO:0003674"],"gene15":["GO:0003674"],"gene16":["GO:0003674"],"gene17":["GO:0003674"],"gene18":["GO:0003674"],"gene19":["GO:0003674"],"gene2":["GO:0008150"],"gene20":["GO:0003674"],"gene21":["GO:0003674"],"gene22":["GO:0003674"],"gene3":["GO:0008150"],"gene4":["GO:0008150"],"gene5":["GO:0008150"],"gene6":["GO:0008150"],"gene7":["GO:0008150"],"gene8":["GO:0003674"],"gene9":["GO:0003674"]},
+    "sig_level":0.05,
+    "all_snps":
+        ["750","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","850","950","1050","1150","1250","1350","1450","1550","1650","1750","1850","1950","2050","50","150","250","350","450","550","650","50","150","250","350","450","550","650","50","150","250","350","450","550","650","800"]
+}
+
+server-response:
+{
+    "tree_go_result": 
+        {6: 
+            {"subtree": [6, 4, 2, 3, 5], 
+             "result": [("GO:0003674", 2.5416172598898217e-18, "molecular_function")], 
+             "subtree_size": 5, 
+             "num_snps": 65, 
+             "in_gene_clade": 65, 
+             "num_go_terms": 1
+            }, 
+         10: {"subtree": [10, 8, 9], 
+              "result": [("GO:0008150", 1.0045918023279837e-20, "biological_process")], 
+              "subtree_size": 3, 
+              "num_snps": 21, 
+              "in_gene_clade": 21, 
+              "num_go_terms": 1
+              }
+         }, 
+    "in_gene_tree": 88
+}
+

@@ -1,3 +1,8 @@
+# File: backend_compute_statistics.py
+# statistical computations of Evidente backend
+# go-enrichment analysis for single clades and complete tree
+# Written by Sophie Pesch 2021
+
 from time import perf_counter
 from flask import jsonify
 import wget
@@ -7,35 +12,33 @@ from goatools import obo_parser
 from backend_go_enrichment import GOEnrichment
 from backend_nwk_parser import Tree
 from backend_tree_enrichment import FindClades
-#TODO: save go-hierarchy(obo) file and update automaticly from time to time
-#TODO: write installation script, that installs virtual environment with flask and goatools automaticly when installing evidente
-#TODO: remove all test prints
-
 
 
 def go_enrichment(all_snps, positions, snps_to_gene,gene_to_go, sig_level):
-    """
+    """Enrichment analysis for given clade
 
-    :param all_snps:
-    :param positions:
-    :param snps_to_gene:
-    :param gene_to_go:
-    :param sig_level:
-    :return:
+    :param all_snps: all snp-positions in tree as :type list
+    :param positions: snp-positions in clade as :type list
+    :param snps_to_gene: snp-gene association as :type dict
+    :param gene_to_go: gene-go association as :type dict
+    :param sig_level: significance level as :type int
+    :return: go enrichment result as :type JSON-obj
     """
-    start_load_go =perf_counter()
+    #start_load_go = perf_counter()
     go_hierarchy = load_go_basic()
-    end_load_go = perf_counter()
-    time_load_go = end_load_go - start_load_go
-    print(f"Needed {time_load_go:0.4f} seconds for loading go hierarchy")
-    start = perf_counter()
+    #end_load_go = perf_counter()
+    #time_load_go = end_load_go - start_load_go
+    #print(f"Needed {time_load_go:0.4f} seconds for loading go hierarchy")
+    #start = perf_counter()
     go_en = GOEnrichment(all_snps,positions,snps_to_gene,gene_to_go,sig_level, go_hierarchy)
-    result, num_assoc_go_terms = go_en.compute_enrichment()
-    end = perf_counter()
-    time_needed = end - start
-    print(f"Needed {time_needed:0.4f} seconds for go enrichment over {num_assoc_go_terms} associated go-terms")
+    result, num_assoc_go_terms,in_gene_clade, in_gene_tree = go_en.compute_enrichment()
+    #end = perf_counter()
+    #time_needed = end - start
+    #print(f"Needed {time_needed:0.4f} seconds for go enrichment over {num_assoc_go_terms} associated go-terms")
     json = dict()
     json["go_result"] = result
+    json["in_gene_tree"] =  in_gene_tree
+    json["in_gene_clade"] = in_gene_clade
     return jsonify(json)
 
 
@@ -62,49 +65,54 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
                    as tree-go-result in a :type json-object
     """
     #start timer for total runtime
-    overall_start =perf_counter()
+    overall_start = perf_counter()
     #get go hierarchy, used to access go-term descriptions
+    start_load_go = perf_counter()
     go_hierarchy = load_go_basic()
+    #end_load_go = perf_counter()
+    #time_load_go = end_load_go - start_load_go
+    #print(f"Needed {time_load_go:0.4f} seconds for loading go hierarchy")
 
     #traverse tree and find all clades with supporting snps:
+    #start_find_clades = perf_counter()
     tree = Tree()
     tree.parse_nwk_string(nwk)
     find_clades = FindClades(support, num_to_lab)
     tree.traverse_tree(find_clades)
     clades = find_clades.get_clades()
-
+    #end_find_clades = perf_counter()
+    #time_find_clades = end_find_clades-start_find_clades
+    #print(f"Needed {time_find_clades:0.4f} seconds for finding clades")
     all_results = dict()
 
     #perform enrichment analysis for all clades found
     for clade in clades.items():
         #timer for runtime of single clade enrichment
-        start = perf_counter()
+        #start = perf_counter()
         #get snps of current clade
         snps = clade_snps(clade[1], node_to_snp)
         #compute enrichment:
         go_en = GOEnrichment(all_snps, snps, snps_to_gene, gene_to_go, sig_level,go_hierarchy)
-        result, num_assoc_go_terms = go_en.compute_enrichment()
+        result, num_assoc_go_terms,in_gene_clade, in_gene_tree = go_en.compute_enrichment()
         if result:
             #store results, if existing
             all_results[clade[0]] = {"subtree": clade[1],
                                                       "result":result,
-                                                      "subree_size" : clade[1].__len__(),
+                                                      "subtree_size" : clade[1].__len__(),
                                                       "num_snps":snps.__len__(),
+                                                      "in_gene_clade": in_gene_clade,
                                                       "num_go_terms": num_assoc_go_terms}
-        end = perf_counter()
-        time_needed = end - start
-        print(f"Needed {time_needed:0.4f} seconds for clade {clade[0]} with {clade[1].__len__()} nodes, {snps.__len__()} snps and {num_assoc_go_terms} associated go-terms")
-
-    print("number of supp clades", clades.keys().__len__())
-    print("number of results", all_results.keys().__len__())
+        #end = perf_counter()
+        #time_needed = end - start
+        #print(f"Needed {time_needed:0.4f} seconds for clade {clade[0]} with {clade[1].__len__()} nodes, {snps.__len__()} snps and {num_assoc_go_terms} associated go-terms")
 
     #create json-object for response to client
     json = dict()
     json["tree_go_result"] = all_results
-    overall_end = perf_counter()
-    overall_time_needed = overall_end - overall_start
-    print(f"Needed {overall_time_needed:0.4f} seconds for enrichment over tree")
-
+    json["in_gene_tree"] = in_gene_tree
+    #overall_end = perf_counter()
+    #overall_time_needed = overall_end - overall_start
+    #print(f"Needed {overall_time_needed:0.4f} seconds for enrichment over tree")
     return jsonify(json)
 
 
@@ -123,7 +131,8 @@ def clade_snps (clade_nodes, node_to_snp):
 
 
 def load_go_basic():
-    """Gets go-hierarchy-file from filesytem or downloads from website.
+    """Gets go-hierarchy-file from filesytem or downloads from website and uses.
+    goatools for parsing.
 
     Download is executed only if last download has been more than a week ago
     or if hierarchy has never been downloaded before. Otherwise go-hierarchy is
@@ -151,5 +160,6 @@ def load_go_basic():
             go_obo = wget.download(go_obo_url, data_folder + '/go-basic.obo')
         else:
             go_obo = data_folder + '/go-basic.obo'
+    # parse hierarchy
     go = obo_parser.GODag(go_obo)
     return go

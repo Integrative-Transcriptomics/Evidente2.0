@@ -1,3 +1,7 @@
+// File: tree-result-modal.jsx
+// Pop-Up-window for visualization of tree analysis results
+// Written by Sophie Pesch 2021
+
 import React from "react";
 import {Component} from "react";
 import Modal from 'react-bootstrap/Modal';
@@ -45,7 +49,6 @@ class TreeResultModal extends Component{
         curr_nodes : [],
         curr_clade : [],
     }
-//phylotree.get_node_by_name
 
   createTableInputFormat(tree_result){
       //console.log(tree_result, typeof(tree_result));
@@ -53,7 +56,7 @@ class TreeResultModal extends Component{
         var input = [];
          for (var key in tree_result){
           var clade = tree_result[key];
-          console.log("clade:", key,clade);
+          //console.log("clade:", key,clade);
           var row_dict = {};
           row_dict["id"] = id;
           row_dict["root"] = key;
@@ -61,6 +64,7 @@ class TreeResultModal extends Component{
           row_dict["result"] = clade["result"];
           row_dict["subtree_size"] = clade["subtree_size"];
           row_dict["num_snps"] = clade["num_snps"];
+          row_dict["in_gene_clade"] = clade["in_gene_clade"];
           row_dict["num_go_terms"] = clade["num_go_terms"];
           row_dict["num_sig_terms"] = clade["result"].length;
 
@@ -76,12 +80,12 @@ class TreeResultModal extends Component{
   hideClades(){
     this.setState({cladeTableShow:false})
   }
-  showCladeResults (root_id, clade_size, clade_snps, clade_sig_terms, clade_result){
-    const nodes = this.props.tree.get_nodes();
-    const root = this.props.tree.get_nodes().filter(node => (node.tempid == root_id))[0];
+  showCladeResults (root_id, clade_size, clade_snps, in_gene_clade, clade_sig_terms, clade_result){
+    const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id))[0];
     const descendants = this.props.tree.select_all_descendants(root, true, true);
-    console.log("root",root, descendants);
+    //console.log("root",root, descendants);
     this.setState({curr_subtree_snps : clade_snps,
+                    curr_in_gene_clade: in_gene_clade,
                     curr_subtree_size : clade_size,
                     curr_sig_terms : clade_sig_terms,
                     curr_result : clade_result,
@@ -91,6 +95,7 @@ class TreeResultModal extends Component{
   }
   closeCladeResults (){
     this.setState({curr_subtree_snps : 0,
+                    curr_in_gene_clade: 0,
                     curr_subtree_size : 0,
                     curr_sig_terms : 0,
                     curr_result : [],
@@ -98,12 +103,8 @@ class TreeResultModal extends Component{
                     allCladesShow: true});
   }
   markClade(root_id, id){
-    const nodes = this.props.tree.get_nodes();
-    const root = this.props.tree.get_nodes().filter(node => (node.tempid == root_id));
+    const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id));
     const descendants = this.props.tree.select_all_descendants(root[0], true, true);
-    const clade = root.concat(descendants);
-    console.log(root, root[0])
-    console.log("clade",descendants);
     this.props.tree.modify_selection(
         descendants,
         undefined,
@@ -116,8 +117,7 @@ class TreeResultModal extends Component{
     this.setState({cladeMarked:curr_state});
   }
   unmarkClade(root_id, id){
-    const nodes = this.props.tree.get_nodes();
-    const root = this.props.tree.get_nodes().filter(node => (node.tempid == root_id));
+    const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id));
     const descendants = root.concat(this.props.tree.select_all_descendants(root[0], true, true));
     this.props.tree.modify_selection(
         descendants,
@@ -170,7 +170,7 @@ class TreeResultModal extends Component{
   }
 
    get_clade_leaves(root_id){
-   const root = this.props.tree.get_nodes().filter(node => (node.tempid == root_id))[0];
+   const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id))[0];
     if(this.props.tree.is_leafnode(root)){
         return [root.name]
     }
@@ -241,8 +241,11 @@ class TreeResultModal extends Component{
                         <Button id="export" variant='light' onClick={this.exportTreeResult} style={{ marginLeft:20,float:'right'}} >
                         Export Results
                         </Button>
+                        <div style={{float:'right', marginLeft:20}}>
                         tree-size: {this.props.tree_size}<br/>
-                        SNPs: {this.props.tree_snps}
+                        SNPs: {this.props.tree_snps}<br/>
+                        in Genes: {this.props.in_gene_tree}
+                        </div>
                     </div>
                 </div>
             </Modal.Footer>
@@ -258,8 +261,10 @@ class TreeResultModal extends Component{
             numOfSigGoTerms = {this.state.curr_sig_terms}
             tree_size = {this.props.tree_size}
             tree_snps = {this.props.tree_snps}
+            in_gene_tree = {this.props.in_gene_tree}
             subtree_size = {this.state.curr_subtree_size}
             subtree_snps = {this.state.curr_subtree_snps}
+            in_gene_clade = {this.state.curr_in_gene_clade}
             go_to_snps = {this.props.go_to_snps}
             handleMultipleSNPadditon = {this.props.handleMultipleSNPadditon}
             visualizedSNPs = {this.props.visualizedSNPs}
@@ -270,11 +275,7 @@ class TreeResultModal extends Component{
         />
         )
      }
-
-
         </div>
-
-
     );
     }}
 export default TreeResultModal

@@ -6,11 +6,9 @@
 
 
 import csv
-import numpy as np
 from typing import Tuple
 from flask import request, jsonify
 from backend_compute_statistics import load_go_basic
-import collections
 
 #TODO: remove all test prints
 #TODO:remove snp info part if not needed
@@ -42,7 +40,6 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
                              snp_info.mimetype)
 
     go_data = ""
-    #TODO automaticly set separator by mimetype!!!
     go_sep = '\t'
     # check if the post request has the taxainfo part
     if 'goterm' in request.files:
@@ -53,20 +50,26 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
         if goterm.mimetype == "text/csv":
             go_sep = ','
         elif goterm.mimetype != "text/tab-separated-values" \
-                and goterm.mimetype != "application/octet-stream":
+                and goterm.mimetype != "application/octet-stream"\
+                and goterm.mimetype != "text/x-go":
             raise ValueError("unexpected taxainfofile type ",
                              goterm.mimetype)
 
 
     gff_data = ""
     gff_sep = '\t'
-    # TODO automaticly set separator by mimetype!!!
     # check if the post request has the taxainfo part
     if 'gff' in request.files:
         gff = request.files['gff']
         if gff!= '':
             gff_data = gff.read()
-
+        print(gff.mimetype)
+        if gff.mimetype == "text/csv":
+            gff_sep = ','
+        elif gff.mimetype != "text/tab-separated-values" \
+                and gff.mimetype != "application/octet-stream":
+            raise ValueError("unexpected gff type ",
+                             gff.mimetype)
 
     available_snps = request.form['availabel_snps'].split(',')
     return  go_data, go_sep,snp_info_data, snp_info_sep,gff_data,gff_sep,available_snps
@@ -76,7 +79,6 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
 def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, available_snps) -> str:
     """Prepares gff and go data for statistical computations
        Holds possibility to use snp_info data in addition to gff
-       TODO: Clarify designated use of snp-info and adjust snp-info parsing
 
     Parses gff data and computes dict from pos to locus-tag for all snps inside genes
     within the given phylogenetic tree.
@@ -97,19 +99,12 @@ def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, a
     snps_to_gene, gene_to_snp = get_gene_for_snp(available_snps, gene_range_with_locus_tag)
     id_to_go, go_to_snp = parse_go_terms(go_terms,go_sep, gene_to_snp)
     id_to_go, go_to_snp = add_all_propagated_terms(go_hierarchy,id_to_go, go_to_snp)
-    #print("go to snp?",go_to_snp)
-    #print("snps for 0004349:", go_to_snp["GO:0004349"])
-    #print("gene to snp?",gene_to_snp)
-    print("go-snp",go_to_snp.keys().__len__())
 
     json = dict()
-    #print("snps-to-gene ", snps_to_gene)
     json["snps_to_gene"] = snps_to_gene
     json["go_to_snp_pos"] = go_to_snp
     json["id_to_go"] = id_to_go
-    print("test tree-enrichment")
-
-    #print(json)
+    print(json)
     return jsonify(json)
 
 def parse_gff(gff, gff_sep):
@@ -121,20 +116,13 @@ def parse_gff(gff, gff_sep):
     :return: gene_range_with_locus_tag: all gene-ranges and corresponding locus-tags
              as :type list of [start-pos,end-pos,locus-tag]-lists sorted by start-pos
     """
-    #print("in parse-gff:")
-    #print("gff:",gff)
     gene_range_with_locus_tag = list()
     for line in csv.reader(gff.split('\n'), delimiter= gff_sep):
-        #print(line)
         if len(line)> 8:
-            #print(line[2])
-            #filter genes
             if line[2].lower() == "gene":
                 gene_range_with_locus_tag.append([line[3],line[4],get_locus_tag(line[8])])
     #sort by start position
     #gene_range_with_locus_tag_sorted = sorted(gene_range_with_locus_tag,key=lambda x:int(x[0]))
-    #print("sorted? ", gene_range_with_locus_tag_sorted)
-    #print("locus-tags: ", gene_range_with_locus_tag.__len__())
     return gene_range_with_locus_tag
 
 def get_locus_tag(col):
@@ -162,22 +150,18 @@ def get_gene_for_snp(available_snps, gene_range_with_locus_tag):
 
     :return: mapping from snp-position to locus-tag as :type dict()
     """
-    #print("in get_gene_for_snp: ")
-    #print("number of snp-positions: ", snps_per_column.__len__())
     snp_to_locus_tag = dict()
     locus_tag_to_snp = dict()
     #find gene for each position with snp:
     for snp in available_snps:
-        #print("snp: ", snp)
         gene = search_gene_binary(gene_range_with_locus_tag,int(snp))
-        #print(snp,gene)
         if gene:
+            gene = gene.strip()
             snp_to_locus_tag[snp] = gene
             if locus_tag_to_snp.__contains__(gene):
                 locus_tag_to_snp[gene].append(snp)
             else:
                 locus_tag_to_snp[gene] = [snp]
-    #print("snp_to_locus_tag: ", snp_to_locus_tag)
     sum = 0
     for item in locus_tag_to_snp.items():
         sum += item[1].__len__()
@@ -202,7 +186,6 @@ def search_gene_binary(gene_range_with_locus_tag,snp_pos):
         mid_gene = gene_range_with_locus_tag[middle]
         start = int(mid_gene[0])
         end = int(mid_gene[1])
-        #print(start,end)
         if snp_pos >= start and snp_pos <= end:
             return mid_gene[2]
         else:
@@ -219,7 +202,6 @@ def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
     :param go_sep: separator tp parse go terms as :type str
     :return: id_to_go: gene id to go-term mapping as :type dict
     """
-    print("genes with snps: ", locus_tag_to_snps.keys().__len__())
     id_to_go = dict()
     go_to_snps = dict()
     for line in csv.reader(go_terms.split('\n'), delimiter=go_sep):
@@ -244,6 +226,15 @@ def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
     return id_to_go, go_to_snps
 
 def add_all_propagated_terms_to_snps (go_hierarchy, go_to_snp):
+    """Extends go-term snp association by all parents of directly
+    associated go-terms.
+
+    :param go_hierarchy:
+    :param go_to_snp: go-term to snp mapping for all directly associated
+    go-terms as :type dict
+    :return: go_to_snp2: go-term to snp mapping containing all associated
+    go-terms as :type dict
+    """
     go_terms = list(go_to_snp.keys()).copy()
     go_to_snp2 = dict()
     for go in go_terms:
@@ -263,9 +254,16 @@ def add_all_propagated_terms_to_snps (go_hierarchy, go_to_snp):
 
 
 def add_all_propagated_terms (go_hierarchy,id_to_go, go_to_snp):
-    snps = add_all_propagated_terms_to_snps(go_hierarchy, go_to_snp.copy())
-    # snps = go_to_snp.copy()
+    """Extends gene-go and go-snp association by parent terms of
+    directly associated go-terms
 
+    :param go_hierarchy:
+    :param id_to_go: gene to go-term mapping as :type dict()
+    :param go_to_snp: go-term to snp mapping as :type dict()
+    :return: id_to_go_ext, go_to_snp_ext: extended mappings from gene to go-term
+    and go-term to snps as :type dict
+    """
+    go_to_snp_ext = add_all_propagated_terms_to_snps(go_hierarchy, go_to_snp.copy())
     id_to_go_ext = dict()
     for id in id_to_go.keys():
         gos = id_to_go[id]
@@ -274,20 +272,33 @@ def add_all_propagated_terms (go_hierarchy,id_to_go, go_to_snp):
             parents = collect_parents(go, go_hierarchy)
             go_set.update(parents)
         id_to_go_ext[id] = list(go_set)
-    return id_to_go_ext, snps
+    return id_to_go_ext, go_to_snp_ext
 
 
-def all_descriptions(go_terms, go_hierarchy):
-    go_to_description = dict()
-    for go in go_terms:
-        go_to_description[go] = go_description(go,go_hierarchy)
-    return go_to_description
+#def all_descriptions(go_terms, go_hierarchy):
+#
+#    go_to_description = dict()
+#    for go in go_terms:
+#        go_to_description[go] = go_description(go,go_hierarchy)
+#    return go_to_description
 
-def go_description(go_term_id, go_hierarchy):
-    return go_hierarchy[go_term_id].name
+#def go_description(go_term_id, go_hierarchy):
+#    """Gets description for given go-term.
+#
+#    :param go_term_id: id of given go-term
+#    :param go_hierarchy:
+#    :return: go-term description as :type str
+#    """
+#    return go_hierarchy[go_term_id].name
 
 
 def collect_parents(go_id, go_hierarchy):
+    """Collects all parents of given go-term.
+
+    :param go_id: id of given go-term
+    :param go_hierarchy:
+    :return: parents of given go_term as :type list
+    """
     try:
         parents = go_hierarchy[go_id].get_all_parents()
     except:
@@ -298,27 +309,9 @@ def collect_parents(go_id, go_hierarchy):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#TODO adjust parsing of snp_info for new use case if needed or remove
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#methods for parsing snp-info-file not used in current version of evidente2.0
 def parse_snp_info(snp_info, snp_info_sep) -> dict:
     """Parses snp_info table
 

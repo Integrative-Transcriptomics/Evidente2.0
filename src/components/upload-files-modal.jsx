@@ -1,10 +1,11 @@
+// File: upload-files-modal.jsx
+// Pop-Up-window to inform user about necessary file-uploads
+// Written by Sophie Pesch 2021
+
+
 import React, {Component} from "react";
 import Modal from 'react-bootstrap/Modal';
 import Button from "react-bootstrap/Button";
-
-
-
-
 
 
 class UploadFilesModal extends Component{

@@ -131,17 +131,11 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
     data["tree_size"] = tree_size
     data["num_snps"] = num_snps
     data["all_snps"] = all_snps
-    #support_nodes = []
-    #support_nodes += map(helper,support)
-    #support_nodes = set(support_nodes)
-    #print("support", support_nodes, support_nodes.__len__())
+
     # convert data to json and send back to frontend
+    #print(data)
     return jsonify(data)
 
-#def helper(sup_dict):
-#    return sup_dict["node"]
-
-# noinspection SpellCheckingInspection
 def call_classico(tmpdir, nwk, snp):
     """Calls CLASSICO and stores output in temporary directory.
 
@@ -160,8 +154,7 @@ def call_classico(tmpdir, nwk, snp):
         fp_snp.flush()
         subprocess.run(["java", "-jar", ScriptDir + "/main.jar", fp_snp.name,
                         fp_nwk.name, tmpdir])
-        # noinspection SpellCheckingInspection
-        #print(os.listdir(tmpdir + "/Ergebnis"))
+
 
 
 def create_number_label_mapping(ids, filename):
@@ -188,7 +181,6 @@ def fill_support(support, filename, ids):
 
     with open(filename) as tsv:
         for line in csv.reader(tsv, delimiter="\t"):
-            print("line",line)
             #handle root case (no -> in line)
             if(len(line[0].split(" ")) > 1):
                 node = ids["numToLabel"][line[0].split(" ")[1]]

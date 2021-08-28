@@ -90,7 +90,6 @@ class App extends Component {
     //-------------------------------------------------
     // added for holding preprocessed statistical data 
     // and go-enrichment results:
-    test: true,
     snpsToGene: {},
     id_to_go: {},
     go_to_snp_pos:{},
@@ -100,8 +99,10 @@ class App extends Component {
     node_to_snps: {},
     tree_size: 0,
     tree_snps:0,
+    in_gene_tree:0,
     subtree_size: 0,
     subtree_snps: 0,
+    in_gene_clade:0,
     numOfSigGoTerms:0,
     statisticsModalShow: false,
     goModalShow: false,
@@ -126,7 +127,7 @@ class App extends Component {
     });
 
     let json = await response.json();
-    if (response.status === 400) {
+    if (response.status === 400 ||  response.status === 500) {
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {
@@ -182,15 +183,8 @@ class App extends Component {
    **/
   getSnpOfSubtree = (node,subtree) => {
     let chosen = [];
-    console.log(node.id);
-    console.log("node-snps: ",this.state.node_to_snps);
-    console.log(this.state.node_to_snps[node.id]);
-    chosen = chosen.concat(this.state.node_to_snps[node.id]);
-    console.log("chosen1: ", chosen);
-    subtree.forEach(sub_node => {chosen = chosen.concat(this.state.node_to_snps[sub_node.id])})
-    console.log("chosen2: ", chosen);
-    console.log("st-size",(subtree.length)+1);
-    console.log("st-snps",(chosen.length));
+    chosen = chosen.concat(this.state.node_to_snps[node.tempid]);
+    subtree.forEach(sub_node => {chosen = chosen.concat(this.state.node_to_snps[sub_node.tempid])})
     this.setState({subtree_size: (subtree.length)+1});
     this.setState({subtree_snps: (chosen.length)});
     return chosen
@@ -267,7 +261,6 @@ class App extends Component {
    * @param {Event} e sent from the file input form.
    */
   handleStatisticSubmit = async (e) => {
-    //TODO: remove snpinfo part 
     var start = performance.now();
     this.setState({computeStatistics:true});
     this.handleLoadingToggle(true);
@@ -293,7 +286,7 @@ class App extends Component {
       body: formData,
     });
     let json = await response.json();
-    if (response.status === 400) {
+    if (response.status === 400 || response.status === 500) {
       //catch server error from prepocessing statistic-files
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
@@ -312,29 +305,26 @@ class App extends Component {
     }
     this.handleLoadingToggle(false);
   }
-  testGO = (e) => {
-    console.log("in test");
-    e.preventDefault();
-    return(0);
-    
-  }
   
   /**
      Sends Clade selection, preprocessed statistical data and ids to backend
      and receives enrichment results
   **/
   sendStatisticsRequest = async (e) => {
-     this.handleLoadingToggle(true);
-    console.log("in statistics request");
-    var start = performance.now();
+    this.handleLoadingToggle(true);
+    //console.log("in statistics request");
+    //var start = performance.now();
     e.preventDefault();
     let significance_level = document.getElementById("sig-level").value;
     let node = this.state.cladeSelection[0];
     let subtree = this.state.cladeSelection[1];
     //console.log(node,subtree)
-
     let snp_positions = this.getSnpOfSubtree(node,subtree);
-    let data = JSON.stringify({"all_snps":this.state.all_snps, "positions":snp_positions, "snps_to_gene":this.state.snpsToGene, "gene_to_go":this.state.gene_to_go, "sig_level":significance_level});
+    let data = JSON.stringify({"all_snps":this.state.all_snps,
+                                "positions":snp_positions,
+                                "snps_to_gene":this.state.snpsToGene,
+                                "gene_to_go":this.state.gene_to_go,
+                                "sig_level":significance_level});
     let response = await fetch('/api/statistics-request',{
       method: "post",
       headers: {
@@ -344,27 +334,28 @@ class App extends Component {
       body: data,
     });
     let json = await response.json();
-    if (response.status === 400) {
+    if (response.status === 400 || response.status === 500) {
       console.error(json.message);
+      this.handleLoadingToggle(false);
       alert("Error by compute enrichment. Details in console.");
     } else {  
-      var end = performance.now();
-      console.log("statitics-request: ",(end-start)/1000.0, "seconds");
-      console.log("received statistics response");
+      //var end = performance.now();
+      //console.log("statitics-request: ",(end-start)/1000.0, "seconds");
+      //console.log("received statistics response");
       this.handleLoadingToggle(false);
       this.setState({goModalShow:false,goResultModalShow:true, go_result:json.go_result,
-		     numOfSigGoTerms:json.go_result.length});
+		     numOfSigGoTerms:json.go_result.length, in_gene_tree: json.in_gene_tree,
+     	               in_gene_clade:json.in_gene_clade,});
     }}  
 
   /**
-     Sends Clade selection, preprocessed statistical data and ids to backend
+     Sends nwk-tree, preprocessed statistical data, support and number-label-association to backend
      and receives enrichment results
   **/
   sendStatisticsRequestTree = async (e) => {
-    console.log("in statistics tree request");
-    var start = performance.now();
+    //var start = performance.now();
     e.preventDefault();
-    let significance_level =0.05//document.getElementById("sig-level-tree").value;
+    let significance_level =document.getElementById("sig-level-tree").value;
     if (!this.state.statisticFilesUploaded || !this.state.goFilesUploaded) {
       this.setState({uploadGOFilesModalShow:true});
       return null;
@@ -390,25 +381,20 @@ class App extends Component {
       let json = await response.json();
       if (response.status === 400) {
      	console.error(json.message);      
-     	alert("Error by compute enrichment. Details in console.");
+     	alert("Error by analyzing tree. Details in console.");
       } else {
          this.handleLoadingToggle(false);
-    	var end = performance.now();
-     	console.log("statitics-tree-request: ",(end-start)/1000.0, "seconds");
-     	console.log("received statistics tree response");
-     	console.log(json);
-     	this.setState({tree_result:json.tree_go_result, treeResultModalShow:true});
+    	//var end = performance.now();
+     	//console.log("statitics-tree-request: ",(end-start)/1000.0, "seconds");
+     	//console.log("received statistics tree response");
+     	//console.log(json);
+     	this.setState({tree_result:json.tree_go_result, in_gene_tree: json.in_gene_tree,
+     	               treeResultModalShow:true});
+
       }
     }  
   }
-  
-  sendTestRequest(){
-    fetch("/test_timeout",)
-      .then((response) => {
-	console.log(response);
-      });
-  }
-  
+
   //----------------------------------------------------------------------------------------
   //----------------------------------------------------------------------------------------
   //----------------------------------------------------------------------------------------
@@ -428,7 +414,7 @@ class App extends Component {
     
 
     let json = await response.json();
-    if (response.status === 400) {
+    if (response.status === 400 ||  response.status === 500) {
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {
@@ -1024,8 +1010,10 @@ class App extends Component {
         go_result = {this.state.go_result}
         tree_size = {this.state.tree_size}
         tree_snps = {this.state.tree_snps}
+        in_gene_tree = {this.state.in_gene_tree}
         subtree_size = {this.state.subtree_size}
         subtree_snps = {this.state.subtree_snps}
+        in_gene_clade = {this.state.in_gene_clade}
         go_to_snps = {this.state.go_to_snp_pos}
         handleMultipleSNPadditon = {this.handleMultipleSNPaddition}
         visualizedSNPs = {this.state.visualizedSNPs}
@@ -1043,6 +1031,7 @@ class App extends Component {
             handleShow = {this.showTreeResultModal}
             tree_size = {this.state.tree_size}
             tree_snps = {this.state.tree_snps}
+            in_gene_tree = {this.state.in_gene_tree}
             go_to_snps = {this.state.go_to_snp_pos}
             handleMultipleSNPadditon = {this.handleMultipleSNPaddition}
             visualizedSNPs = {this.state.visualizedSNPs}

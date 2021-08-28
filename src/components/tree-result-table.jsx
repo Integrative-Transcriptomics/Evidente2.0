@@ -1,3 +1,7 @@
+// File: tree-result-table.jsx
+// Table for listing tree analysis results
+// Written by Sophie Pesch 2021
+
 import React, {Component} from "react";
 import Button from "react-bootstrap/Button";
 
@@ -18,7 +22,6 @@ class Table extends Component {
 
 }
 class CladeTable extends React.Component {
-
   render() {
     var rows = new Set();
     for (var r=0; r<this.props.rows.length; r++){
@@ -27,6 +30,7 @@ class CladeTable extends React.Component {
       const c_root = this.props.rows[r].root;
       const size = this.props.rows[r].subtree_size;
       const snps = this.props.rows[r].num_snps;
+      const in_gene_clade = this.props.rows[r].in_gene_clade;
       const sig_terms = this.props.rows[r].num_sig_terms;
       const result = this.props.rows[r].result;
       const row = <CladeRow
@@ -35,7 +39,7 @@ class CladeTable extends React.Component {
                       row={this.props.rows[r]}
                       key = {this.props.rows[r].id}
                       button={ <Button
-                               onClick={() => {this.props.showCladeResults(c_root, size, snps, sig_terms, result)}} variant='light'
+                               onClick={() => {this.props.showCladeResults(c_root, size, snps, in_gene_clade, sig_terms, result)}} variant='light'
                                style = {{margin:5}}> show clade results
                                </Button>  }
                       mark_button={ <Button
@@ -62,8 +66,8 @@ class CladeTable extends React.Component {
 
   }
 }
-class CladeRow extends React.Component {
 
+class CladeRow extends React.Component {
   render() {
     var color = 'white';
     if((this.props.row.id % 2) === 0){

@@ -1,3 +1,7 @@
+// File: my-button.jsx
+// test component providing a personalized button
+// Written by Sophie Pesch 2021
+
 import React, {Component} from "react";
 import Button from "react-bootstrap/Button";
 
