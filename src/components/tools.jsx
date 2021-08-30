@@ -1,10 +1,12 @@
 import React, { Component } from "react";
 import { Accordion, Card, Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import Select, { components } from "react-select";
-import { filter, keys } from "lodash";
+import { keys } from "lodash";
 import * as $ from "jquery";
-import { select } from "d3";
+//import { select } from "d3";
 import * as d3 from "d3";
+import {jsPDF} from "jspdf";
+import html2canvas from "html2canvas";
 
 
 import { Typography, Divider, Grid } from "@material-ui/core";
@@ -99,57 +101,25 @@ class Tools extends Component {
   state = { filterValue: [], selectedFeatures: [] };
 
   /**
-   * Exports the main SVG to the selected type.
+   * Exports the main SVG to image in pdf document
    *
-   * @param {String} typeOfExport defines the type of export that is run: PNG, JPEG, PDF
    */
-  async onExport(type) {
-    this.props.handleLoadingToggle(true);
-
-    let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
-    let allData = document.createElement("div");
-    let mainVisualization = document.getElementById("parent-svg");
-    allData.appendChild(mainVisualization.cloneNode(true));
-    let divLegend = document.createElement("div");
-    divLegend.style.display = "flex";
-    divLegend.style.flexWrap = "wrap";
-    divLegend.style.padding = "5px";
-    filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
-      return accountForLegend.includes(v.name);
-    }).forEach((data) => {
-      let blockLegendLabel = document.createElement("div");
-      let labelLegend = document.createElement("p");
-      labelLegend.textContent = data.name;
-      let svgLegend = document.createElement("div");
-      svgLegend.style.minHeight = 30;
-
-      let legend = select("#root")
-          .append("svg")
-          .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 350 });
-      this.props.addLegend(legend, 250, data, true);
-      svgLegend.appendChild(legend.node());
-      blockLegendLabel.appendChild(labelLegend);
-      blockLegendLabel.appendChild(svgLegend);
-      divLegend.appendChild(blockLegendLabel);
+  async onExport() {
+      html2canvas(document.querySelector("#parent-svg")).then(canvas => {
+        document.body.appendChild(canvas)
     });
-    allData.appendChild(divLegend);
 
-    let response = await fetch("/api/export", {
-      method: "post",
-      body: JSON.stringify({ htmlContent: allData.outerHTML, typeOf: type }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).catch((e) => alert(e));
-
-    let responseBlob = await response.blob();
-    const url = window.URL.createObjectURL(responseBlob);
-    let link = document.createElement("a");
-    link.href = url;
-    link.download = `export_evidente.${type}`;
-    this.props.handleLoadingToggle(false);
-
-    link.click();
+      const input = document.getElementById('parent-svg');
+      html2canvas(input)
+      .then((canvas) => {
+        const imgData = canvas.toDataURL();
+        var width = canvas.width;
+        var height = canvas.height;
+        const pdf = new jsPDF({orientation: 'l', unit: 'px', format: [height,width]});
+        pdf.addImage(imgData, 'SVG', 0, 0, height,width);
+        pdf.save("download.pdf");
+      })
+    ;
   }
   /**
    * Creates the labels and values for the correspoinding selecting menu
@@ -260,7 +230,7 @@ class Tools extends Component {
         {[
           { id: "goterm", label: "GO" },
           { id: "gff", label: "gff"},
-          { id: "snp_info", label: "SNP info" },
+          //{ id: "snp_info", label: "SNP info" },
         ].map(({ id, label }) => (
           <Form.Group key={id}>
             <Form.File
@@ -446,7 +416,10 @@ class Tools extends Component {
         <Typography variant='h6' gutterBottom={true}>
         Export visualizations
       </Typography>
-        <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
+       <Button variant= 'primary' onClick={this.onExport}>
+        Export
+      </Button>
+        {/* <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
         {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
           <Grid key={typeOfExport} item>
             <Button
@@ -457,7 +430,7 @@ class Tools extends Component {
             </Button>
           </Grid>
         ))}
-      </Grid>
+      </Grid> */}
         </Card.Body>
         </Accordion.Collapse>
         </Card>

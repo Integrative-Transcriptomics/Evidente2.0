@@ -27,3 +27,6 @@ From Schuenemann et al (2018, [Publication](https://journals.plos.org/plospathog
 
 ### _Treponema pallidum_
 From Arora et al (2016, [Publication](https://www.nature.com/articles/nmicrobiol2016245)). The study analyzed around 120 samples of different strains of the _T. pallidum_ collected around the globe. It analyzed their antibiotic resistance and it was able to identified a correlation between the presence of SNP 235204 and a resistance to the antibiotic macrolide. 
+
+## contents.txt 
+Contains a list of contents of the evidente2 repository including all files relevant during the extension of evidente2.0 together with a short description.

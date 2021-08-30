@@ -81,7 +81,7 @@ class TreeResultModal extends Component{
     this.setState({cladeTableShow:false})
   }
   showCladeResults (root_id, clade_size, clade_snps, in_gene_clade, clade_sig_terms, clade_result){
-    const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id))[0];
+    const root = this.props.tree.get_nodes().filter(node => (String(node.tempid) === String(root_id)))[0];
     const descendants = this.props.tree.select_all_descendants(root, true, true);
     //console.log("root",root, descendants);
     this.setState({curr_subtree_snps : clade_snps,
@@ -103,7 +103,7 @@ class TreeResultModal extends Component{
                     allCladesShow: true});
   }
   markClade(root_id, id){
-    const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id));
+    const root = this.props.tree.get_nodes().filter(node => (String(node.tempid) === String(root_id)));
     const descendants = this.props.tree.select_all_descendants(root[0], true, true);
     this.props.tree.modify_selection(
         descendants,
@@ -117,7 +117,7 @@ class TreeResultModal extends Component{
     this.setState({cladeMarked:curr_state});
   }
   unmarkClade(root_id, id){
-    const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id));
+    const root = this.props.tree.get_nodes().filter(node => (String(node.tempid) === String(root_id)));
     const descendants = root.concat(this.props.tree.select_all_descendants(root[0], true, true));
     this.props.tree.modify_selection(
         descendants,
@@ -170,7 +170,7 @@ class TreeResultModal extends Component{
   }
 
    get_clade_leaves(root_id){
-   const root = this.props.tree.get_nodes().filter(node => (node.tempid === root_id))[0];
+   const root = this.props.tree.get_nodes().filter(node => (String(node.tempid) === String(root_id)))[0];
     if(this.props.tree.is_leafnode(root)){
         return [root.name]
     }

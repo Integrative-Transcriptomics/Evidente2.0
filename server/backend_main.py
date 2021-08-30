@@ -75,8 +75,8 @@ def prepare_statistics_data():
         #print("in prepare_statistics_data")
         #start = perf_counter()
 
-        go_data,go_sep,snp_info_data,snp_sep,gff_data,gff_sep,available_snps = read_statistic_file_content()
-        response = prepare_statistics(gff_data.decode('utf8'),gff_sep,snp_info_data.decode('utf-8'),snp_sep,go_data.decode('utf-8'),go_sep,available_snps)
+        go_data,go_sep,gff_data,gff_sep,available_snps = read_statistic_file_content()
+        response = prepare_statistics(gff_data.decode('utf8'),gff_sep,go_data.decode('utf-8'),go_sep,available_snps)
         #end = perf_counter()
         #time_needed = end - start
         #print(f"Needed {time_needed:0.4f} seconds for statistics data preparation")

@@ -73,7 +73,6 @@ class GOResultModal extends Component{
       id++;
       input.push(row_dict)
     });
-    console.log(input);
     return input;
   }
 
@@ -100,7 +99,6 @@ class GOResultModal extends Component{
 
   //visualize snps associated with given go term in tree viusalization
   showSNPsforGoTerm(go_term, id){
-    console.log(this.props.go_to_snps);
     var snps = this.props.go_to_snps[go_term];
     if (snps !== undefined){
       this.props.handleMultipleSNPadditon(snps);
@@ -133,7 +131,6 @@ class GOResultModal extends Component{
 
   //mark branches of selected clade in tree visualization
   markSelectedClade(){
-    console.log("test:",this.props.clade[1]);
     this.props.tree.modify_selection(
         this.props.clade[1],
         undefined,
@@ -157,14 +154,12 @@ class GOResultModal extends Component{
   }
   //get leaves of analysed clade
   get_clade_leaves(){
-    console.log(this.props.root);
     if(this.props.tree.is_leafnode(this.props.root)){
         return [this.props.root.name]
     }
     else{
         const leaves = this.props.tree.select_all_descendants(this.props.root, true, false);
         const names = leaves.map(leave => String(leave.name));
-        //console.log("leaves: ", leaves);
         return names;
     }
   }

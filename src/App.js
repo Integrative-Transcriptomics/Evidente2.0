@@ -261,16 +261,16 @@ class App extends Component {
    * @param {Event} e sent from the file input form.
    */
   handleStatisticSubmit = async (e) => {
-    var start = performance.now();
+    //var start = performance.now();
     this.setState({computeStatistics:true});
     this.handleLoadingToggle(true);
     e.preventDefault();
     //get uploaded files
     var formData = new FormData(document.getElementById("statfileform"));
     //check if at least one file has been uploaded and if so, enable compute-statistics
-    if(formData.get("gff")!= null||formData.get("snp_info")!= null || formData.get("goterm")!=null){
+    if(formData.get("gff")!= null|| formData.get("goterm")!=null){
       this.setState({statisticFilesUploaded:true})
-      console.log(formData.get("gff"),formData.get("snp_info"), formData.get("goterm"))
+      //console.log(formData.get("gff"),formData.get("snp_info"), formData.get("goterm"))
       //check if data for go-enrichment has been uploaded and if so enable go enrichment
       if( formData.get("goterm").length!== 0 &&formData.get("gff").length!==0 ){
 	this.setState({goFilesUploaded:true});    	
@@ -278,7 +278,6 @@ class App extends Component {
     }
     //add all SNPs available in tree to form data
     var availableSNPs = this.state.availableSNPs.toString();
-    console.log(availableSNPs);
     formData.set("availabel_snps",availableSNPs);
     //send request at server to preprocess statistic-files
     let response = await fetch(`/api/statistic-upload`, {
@@ -291,10 +290,10 @@ class App extends Component {
       console.error(json.message);
       alert("Error by processing files. Please revise the files uploaded. Details in console.");
     } else {  
-      var end = performance.now();
-      console.log("statitics-upload: ",(end-start)/1000.0, "seconds");
+      //var end = performance.now();
+      //console.log("statitics-upload: ",(end-start)/1000.0, "seconds");
       //save preprocessed data for go-enrichment for statisticsRequest
-      console.log("received statistics response");
+      //console.log("received statistics response");
       this.setState({
 	snpsToGene:json.snps_to_gene,
 	gene_to_go:json.id_to_go,  
@@ -534,7 +533,7 @@ class App extends Component {
     });
   };
   handleMultipleSNPaddition = (listOfSnps) => {
-    console.log(listOfSnps);
+   // console.log(listOfSnps);
     document.body.style.cursor = "wait !important";
     setTimeout(() => {
       this.setState({

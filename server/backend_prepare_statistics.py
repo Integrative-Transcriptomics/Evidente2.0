@@ -10,9 +10,7 @@ from typing import Tuple
 from flask import request, jsonify
 from backend_compute_statistics import load_go_basic
 
-#TODO: remove all test prints
-#TODO:remove snp info part if not needed
-def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
+def read_statistic_file_content() -> Tuple[str, str,str,str]:
     """Reads contents of gff, go_term and snpinfo files.
 
     Raises value error if a file is missing .
@@ -24,20 +22,20 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
 
     if request.method != 'POST':
         raise ValueError("unexpected method type")
-    #TODO: use later for snp-effect interpretation or remove
-    snp_info_data = ""
-    snp_info_sep = ','
-    # check if the post request has the taxainfo part
-    if 'snp_info' in request.files:
-        snp_info = request.files['snp_info']
-        if snp_info != '':
-            snp_info_data = snp_info.read()
-        if snp_info.mimetype == "text/tab-separated-values":
-            snp_info_sep = '\t'
-        elif snp_info.mimetype != "text/csv" \
-                and snp_info.mimetype != "application/octet-stream":
-            raise ValueError("unexpected taxainfofile type ",
-                             snp_info.mimetype)
+    # can be used for snp-effect interpretation
+    # snp_info_data = ""
+    # snp_info_sep = ','
+    # # check if the post request has the taxainfo part
+    # if 'snp_info' in request.files:
+    #     snp_info = request.files['snp_info']
+    #     if snp_info != '':
+    #         snp_info_data = snp_info.read()
+    #     if snp_info.mimetype == "text/tab-separated-values":
+    #         snp_info_sep = '\t'
+    #     elif snp_info.mimetype != "text/csv" \
+    #             and snp_info.mimetype != "application/octet-stream":
+    #         raise ValueError("unexpected taxainfofile type ",
+    #                          snp_info.mimetype)
 
     go_data = ""
     go_sep = '\t'
@@ -63,7 +61,6 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
         gff = request.files['gff']
         if gff!= '':
             gff_data = gff.read()
-        print(gff.mimetype)
         if gff.mimetype == "text/csv":
             gff_sep = ','
         elif gff.mimetype != "text/tab-separated-values" \
@@ -72,11 +69,11 @@ def read_statistic_file_content() -> Tuple[str, str, str, str,str,str]:
                              gff.mimetype)
 
     available_snps = request.form['availabel_snps'].split(',')
-    return  go_data, go_sep,snp_info_data, snp_info_sep,gff_data,gff_sep,available_snps
+    return  go_data, go_sep,gff_data,gff_sep,available_snps
 
 
 
-def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, available_snps) -> str:
+def prepare_statistics(gff, gff_sep, go_terms, go_sep, available_snps) -> str:
     """Prepares gff and go data for statistical computations
        Holds possibility to use snp_info data in addition to gff
 
@@ -104,7 +101,6 @@ def prepare_statistics(gff, gff_sep, snp_info, snp_info_sep, go_terms, go_sep, a
     json["snps_to_gene"] = snps_to_gene
     json["go_to_snp_pos"] = go_to_snp
     json["id_to_go"] = id_to_go
-    print(json)
     return jsonify(json)
 
 def parse_gff(gff, gff_sep):
