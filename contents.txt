@@ -1,0 +1,56 @@
+evidente2/src: 
+Contains all client-side source-code added or eddited during the extension of Evidente2.0.
+
+    App.js: Builds the center of the Evidente2-Frontend. Brings the different components together and manages the communication with the server (eddited).
+
+    evidente2/src/components:
+    Contains all components that are parts of the user interface of evidente2.0
+
+        tools.jsx, toolbox.jsx : Provide the evidente2-main-menu with its user interactions (eddited).
+
+        phylotree.jsx: Visualization of phylotree including the node menu (eddited).
+
+        upload-files-modal.jsx, upload-go-files-modal.jsx: Visualization of Pop-Up-Windows asking for file-upload.
+
+        statitics-modal.jsx: Pop-Up-Window providing user interactions for choosing desired statistic computations - currently only go-enrichment, can be extended.
+
+        go-modal.jsx: Pop-Up-Window providing user interactions to request go enrichment.
+
+        go-result-modal.jsx: Pop-Up-window providing visualization of go-enrichment result and related interactions.
+
+        go-table.jsx, go-table-header.jsx: Provide visualization of go-terms, descriptions, p-values and related interactions.
+
+        test.styles.css: Style-sheet for adjusting style of go-result-modal.
+        
+        tree-result-modal.jsx: Pop-Up-Window providing visualization of tree analysis results and related interactions
+
+
+
+evidente2/server:
+Contains all server-side source code plus some datasets for testing evidente2.
+
+    ReadMe: Description of data-formats used for client-server-communication
+
+    /MiniExample: Mini-dataset used as start-example in evidente2.
+    
+    /ValidationExample: Mini-dataset used to validate data preparation and enrichment results.
+    
+    /Leprosy: Application-dataset 
+    
+    main.jar: CLASSICO
+    
+    backend_main.py: Entry point of evidente backend. Receives requests from client, passes data to actual implementation and sends results back to client.
+    
+    backend_nwk_parser.py: Provides methods for parsing nwk-file to a tree structur and traversing the tree.
+    
+    backend_prepare_data.py: Preparation of the phylogenetic data (nwx, snp, taxainfo) for visualization. 
+    
+    backend_prepare_statistics.py: Preparation of the statistical data (go,gff) for statistical computations and result visaulization.
+    
+    backend_compute_statistics.py: Computation of go-enrichment and tree analysis.
+    
+    backend_go_enrichment: Provides methods for go-enrichment analysis.
+    
+    backend_tree_enrichment: Provides methods for finding clades in tree that have to be analysed.
+    
+    
