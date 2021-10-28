@@ -67,15 +67,21 @@ class Legend extends Component {
         },
     }));
 
-    state = {checked: true};
-    header = ["Name", "Color Scale", "Actions"];
-    setChecked = () => this.setState({checked: !this.state.checked});
+    constructor(props) {
+        super(props);
+        this.state = {
+            checked: true,
+        }
+    }
 
-    shouldComponentUpdate(nextProp) {
+    header = ["Name", "Color Scale", "Actions"];
+
+    shouldComponentUpdate(nextProp, nextState) {
         return (
             !isEqual(this.props.availableMDs, nextProp.availableMDs) ||
             !isEqual(this.props.visMd, nextProp.visMd) ||
-            !isEqual(this.props.visSNPs, nextProp.visSNPs)
+            !isEqual(this.props.visSNPs, nextProp.visSNPs) ||
+            !isEqual(this.state.checked, nextState.checked)
         );
     }
 
@@ -102,7 +108,8 @@ class Legend extends Component {
             <React.Fragment>
                 <div style={{display: "flex", alignItems: "center"}}>
                     <h4>Legend</h4>
-                    <AntSwitch size='small' checked={this.state.checked} onChange={this.setChecked}/>
+                    <AntSwitch size='small' checked={this.state.checked}
+                               onChange={() => this.setState({checked: !this.state.checked})}/>
                 </div>
                 <div style={{padding: "0px 10px"}}>
                     <div className={this.classes.container}>
