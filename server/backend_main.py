@@ -3,7 +3,7 @@
 # Written by Sophie Pesch 2021
 
 from os import abort
-from time import perf_counter,sleep
+from time import perf_counter, sleep
 from backend_prepare_data import prepare_data, read_file_content
 from backend_prepare_statistics import read_statistic_file_content, prepare_statistics
 from backend_compute_statistics import go_enrichment, tree_enrichment
@@ -29,23 +29,26 @@ def upload_data():
     print(request.files)
     try:
         nwk_data, snp_data, taxainfo_data, taxainfo_sep = read_file_content()
+        print(taxainfo_sep)
         # you may use the following lines to store data in session
         # (using cookies):
         # session['nwk'] = nwk_data
         # session['snp'] = snp_data
         # session['taxainfo'] = taxainfo_data
-        response = prepare_data(nwk_data, snp_data, taxainfo_data, taxainfo_sep)
-        print(response)
-        return response #prepare_data(nwk_data, snp_data, taxainfo_data, taxainfo_sep)
+        response = prepare_data(
+            nwk_data, snp_data, taxainfo_data, taxainfo_sep)
+        # prepare_data(nwk_data, snp_data, taxainfo_data, taxainfo_sep)
+        return response
 
     except ValueError as e:
         print("error", e.args)
-        return jsonify({'error' : 'internal server error'}), 500
+        return jsonify({'error': 'internal server error'}), 500
         # return redirect(request.url)
 
     except:
         print("Unexpected error:", sys.exc_info())
-        return jsonify({'error' : 'internal server error'}), 500
+        return jsonify({'error': 'internal server error'}), 500
+
 
 @app.route('/api/init-example', methods=['POST'])
 def load_init_example():
@@ -54,10 +57,13 @@ def load_init_example():
     :return: preprocessed phylogenetic data as :type Json-object
     """
     try:
-        nwk_data =bytes( open("./MiniExample/mini_nwk.nwk", "r").read(), 'utf-8')
-        #print(nwk_data)
-        snp_data = bytes(open("./MiniExample/mini_snp.tsv", "r").read(),'utf-8')
-        taxainfo_data = bytes(open("./MiniExample/mini_nodeinfo.csv", "r").read(),'utf-8')
+        nwk_data = bytes(
+            open("./MiniExample/mini_nwk.nwk", "r").read(), 'utf-8')
+        # print(nwk_data)
+        snp_data = bytes(
+            open("./MiniExample/mini_snp.tsv", "r").read(), 'utf-8')
+        taxainfo_data = bytes(
+            open("./MiniExample/mini_nodeinfo.csv", "r").read(), 'utf-8')
         return prepare_data(nwk_data, snp_data, taxainfo_data, ",")
     except ValueError as e:
         print("error", e.args)
@@ -72,14 +78,15 @@ def prepare_statistics_data():
     :return: preprocessed statistical data as :type JSON-object
     """
     try:
-        #print("in prepare_statistics_data")
-        #start = perf_counter()
+        # print("in prepare_statistics_data")
+        # start = perf_counter()
 
-        go_data,go_sep,gff_data,gff_sep,available_snps = read_statistic_file_content()
-        response = prepare_statistics(gff_data.decode('utf8'),gff_sep,go_data.decode('utf-8'),go_sep,available_snps)
-        #end = perf_counter()
-        #time_needed = end - start
-        #print(f"Needed {time_needed:0.4f} seconds for statistics data preparation")
+        go_data, go_sep, gff_data, gff_sep, available_snps = read_statistic_file_content()
+        response = prepare_statistics(gff_data.decode(
+            'utf8'), gff_sep, go_data.decode('utf-8'), go_sep, available_snps)
+        # end = perf_counter()
+        # time_needed = end - start
+        # print(f"Needed {time_needed:0.4f} seconds for statistics data preparation")
         return response
 
     except ValueError as e:
@@ -105,8 +112,10 @@ def compute_statistics():
         gene_to_go = data["gene_to_go"]
         sig_level = data["sig_level"]
         all_snps = data["all_snps"]
-        result = go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
-        return result #go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
+        result = go_enrichment(all_snps, positions,
+                               snps_to_gene, gene_to_go, float(sig_level))
+        # go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
+        return result
     except:
         print("Unexpected error:", sys.exc_info()[0])
         return jsonify({'error': 'internal server error'}), 500
@@ -131,13 +140,16 @@ def compute_tree_statitics():
         sig_level = data["sig_level"]
         all_snps = data["all_snps"]
         # go_to_description = data["go_to_description"]
-        response = tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snps, snps_to_gene, gene_to_go, float(sig_level))
+        response = tree_enrichment(nwk, support, num_to_lab, all_snps,
+                                   node_to_snps, snps_to_gene, gene_to_go, float(sig_level))
         return response
     except:
         print("Unexpected error:", sys.exc_info()[0])
         return jsonify({'error': 'internal server error'}), 500
 
 # just for debugging purposes:
+
+
 @app.route('/<path:subpath>', methods=['POST'])
 def show_post_subpath(subpath):
     """shows content of POST message"""
@@ -173,4 +185,4 @@ def test_timeout():
 
 
 if __name__ == "__main__":
-    app.run(port=int("3001"))
+    app.run(debug=True, port=int("3001"))

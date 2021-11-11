@@ -11,7 +11,7 @@ import os
 import re
 from typing import Tuple
 from flask import request, jsonify
-from backend_nwk_parser import Tree,Snps
+from backend_nwk_parser import Tree, Snps
 import numpy as np
 # Use path of this script to detect related executables
 ScriptDir = os.path.dirname(os.path.realpath(__file__))
@@ -53,20 +53,23 @@ def read_file_content() -> Tuple[str, str, str, str]:
 
     taxainfo_data = ""
     taxainfo_sep = ','
+    print(request.files["taxainfo"].mimetype)
     # check if the post request has the taxainfo part
     if 'taxainfo' in request.files:
         taxainfo = request.files['taxainfo']
         if taxainfo != '':
             taxainfo_data = taxainfo.read()
-        if taxainfo.mimetype == "text/tab-separated-values":
+        if taxainfo.mimetype == "text/tab-separated-values" or \
+            (taxainfo.mimetype == "application/vnd.ms-excel" and
+                "tsv" in taxainfo.name):
             taxainfo_sep = '\t'
-        elif taxainfo.mimetype != "text/csv" \
-                and taxainfo.mimetype != "application/octet-stream":
+        elif taxainfo.mimetype != "text/csv" and\
+                taxainfo.mimetype != "application/vnd.ms-excel" and \
+                taxainfo.mimetype != "application/octet-stream":
             raise ValueError("unexpected taxainfo file type ",
                              taxainfo.mimetype)
 
     return nwk_data, snp_data, taxainfo_data, taxainfo_sep
-
 
 
 # noinspection SpellCheckingInspection,SpellCheckingInspection
@@ -114,8 +117,8 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
                                     "extent": ["A", "C", "T", "G", "N"]})
     # propagate SNPs from Classico assignement down to leaves
     # needed for statistical computations
-    node_to_snps, tree_size, num_snps, all_snps = propagate_snps_to_leaves(support,not_support,ids["numToLabel"],nwk.decode('UTF-8'))
-
+    node_to_snps, tree_size, num_snps, all_snps = propagate_snps_to_leaves(
+        support, not_support, ids["numToLabel"], nwk.decode('UTF-8'))
 
     # prepare data format for response to frontend:
     data = dict()
@@ -133,8 +136,9 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
     data["all_snps"] = all_snps
 
     # convert data to json and send back to frontend
-    #print(data)
+    # print(data)
     return jsonify(data)
+
 
 def call_classico(tmpdir, nwk, snp):
     """Calls CLASSICO and stores output in temporary directory.
@@ -154,7 +158,6 @@ def call_classico(tmpdir, nwk, snp):
         fp_snp.flush()
         subprocess.run(["java", "-jar", ScriptDir + "/main.jar", fp_snp.name,
                         fp_nwk.name, tmpdir])
-
 
 
 def create_number_label_mapping(ids, filename):
@@ -181,7 +184,7 @@ def fill_support(support, filename, ids):
 
     with open(filename) as tsv:
         for line in csv.reader(tsv, delimiter="\t"):
-            #handle root case (no -> in line)
+            # handle root case (no -> in line)
             if(len(line[0].split(" ")) > 1):
                 node = ids["numToLabel"][line[0].split(" ")[1]]
             else:
@@ -201,7 +204,8 @@ def fill_not_support(not_support, filename, ids):
         for line in csv.reader(tsv, delimiter="\t"):
             node = ids["numToLabel"][line[0].split("->")[1]]
             for pos, allele in re.findall(r"([0-9]+):\[(.)\]", line[2]):
-                not_support.append({"node": node, "pos": pos, "allele": allele})
+                not_support.append(
+                    {"node": node, "pos": pos, "allele": allele})
 
 
 # noinspection SpellCheckingInspection
@@ -353,8 +357,7 @@ def parse_meta_data(taxainfo_decode, taxainfo_sep, taxainfo_mod, columns,
             row += 1
 
 
-
-def propagate_snps_to_leaves(support,not_support, ids,nwk):
+def propagate_snps_to_leaves(support, not_support, ids, nwk):
     """Propagates SNPs from last common ancestor down tto all descendants.
 
     :param support: supportive snps as :type dict
@@ -368,7 +371,5 @@ def propagate_snps_to_leaves(support,not_support, ids,nwk):
     tree.parse_nwk_string(nwk)
     tree.traverse_tree(snp)
     #print(snp.get_number_of_nodes(), "nodes")
-    #print(snp.get_node_to_snps())
+    # print(snp.get_node_to_snps())
     return snp.get_node_to_snps(), snp.get_number_of_nodes(), snp.get_num_snps(), snp.get_all_snps()
-
-
