@@ -57,11 +57,13 @@ def read_file_content() -> Tuple[str, str, str, str]:
     # check if the post request has the taxainfo part
     if 'taxainfo' in request.files:
         taxainfo = request.files['taxainfo']
+        print(taxainfo.filename)
+        print(taxainfo.mimetype)
+
         if taxainfo != '':
             taxainfo_data = taxainfo.read()
         if taxainfo.mimetype == "text/tab-separated-values" or \
-            (taxainfo.mimetype == "application/vnd.ms-excel" and
-                "tsv" in taxainfo.name):
+                ".tsv" in taxainfo.filename:
             taxainfo_sep = '\t'
         elif taxainfo.mimetype != "text/csv" and\
                 taxainfo.mimetype != "application/vnd.ms-excel" and \

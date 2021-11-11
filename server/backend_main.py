@@ -29,7 +29,6 @@ def upload_data():
     print(request.files)
     try:
         nwk_data, snp_data, taxainfo_data, taxainfo_sep = read_file_content()
-        print(taxainfo_sep)
         # you may use the following lines to store data in session
         # (using cookies):
         # session['nwk'] = nwk_data
