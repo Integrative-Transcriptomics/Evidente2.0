@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import Select, { components } from "react-select";
-import { keys } from "lodash";
+import { filter, keys } from "lodash";
 import * as $ from "jquery";
 //import { select } from "d3";
 import * as d3 from "d3";
@@ -16,8 +16,6 @@ import FilterList from "./filter-list";
 import VisualizeDataCard from "./visualize-card";
 
 /**
- <<<<<<< HEAD
- =======
  * Helper Function for showing an information text box by hovering over "analyse tree"
  * option in toolbox
  */
@@ -43,7 +41,6 @@ const outMouse = () => {
 };
 
 /**
- >>>>>>> sophie/main
  * Helper function for the filter tooltip
  * @param {Object} props
  */
@@ -110,37 +107,58 @@ class Tools extends Component {
    *
    */
   async onExport() {
-    // html2canvas(document.querySelector("#parent-svg")).then((canvas) => {
-    //   document.body.appendChild(canvas);
-    // });
+    this.props.handleLoadingToggle(true);
 
-    // const input = document.getElementById("parent-svg");
-    var element = document.getElementById("parent-svg");
-    var borderStyle = element.style.border;
-    element.style.border = "none";
+    let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
+    // let allData = document.createElement("div");
+    // let mainVisualization = document.getElementById("parent-svg");
+    // allData.appendChild(mainVisualization.cloneNode(true));
+    let divLegend = document.createElement("div");
+    divLegend.style.display = "flex";
+    divLegend.style.flexWrap = "wrap";
+    divLegend.style.padding = "5px";
+    divLegend.id = "legend-blox";
+    filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
+      return accountForLegend.includes(v.name);
+    }).forEach((data) => {
+      let blockLegendLabel = document.createElement("div");
+      let labelLegend = document.createElement("p");
+      labelLegend.textContent = data.name;
+      let svgLegend = document.createElement("div");
+      svgLegend.style.minHeight = 30;
+
+      let legend = d3
+        .select("#root")
+        .append("svg")
+        .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 350 });
+      this.props.addLegend(legend, 250, data, true);
+      svgLegend.appendChild(legend.node());
+      blockLegendLabel.appendChild(labelLegend);
+      blockLegendLabel.appendChild(svgLegend);
+      divLegend.appendChild(blockLegendLabel);
+    });
+
+    var allData = document.getElementById("parent-svg");
+    allData.appendChild(divLegend);
+
+    // var borderStyle = allData.style.border;
+    // allDAta.style.border = "none";
     // labeling of the tree
-    var figureName = "test";
+    var figureName = "Evidente_" + Date.now();
 
     domtoimage
-      .toSvg(element, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+      .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
       .then(function (dataUrl) {
         var link = document.createElement("a");
         link.download = figureName;
         link.href = dataUrl;
         link.click();
         link.remove();
-        element.style.border = borderStyle;
+        allData.removeChild(divLegend);
+
+        // allData.style.border = borderStyle;
       });
-    element.style.height = "80vh";
-    // }
-    // html2canvas(input).then((canvas) => {
-    //   const imgData = canvas.toDataURL();
-    //   var width = canvas.width;
-    //   var height = canvas.height;
-    //   const pdf = new jsPDF({ orientation: "l", unit: "px", format: [height, width] });
-    //   pdf.addImage(imgData, "SVG", 0, 0, height, width);
-    //   pdf.save("download.pdf");
-    // });
+    // element.style.height = "80vh";
   }
 
   /**
@@ -436,7 +454,12 @@ class Tools extends Component {
                 <Typography variant='h6' gutterBottom={true}>
                   Export visualizations
                 </Typography>
-                <Button variant='primary' onClick={this.onExport}>
+                <Button
+                  variant='primary'
+                  onClick={() => {
+                    this.onExport();
+                  }}
+                >
                   Export
                 </Button>
                 {/* <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
