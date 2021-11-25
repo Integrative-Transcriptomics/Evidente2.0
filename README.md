@@ -15,7 +15,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Run Deployment Version
 1. Go to project folder
 2. Create virtual environment
-`python3 -m venv ed`
+`python3 -m venv env`
 3. Activate virtual environment
 `source env/bin/activate`
 4. Install python dependencies 
