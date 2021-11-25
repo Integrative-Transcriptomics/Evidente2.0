@@ -27,7 +27,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 7. Build deployment version of code
 `npm run build`
 8. Run server
-`npm run server2`
+`npm run server`
 9. Access deployed version at http://localhost:5000/
 ## Available Examples
 

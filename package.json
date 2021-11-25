@@ -36,8 +36,8 @@
     "styled-components": "^5.1.0"
   },
   "scripts": {
-    "server2": "cd server && flask run --no-debugger",
-    "evidente": "run-p server2 start",
+    "server": "cd server && flask run --no-debugger",
+    "evidente": "run-p server start",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
