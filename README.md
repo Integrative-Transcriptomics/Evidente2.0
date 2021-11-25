@@ -2,19 +2,33 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Run Devolpment Version
 
-In the project directory, you can run:
-
-
-### setup.sh
-Runs a clean install of all needed modules
-
-### `npm run evidente`
-Make sure that all needed modules are installed before running the app. <br />
-Runs the app and the server in the background.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
+1. Go to project folder
+2. Run setup.sh to install all npm and python packages
+ `bash setup.sh`
+3. Activate virtual environment
+`source env/bin/activate`
+4. Run development version of evidente
+`npm run evidente`
+5. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Run Deployment Version
+1. Go to project folder
+2. Create virtual environment
+`python3 -m venv ed`
+3. Activate virtual environment
+`source env/bin/activate`
+4. Install python dependencies 
+`pip install -r requirements.txt`
+5. Install server package (setup.py)
+`pip install .`
+6. Install npm packages
+`npm install`
+7. Build deployment version of code
+`npm run build`
+8. Run server
+`npm run server2`
+9. Access deployed version at http://localhost:5000/
 ## Available Examples
 
 ### Toy Example
