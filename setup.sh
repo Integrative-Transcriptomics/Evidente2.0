@@ -2,14 +2,8 @@
 
 srcdir=`dirname "$0"`
 
-npm ci
+npm install
 
 python3 -m venv ${srcdir}/env
-${srcdir}/env/bin/python3 -m pip install --upgrade pip
-${srcdir}/env/bin/python3 -m pip install six
-${srcdir}/env/bin/python3 -m pip install appdirs
-${srcdir}/env/bin/python3 -m pip install packaging
-${srcdir}/env/bin/python3 -m pip install ordered_set
-${srcdir}/env/bin/python3 -m pip install goatools
-${srcdir}/env/bin/python3 -m pip install flask
-${srcdir}/env/bin/python3 -m pip install parse
+source ${srcdir}/env/bin/activate
+pip install -r requirements.txt

@@ -11,7 +11,7 @@ import os
 import re
 from typing import Tuple
 from flask import request, jsonify
-from backend_nwk_parser import Tree, Snps
+from server.backend_nwk_parser import Tree, Snps
 import numpy as np
 # Use path of this script to detect related executables
 ScriptDir = os.path.dirname(os.path.realpath(__file__))
@@ -99,14 +99,14 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
         call_classico(tmpdir, nwk, snp)
         # create nmmber <-> label mappings
         # noinspection SpellCheckingInspection,SpellCheckingInspection
-        create_number_label_mapping(ids, tmpdir + "/Ergebnis/IDzuordnung.txt")
+        create_number_label_mapping(ids, os.path.join(tmpdir,"Ergebnis","IDzuordnung.txt"))
         # fill support
         # noinspection SpellCheckingInspection
-        fill_support(support, tmpdir + "/Ergebnis/supportSplitKeys.txt", ids)
+        fill_support(support, os.path.join(tmpdir,"Ergebnis","supportSplitKeys.txt"), ids)
         # fill 'notSupport'
         # noinspection SpellCheckingInspection
         fill_not_support(not_support,
-                         tmpdir + "/Ergebnis/notSupportSplitKeys.txt", ids)
+                         os.path.join(tmpdir,"Ergebnis","notSupportSplitKeys.txt"), ids)
 
     # get available SNPS and SNP per column
     available_snps, snp_per_column = get_snps(support, not_support)

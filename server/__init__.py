@@ -1,20 +1,23 @@
-# File: backend_main.py
+# File: __init__.py
 # entry point of Evidente backend
 # Written by Sophie Pesch 2021
-
+import os
 from os import abort
 from time import perf_counter, sleep
-from backend_prepare_data import prepare_data, read_file_content
-from backend_prepare_statistics import read_statistic_file_content, prepare_statistics
-from backend_compute_statistics import go_enrichment, tree_enrichment
+from server.backend_prepare_data import prepare_data, read_file_content
+from server.backend_prepare_statistics import read_statistic_file_content, prepare_statistics
+from server.backend_compute_statistics import go_enrichment, tree_enrichment
 from flask import Flask, request, session, jsonify
 from markupsafe import escape
 import sys
 
 
 # we are using flask for RESTful communication
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../build', static_url_path='/')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+here = os.path.dirname(__file__)
+app.config['EXAMPLE_DATA'] = os.path.join(here,'MiniExample')
+app.config['FILES_STREPTOMYCES'] = os.path.join(here, 'data', 'caseStudy_colnames')
 
 
 @app.route('/api/upload', methods=['POST'])
@@ -57,12 +60,12 @@ def load_init_example():
     """
     try:
         nwk_data = bytes(
-            open("./MiniExample/mini_nwk.nwk", "r").read(), 'utf-8')
+            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_nwk.nwk"), "r").read(), 'utf-8')
         # print(nwk_data)
         snp_data = bytes(
-            open("./MiniExample/mini_snp.tsv", "r").read(), 'utf-8')
+            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_snp.tsv"), "r").read(), 'utf-8')
         taxainfo_data = bytes(
-            open("./MiniExample/mini_nodeinfo.csv", "r").read(), 'utf-8')
+            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_nodeinfo.csv"), "r").read(), 'utf-8')
         return prepare_data(nwk_data, snp_data, taxainfo_data, ",")
     except ValueError as e:
         print("error", e.args)
@@ -182,6 +185,10 @@ def test_timeout():
     sleep(301)
     return jsonify("done")
 
+
+@app.route('/', methods=['GET'])
+def index():
+    return app.send_static_file('index.html')
 
 if __name__ == "__main__":
     app.run(debug=True, port=int("3001"))

@@ -8,7 +8,7 @@
 import csv
 from typing import Tuple
 from flask import request, jsonify
-from backend_compute_statistics import load_go_basic
+from server.backend_compute_statistics import load_go_basic
 
 def read_statistic_file_content() -> Tuple[str, str,str,str]:
     """Reads contents of gff, go_term and snpinfo files.

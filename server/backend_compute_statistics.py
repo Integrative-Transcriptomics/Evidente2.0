@@ -9,9 +9,9 @@ import wget
 import os
 import time
 from goatools import obo_parser
-from backend_go_enrichment import GOEnrichment
-from backend_nwk_parser import Tree
-from backend_tree_enrichment import FindClades
+from server.backend_go_enrichment import GOEnrichment
+from server.backend_nwk_parser import Tree
+from server.backend_tree_enrichment import FindClades
 
 
 def go_enrichment(all_snps, positions, snps_to_gene,gene_to_go, sig_level):
