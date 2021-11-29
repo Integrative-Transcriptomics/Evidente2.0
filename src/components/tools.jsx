@@ -5,8 +5,8 @@ import { filter, keys } from "lodash";
 import * as $ from "jquery";
 //import { select } from "d3";
 import * as d3 from "d3";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
+// import { jsPDF } from "jspdf";
+// import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image";
 import { Divider, Grid, Typography } from "@material-ui/core";
 
@@ -107,8 +107,6 @@ class Tools extends Component {
    *
    */
   async onExport() {
-    this.props.handleLoadingToggle(true);
-
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     // let allData = document.createElement("div");
     // let mainVisualization = document.getElementById("parent-svg");
@@ -158,6 +156,8 @@ class Tools extends Component {
 
         // allData.style.border = borderStyle;
       });
+    // this.props.handleLoadingToggle(false);
+
     // element.style.height = "80vh";
   }
 
@@ -268,7 +268,7 @@ class Tools extends Component {
                 <Form id='statfileform' onSubmit={this.props.onStatisticFileUpload}>
                   {[
                     { id: "goterm", label: "GO" },
-                    { id: "gff", label: "gff" },
+                    { id: "gff", label: "GFF-file" },
                     //{ id: "snp_info", label: "SNP info" },
                   ].map(({ id, label }) => (
                     <Form.Group key={id}>
@@ -457,7 +457,9 @@ class Tools extends Component {
                 <Button
                   variant='primary'
                   onClick={() => {
+                    this.props.handleLoadingToggle(true);
                     this.onExport();
+                    this.props.handleLoadingToggle(false);
                   }}
                 >
                   Export
