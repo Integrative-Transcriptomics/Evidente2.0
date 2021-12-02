@@ -100,6 +100,7 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
         # create nmmber <-> label mappings
         # noinspection SpellCheckingInspection,SpellCheckingInspection
         create_number_label_mapping(ids, os.path.join(tmpdir,"Ergebnis","IDzuordnung.txt"))
+        print(os.path.join(tmpdir,"Ergebnis","IDzuordnung.txt"))
         # fill support
         # noinspection SpellCheckingInspection
         fill_support(support, os.path.join(tmpdir,"Ergebnis","supportSplitKeys.txt"), ids)
