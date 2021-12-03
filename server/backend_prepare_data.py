@@ -99,14 +99,14 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
         call_classico(tmpdir, nwk, snp)
         # create nmmber <-> label mappings
         # noinspection SpellCheckingInspection,SpellCheckingInspection
-        create_number_label_mapping(ids, os.path.join(tmpdir,"Ergebnis","IDzuordnung.txt"))
+        create_number_label_mapping(ids, os.path.join(tmpdir,"IDdistribution.txt"))
         # fill support
         # noinspection SpellCheckingInspection
-        fill_support(support, os.path.join(tmpdir,"Ergebnis","supportSplitKeys.txt"), ids)
+        fill_support(support, os.path.join(tmpdir,"supportSplitKeys.txt"), ids)
         # fill 'notSupport'
         # noinspection SpellCheckingInspection
         fill_not_support(not_support,
-                         os.path.join(tmpdir,"Ergebnis","notSupportSplitKeys.txt"), ids)
+                         os.path.join(tmpdir,"notSupportSplitKeys.txt"), ids)
 
     # get available SNPS and SNP per column
     available_snps, snp_per_column = get_snps(support, not_support)
@@ -158,8 +158,9 @@ def call_classico(tmpdir, nwk, snp):
         fp_snp.write(snp)
         fp_nwk.flush()
         fp_snp.flush()
-        subprocess.run(["java", "-jar", ScriptDir + "/main.jar", fp_snp.name,
-                        fp_nwk.name, tmpdir])
+        env=dict(os.environ)
+        subprocess.run(["java", "-jar", ScriptDir + "/classico.jar", fp_snp.name,
+                        fp_nwk.name, tmpdir],env=env)
 
 
 def create_number_label_mapping(ids, filename):
