@@ -23,7 +23,7 @@ class UploadGOFilesModal extends Component{
           <Modal.Title>File upload required</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Please upload gff- and go-annotation-file in the menu on the right under "Load statistics files" to compute GO enrichments
+          Please upload GFF- and GO-annotation-file in the menu on the right under "Load statistics files" to compute GO enrichments
         </Modal.Body>
         <Modal.Footer>
           <Button id= "go" variant= "primary" onClick={this.props.handleClose} style={{float: 'right'}}>
