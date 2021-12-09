@@ -37,4 +37,4 @@ jobs:
         config: ${{ secrets.SSH_CONFIG }}
         known_hosts: ${{ secrets.KNOWN_HOSTS }}
     - name: Deploy with rsync
-      run: rsync -azv -O --no-perms --include='server' --include='build' --include='requirements.txt' --include='setup.py' --exclude='*' . ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_TARGET }}
+      run: rsync -azv -O --no-perms --include='*/' --include='server' --include='build' --include='requirements.txt' --include='setup.py' --exclude='*' . ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REMOTE_TARGET }}
