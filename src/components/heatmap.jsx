@@ -63,12 +63,10 @@ class Heatmap extends Component {
             .get_nodes()
             .filter((node) => this.isVisibleEndNode(node))
             .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
-
         let x_elements = this.isSNP
             ? this.props.visSNPs.map((d) => `${this.SNPprefix}${d}`)
             : this.props.visMd,
             y_elements = shownNodes;
-
         let cellWidthMin =
             props.collapsedClades.length > 0
                 ? this.minCollapsedCellWidth
@@ -664,7 +662,7 @@ class Heatmap extends Component {
         margin.top = 0.05 * this.container.offsetHeight;
         let width = this.container.offsetWidth - margin.right - margin.left,
             height = this.container.offsetHeight - margin.top - margin.bottom;
-
+        console.log(width);
         let svg = d3
             .select(`#${this.props.divID}`)
             .append("svg")
