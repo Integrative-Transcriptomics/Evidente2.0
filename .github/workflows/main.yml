@@ -8,10 +8,10 @@ on:
   # but only for the main branch
   push:
     branches:
-      - development
+      - master
   pull_request:
     branches:
-      - development
+      - master
 
 jobs:
   rsync-deployment:
