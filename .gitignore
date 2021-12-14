@@ -130,3 +130,4 @@ dmypy.json
 node_modules
 /server/.idea/
 /node_modules/
+package-lock.json
