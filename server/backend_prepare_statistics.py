@@ -45,9 +45,10 @@ def read_statistic_file_content() -> Tuple[str, str,str,str]:
         if goterm != '':
             go_data = goterm.read()
         print(goterm.mimetype)
-        if goterm.mimetype == "text/csv":
+        if goterm.mimetype == "text/csv" or ".csv" in goterm.filename:
             go_sep = ','
         elif goterm.mimetype != "text/tab-separated-values" \
+                and ".tsv" in goterm.filename \
                 and goterm.mimetype != "application/octet-stream"\
                 and goterm.mimetype != "text/x-go":
             raise ValueError("unexpected taxainfofile type ",
@@ -61,9 +62,10 @@ def read_statistic_file_content() -> Tuple[str, str,str,str]:
         gff = request.files['gff']
         if gff!= '':
             gff_data = gff.read()
-        if gff.mimetype == "text/csv":
+        if gff.mimetype == "text/csv" or ".csv" in gff.filename:
             gff_sep = ','
         elif gff.mimetype != "text/tab-separated-values" \
+                and ".tsv" in gff.filename \
                 and gff.mimetype != "application/octet-stream":
             raise ValueError("unexpected gff type ",
                              gff.mimetype)
