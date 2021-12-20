@@ -5,7 +5,6 @@
 # Written by Sophie Pesch 2021
 
 import numpy as np
-import multiprocessing as mp
 from scipy.stats import fisher_exact
 
 
@@ -13,7 +12,6 @@ from scipy.stats import fisher_exact
 class GOEnrichment:
     def __init__(self, tree_snps, clade_snps, snps_to_gene, gene_to_go_terms, sig_level, go_hierarchy):
         """construct go-enrichment object
-
         :param tree_snps: snps in tree as :type list
         :param clade_snps: snps in clade as :type list
         :param snps_to_gene: snp-gene association as :type dict
@@ -27,22 +25,19 @@ class GOEnrichment:
         self.__gene_to_go_terms = gene_to_go_terms
         self.__sig_level = sig_level
         self.__go_hierarchy = go_hierarchy
-        self.__manager = mp.Manager()
-        self.results_enrichment = self.__manager.list()
 
     def compute_enrichment(self):
         # return dict:go-term -> p-value, description, e/p
-        self.results_enrichment = self.__manager.list()
+        results = []
         tree_go_terms, in_gene_tree = self.__associated_go_terms(self.__tree_snps)
         clade_go_terms, in_gene_clade = self.__associated_go_terms(self.__clade_snps)
-        cpu_pool = mp.Pool(int(mp.cpu_count()/4))
         for go_term in set(clade_go_terms):
-            cpu_pool.apply_async(self.__helper_parallelizing_enrichment, args=(go_term, tree_go_terms, clade_go_terms), callback= lambda x: self.__collect_result(x))
-        cpu_pool.close()
-        cpu_pool.join()
-
+            fishers_exact = self.__fishers_exact_test(go_term, tree_go_terms, clade_go_terms)
+            if fishers_exact:
+                description = self.__go_to_description(go_term)
+                results.append((go_term, fishers_exact, description))
         #print(results.__len__())
-        results_sorted = sorted(self.results_enrichment, key=lambda k:k[1])
+        results_sorted = sorted(results, key=lambda k:k[1])
         #print("in gene", in_gene_tree, in_gene_clade)
         return results_sorted, set(clade_go_terms).__len__(),in_gene_clade, in_gene_tree
 
@@ -50,15 +45,6 @@ class GOEnrichment:
         if go_term in self.__go_hierarchy.keys():
             return self.__go_hierarchy[go_term]
         return ''
-
-    def __collect_result(self, result):
-        self.results_enrichment.append(result)
-    
-    def __helper_parallelizing_enrichment(self, go_term, tree_go_terms, clade_go_terms):
-        fishers_exact = self.__fishers_exact_test(go_term, tree_go_terms, clade_go_terms)
-        if fishers_exact:
-            description = self.__go_to_description(go_term)
-            return (go_term, fishers_exact, description)
 
     def __associated_go_terms(self, snps):
         associated = []
@@ -90,4 +76,3 @@ class GOEnrichment:
 
     def __bonferroni_correction(self,go_terms_clade):
         return self.__sig_level / go_terms_clade.__len__()
-
