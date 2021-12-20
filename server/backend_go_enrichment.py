@@ -35,7 +35,7 @@ class GOEnrichment:
         self.results_enrichment = self.__manager.list()
         tree_go_terms, in_gene_tree = self.__associated_go_terms(self.__tree_snps)
         clade_go_terms, in_gene_clade = self.__associated_go_terms(self.__clade_snps)
-        cpu_pool = mp.Pool(mp.cpu_count()/4)
+        cpu_pool = mp.Pool(int(mp.cpu_count()/4))
         for go_term in set(clade_go_terms):
             cpu_pool.apply_async(self.__helper_parallelizing_enrichment, args=(go_term, tree_go_terms, clade_go_terms), callback= lambda x: self.__collect_result(x))
         cpu_pool.close()
