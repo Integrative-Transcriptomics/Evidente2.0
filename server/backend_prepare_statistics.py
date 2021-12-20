@@ -273,23 +273,6 @@ def add_all_propagated_terms (go_hierarchy,id_to_go, go_to_snp):
     return id_to_go_ext, go_to_snp_ext
 
 
-#def all_descriptions(go_terms, go_hierarchy):
-#
-#    go_to_description = dict()
-#    for go in go_terms:
-#        go_to_description[go] = go_description(go,go_hierarchy)
-#    return go_to_description
-
-#def go_description(go_term_id, go_hierarchy):
-#    """Gets description for given go-term.
-#
-#    :param go_term_id: id of given go-term
-#    :param go_hierarchy:
-#    :return: go-term description as :type str
-#    """
-#    return go_hierarchy[go_term_id].name
-
-
 def collect_parents(go_id, go_hierarchy):
     """Collects all parents of given go-term.
 
@@ -310,61 +293,62 @@ def collect_parents(go_id, go_hierarchy):
 #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 #methods for parsing snp-info-file not used in current version of evidente2.0
-def parse_snp_info(snp_info, snp_info_sep) -> dict:
-    """Parses snp_info table
 
-    Stores Position, Allele, Annotation and Gene-Id Columns of snp-info table in
-    a dictionary going from (Position, Allele)-Tuple to [Annotation, Gene-Id]-list
-    if SNP is inside a gene
+# def parse_snp_info(snp_info, snp_info_sep) -> dict:
+#     """Parses snp_info table
 
-
-    :param snp_info: snp_info_table as :type str
-    :param snp_info_sep: separator for parsing snp_info_table as :type str
-    :return:  data: (pos, allele), [annotation, gene-id] mapping as :type dict
-    """
-    header_line = []
-    header_to_column = dict()
-    #print("old: ",header_to_column)
-    #order: [position,allele] -> [annotation, gene-id]
-    data = dict()
-    row = 0
-    for line in csv.reader(snp_info.split('\n'), delimiter=snp_info_sep):
-        if len(line) > 0:
-            if row == 0:
-                header_line+= line
-                #get indices of chosen columns
-                header_to_column.update(filter_columns(header_line))
-            else:
-                #fill data table
-                if ((line[header_to_column["annotation"]].lower() == "missense_variant") or line[header_to_column["annotation"]].lower() == "synonymous_variant"):
-                    data[str((line[header_to_column["position"]],line[header_to_column["allele"]]))] = [line[header_to_column["gene_id"]]]
-        row+=1
-    #print("data: ",data)
-    return data
+#     Stores Position, Allele, Annotation and Gene-Id Columns of snp-info table in
+#     a dictionary going from (Position, Allele)-Tuple to [Annotation, Gene-Id]-list
+#     if SNP is inside a gene
 
 
-def filter_columns(headers) -> dict:
-    """Computes header_column_mapping
+#     :param snp_info: snp_info_table as :type str
+#     :param snp_info_sep: separator for parsing snp_info_table as :type str
+#     :return:  data: (pos, allele), [annotation, gene-id] mapping as :type dict
+#     """
+#     header_line = []
+#     header_to_column = dict()
+#     #print("old: ",header_to_column)
+#     #order: [position,allele] -> [annotation, gene-id]
+#     data = dict()
+#     row = 0
+#     for line in csv.reader(snp_info.split('\n'), delimiter=snp_info_sep):
+#         if len(line) > 0:
+#             if row == 0:
+#                 header_line+= line
+#                 #get indices of chosen columns
+#                 header_to_column.update(filter_columns(header_line))
+#             else:
+#                 #fill data table
+#                 if ((line[header_to_column["annotation"]].lower() == "missense_variant") or line[header_to_column["annotation"]].lower() == "synonymous_variant"):
+#                     data[str((line[header_to_column["position"]],line[header_to_column["allele"]]))] = [line[header_to_column["gene_id"]]]
+#         row+=1
+#     #print("data: ",data)
+#     return data
 
-    Used to filter chosen columns out of snp_info table
 
-    :param headers: headers of snp_info table as :type list
-    :return: header_to_column: map from headers 'position', 'allele', 'annotation'
-             and 'gene_id' to column index as :type dict
-    """
-    col = 0
-    header_to_column = dict()
-    for title in headers:
-        if title.lower() == "position":
-            header_to_column["position"] = col
-        elif title.lower() == "allele":
-            header_to_column["allele"] = col
-        elif title.lower() == "annotation":
-            header_to_column["annotation"] = col
-        elif title.lower() == "gene_id":
-            header_to_column["gene_id"] = col
-        col+=1
-    return header_to_column
+# def filter_columns(headers) -> dict:
+#     """Computes header_column_mapping
+
+#     Used to filter chosen columns out of snp_info table
+
+#     :param headers: headers of snp_info table as :type list
+#     :return: header_to_column: map from headers 'position', 'allele', 'annotation'
+#              and 'gene_id' to column index as :type dict
+#     """
+#     col = 0
+#     header_to_column = dict()
+#     for title in headers:
+#         if title.lower() == "position":
+#             header_to_column["position"] = col
+#         elif title.lower() == "allele":
+#             header_to_column["allele"] = col
+#         elif title.lower() == "annotation":
+#             header_to_column["annotation"] = col
+#         elif title.lower() == "gene_id":
+#             header_to_column["gene_id"] = col
+#         col+=1
+#     return header_to_column
 
 
 
