@@ -12,7 +12,6 @@ from scipy.stats import fisher_exact
 class GOEnrichment:
     def __init__(self, tree_snps, clade_snps, snps_to_gene, gene_to_go_terms, sig_level, go_hierarchy):
         """construct go-enrichment object
-
         :param tree_snps: snps in tree as :type list
         :param clade_snps: snps in clade as :type list
         :param snps_to_gene: snp-gene association as :type dict
@@ -43,8 +42,8 @@ class GOEnrichment:
         return results_sorted, set(clade_go_terms).__len__(),in_gene_clade, in_gene_tree
 
     def __go_to_description(self, go_term):
-        if go_term in self.__go_hierarchy:
-            return self.__go_hierarchy[go_term].name
+        if go_term in self.__go_hierarchy.keys():
+            return self.__go_hierarchy[go_term]
         return ''
 
     def __associated_go_terms(self, snps):
@@ -77,4 +76,3 @@ class GOEnrichment:
 
     def __bonferroni_correction(self,go_terms_clade):
         return self.__sig_level / go_terms_clade.__len__()
-
