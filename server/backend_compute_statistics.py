@@ -11,31 +11,31 @@ import os
 import time
 from goatools import obo_parser
 import multiprocessing as mp
-import multiprocessing.pool
+# import multiprocessing.pool
 
 from server.backend_go_enrichment import GOEnrichment
 from server.backend_nwk_parser import Tree
 from server.backend_tree_enrichment import FindClades
 
-class NoDaemonProcess(multiprocessing.Process):
-    @property
-    def daemon(self):
-        return False
+# class NoDaemonProcess(multiprocessing.Process):
+#     @property
+#     def daemon(self):
+#         return False
 
-    @daemon.setter
-    def daemon(self, value):
-        pass
+#     @daemon.setter
+#     def daemon(self, value):
+#         pass
 
 
-class NoDaemonContext(type(multiprocessing.get_context())):
-    Process = NoDaemonProcess
+# class NoDaemonContext(type(multiprocessing.get_context())):
+#     Process = NoDaemonProcess
 
-# We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
-# because the latter is only a wrapper function, not a proper class.
-class NestablePool(multiprocessing.pool.Pool):
-    def __init__(self, *args, **kwargs):
-        kwargs['context'] = NoDaemonContext()
-        super(NestablePool, self).__init__(*args, **kwargs)
+# # We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
+# # because the latter is only a wrapper function, not a proper class.
+# class NestablePool(multiprocessing.pool.Pool):
+#     def __init__(self, *args, **kwargs):
+#         kwargs['context'] = NoDaemonContext()
+#         super(NestablePool, self).__init__(*args, **kwargs)
 
 
 def go_enrichment(all_snps, positions, snps_to_gene,gene_to_go, sig_level):
@@ -107,10 +107,10 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
     #end_find_clades = perf_counter()
     #time_find_clades = end_find_clades-start_find_clades
     #print(f"Needed {time_find_clades:0.4f} seconds for finding clades")
-
+    mp.set_start_method('spawn')
     all_results = dict()
     in_gene_tree = ""
-    with NestablePool(int(mp.cpu_count()/2)) as pool:
+    with mp.Pool(int(mp.cpu_count()/2)) as pool:
         #perform enrichment analysis for all clades found
         multiple_results = [pool.apply_async(helper_multiprocess_enrichment, (clade, node_to_snp, all_snps, snps_to_gene, gene_to_go, sig_level, go_hierarchy)) for clade in clades.items()]
         all_res = [res.get() for res in multiple_results]
