@@ -5,7 +5,7 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import AnnouncementIcon from "@material-ui/icons/Announcement";
 import {
   Button,
-  Collapse,
+  Collapse, IconButton,
   Paper,
   Switch,
   Table,
@@ -15,6 +15,7 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
+import EditIcon from '@material-ui/icons/Edit';
 
 import { filter, isEqual } from "lodash";
 
@@ -74,7 +75,7 @@ class Legend extends Component {
     };
   }
 
-  header = ["Name", "Color Scale", "Actions"];
+  header = ["Name", "Color Scale", ""];
 
   shouldComponentUpdate(nextProp, nextState) {
     return (
@@ -138,7 +139,7 @@ class Legend extends Component {
                                 <svg id={`svg-legend-${row.name.replace(/ /g, "-")}`} />
                               </TableCell>
                               <TableCell>
-                                <Button
+                                <IconButton
                                   size='small'
                                   variant='outlined'
                                   style={{ color: "black" }}
@@ -146,8 +147,8 @@ class Legend extends Component {
                                     this.props.onChange(row.name);
                                   }}
                                 >
-                                  Change
-                                </Button>
+                                <EditIcon/>
+                                </IconButton>
                               </TableCell>
                             </React.Fragment>
                           ) : (
@@ -205,21 +206,6 @@ class Legend extends Component {
                           </TableRow>
                         );
                       })}
-
-                      {this.props.availableMDs.some(this.someOrdinalPresent) && (
-                        <TableRow>
-                          <TableCell align='center' colSpan={3}>
-                            <Button
-                              size='small'
-                              variant='outlined'
-                              style={{ color: "black" }}
-                              onClick={this.props.onChangeOrder}
-                            >
-                              Change order of Ordinal values
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      )}
                     </TableBody>
                   </Table>
                 </TableContainer>

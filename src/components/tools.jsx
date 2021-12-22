@@ -14,6 +14,7 @@ import HelpIcon from "@material-ui/icons/Help";
 
 import FilterList from "./filter-list";
 import VisualizeDataCard from "./visualize-card";
+import FileUploadForm from "./file-upload-form";
 
 /**
  * Helper Function for showing an information text box by hovering over "analyse tree"
@@ -229,65 +230,12 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
-                <Form id='fileform' onSubmit={this.props.onFileUpload}>
-                  {[
-                    { id: "nwk", label: "Newick Tree" },
-                    { id: "snp", label: "SNP Table" },
-                    { id: "taxainfo", label: "Taxa metadata" },
-                    // { id: "SNPinfo", label: "SNP metadata" },
-                  ].map(({ id, label }) => (
-                    <Form.Group key={id}>
-                      <Form.File
-                        id={id}
-                        label={label}
-                        name={id}
-                        custom
-                        onChange={(el) => this.onFileChange(el, label)}
-                      />
-                    </Form.Group>
-                  ))}
-                  <Button variant='primary' type='submit'>
-                    Submit
-                  </Button>
-                </Form>
+               <FileUploadForm loadFiles={this.props.loadFiles}/>
               </Card.Body>
             </Accordion.Collapse>
           </Card>
 
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='1'
-              id='statfiles-card'
-              className='noselect header-accordion'
-            >
-              Load statistic files
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='1'>
-              <Card.Body>
-                <Form id='statfileform' onSubmit={this.props.onStatisticFileUpload}>
-                  {[
-                    { id: "goterm", label: "GO" },
-                    { id: "gff", label: "GFF-file" },
-                    //{ id: "snp_info", label: "SNP info" },
-                  ].map(({ id, label }) => (
-                    <Form.Group key={id}>
-                      <Form.File
-                        id={id}
-                        label={label}
-                        name={id}
-                        custom
-                        onChange={(el) => this.onFileChange(el, label)}
-                      />
-                    </Form.Group>
-                  ))}
-                  <Button variant='primary' type='submit'>
-                    Submit
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
+
 
           <Card>
             <Accordion.Toggle

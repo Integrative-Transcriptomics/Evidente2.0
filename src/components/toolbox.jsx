@@ -280,12 +280,13 @@ class Toolbox extends Component {
                     onSNPaddition={this.props.onSNPaddition}
                     onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                 >
-                    Node Information
+                    Clade SNPs
                 </NodeInformation>
                 <Tools
                     handleLoadingToggle={this.props.handleLoadingToggle}
                     availableMDs={this.props.availableMDs}
                     availableSNPs={this.props.availableSNPs}
+                    loadFiles={this.props.loadFiles}
                     onFileUpload={this.props.onFileUpload}
                     onStatisticFileUpload={this.props.onStatisticFileUpload}
                     onStatisticsTreeRequest={this.props.onStatisticsTreeRequest}

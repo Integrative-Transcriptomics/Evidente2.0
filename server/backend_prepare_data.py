@@ -27,7 +27,6 @@ def read_file_content() -> Tuple[str, str, str, str]:
        newick, snp, metadata-string, metadata-separator
        :rtype: str
     """
-
     if request.method != 'POST':
         raise ValueError("unexpected method type")
     # check if the post request has the nwk part
@@ -53,7 +52,7 @@ def read_file_content() -> Tuple[str, str, str, str]:
 
     taxainfo_data = ""
     taxainfo_sep = ','
-    print(request.files["taxainfo"].mimetype)
+    #print(request.files["taxainfo"].mimetype)
     # check if the post request has the taxainfo part
     if 'taxainfo' in request.files:
         taxainfo = request.files['taxainfo']
@@ -112,7 +111,6 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
     available_snps, snp_per_column = get_snps(support, not_support)
     # fill metaDataInfo and taxainfo_mod:
     get_meta_data(metadatainfo, taxainfo, taxainfo_sep, taxainfo_mod)
-
     # add {"type":"SNP","extent":["A","C","T","G","N"]} to metadatainfo if
     # not already existing
     metadatainfo.setdefault("SNP", {"type": "SNP",
@@ -250,8 +248,7 @@ def get_meta_data(metadata_info, taxainfo, taxainfo_sep, taxainfo_mod):
     :param taxainfo_sep: separator for metadata as :type str
     :param taxainfo_mod: result-storage as :type list
     """
-
-    taxainfo_decode = taxainfo.decode('UTF-8')
+    taxainfo_decode = taxainfo
     headers = []
     types = []
     columns = []
