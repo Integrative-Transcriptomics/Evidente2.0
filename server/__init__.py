@@ -38,7 +38,7 @@ def upload_data():
         # session['snp'] = snp_data
         # session['taxainfo'] = taxainfo_data
         response = prepare_data(
-            nwk_data, snp_data, taxainfo_data, taxainfo_sep)
+            nwk_data, snp_data, taxainfo_data, taxainfo_sep, 'taxainfo' in request.files)
         # prepare_data(nwk_data, snp_data, taxainfo_data, taxainfo_sep)
         return response
 
@@ -66,7 +66,7 @@ def load_init_example():
             open(os.path.join(app.config['EXAMPLE_DATA'],"mini_snp.tsv"), "r").read(), 'utf-8')
         taxainfo_data = bytes(
             open(os.path.join(app.config['EXAMPLE_DATA'],"mini_nodeinfo.csv"), "r").read(), 'utf-8')
-        return prepare_data(nwk_data, snp_data, taxainfo_data, ",")
+        return prepare_data(nwk_data, snp_data, taxainfo_data, ",",True)
     except ValueError as e:
         print("error", e.args)
         return jsonify({'error': 'internal server error'}), 500

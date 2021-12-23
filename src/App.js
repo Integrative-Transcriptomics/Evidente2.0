@@ -412,7 +412,6 @@ class App extends Component {
     //----------------------------------------------------------------------------------------
 
     handleSubmitAllFiles = async (files) => {
-        const filenames = Object.keys(files);
         const visFormData = new FormData();
         Object.entries(files.visFiles).forEach(([key, value]) => {
             if (value !== null) {
@@ -420,9 +419,9 @@ class App extends Component {
             }
         })
         await this.handleSubmit(visFormData);
+        const filenames = Object.keys(files.statisticsFiles);
         if (filenames.includes("goterm") && filenames.includes("gff")) {
             const statisticsFormData = new FormData();
-            console.log(statisticsFormData);
             Object.entries(files.statisticsFiles).forEach(([key, value]) => {
                 if (value !== null) {
                     statisticsFormData.set(key, value)

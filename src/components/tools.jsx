@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip , ButtonGroup} from "react-bootstrap";
 import Select, { components } from "react-select";
 import { filter, keys } from "lodash";
 import * as $ from "jquery";
@@ -235,8 +235,6 @@ class Tools extends Component {
             </Accordion.Collapse>
           </Card>
 
-
-
           <Card>
             <Accordion.Toggle
               as={Card.Header}
@@ -341,53 +339,38 @@ class Tools extends Component {
               onMouseOver={enterMouse}
               onMouseOut={outMouse}
             >
-              Analyse Tree
+              Statistical Analysis
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='4'>
               <Card.Body>
+                <Typography variant={"h6"}>Tree Analysis</Typography>
                 <Form id='tree-enrichment'>
                   <Form.Group id='group'>
-                    <Form.Label>Significance Level:</Form.Label>
-                    <Form.Control id='sig-level-tree' type='text' defaultValue='0.05' />
+                    <Form.Label size={"sm"}>
+                        <Typography variant={"h6"}>Significance Level</Typography>
+                    </Form.Label>
+                    <Form.Control size={"sm"} id='sig-level-tree' type='text' defaultValue='0.05' />
                   </Form.Group>
                 </Form>
                 <Button variant='primary' onClick={this.props.onStatisticsTreeRequest}>
                   Find enriched Clades
                 </Button>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='5'
-              id='result-card'
-              className='noselect header-accordion'
-            >
-              Enrichment Results
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='5'>
-              <Card.Body>
-                <Typography variant='h6' gutterBottom={true}>
-                  Latest Results
+                                <Typography variant='h6' gutterBottom={true}>
+                  Previous Results
                 </Typography>
-                <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
+                <ButtonGroup aria-label="Basic example">
                   {["Clade", "Tree"].map((typeOfResult) => (
-                    <Grid key={typeOfResult} item>
                       <Button
                         variant='primary'
                         onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
                       >
                         {typeOfResult} analysis
                       </Button>
-                    </Grid>
                   ))}
-                </Grid>
+                </ButtonGroup>
               </Card.Body>
             </Accordion.Collapse>
           </Card>
-
           <Card>
             <Accordion.Toggle
               as={Card.Header}

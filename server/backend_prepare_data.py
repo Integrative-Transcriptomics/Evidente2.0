@@ -74,7 +74,7 @@ def read_file_content() -> Tuple[str, str, str, str]:
 
 
 # noinspection SpellCheckingInspection,SpellCheckingInspection
-def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
+def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo) -> str:
     """Prepares data and returns json result.
 
     Calls CLASSICO and uses output to create ids and snp parts of result buffer.
@@ -110,7 +110,9 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep) -> str:
     # get available SNPS and SNP per column
     available_snps, snp_per_column = get_snps(support, not_support)
     # fill metaDataInfo and taxainfo_mod:
-    get_meta_data(metadatainfo, taxainfo, taxainfo_sep, taxainfo_mod)
+    print(has_taxainfo)
+    if has_taxainfo:
+        get_meta_data(metadatainfo, taxainfo, taxainfo_sep, taxainfo_mod)
     # add {"type":"SNP","extent":["A","C","T","G","N"]} to metadatainfo if
     # not already existing
     metadatainfo.setdefault("SNP", {"type": "SNP",
@@ -248,7 +250,7 @@ def get_meta_data(metadata_info, taxainfo, taxainfo_sep, taxainfo_mod):
     :param taxainfo_sep: separator for metadata as :type str
     :param taxainfo_mod: result-storage as :type list
     """
-    taxainfo_decode = taxainfo
+    taxainfo_decode = taxainfo.decode("utf-8")
     headers = []
     types = []
     columns = []

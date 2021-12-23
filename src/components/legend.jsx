@@ -18,6 +18,7 @@ import {
 import EditIcon from '@material-ui/icons/Edit';
 
 import { filter, isEqual } from "lodash";
+import {Alert} from "@material-ui/lab";
 
 const rowNameTooltip = (name, props) => {
   return <Tooltip id={`${name}-filter-row`}>{name}</Tooltip>;
@@ -104,7 +105,10 @@ class Legend extends Component {
   }
 
   render() {
-    let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
+    const accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
+    const legendRows=filter(this.props.availableMDs, (v) => {
+                        return accountForLegend.includes(v.name);
+                      });
     return (
       <React.Fragment>
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -115,6 +119,8 @@ class Legend extends Component {
             onChange={() => this.setState({ checked: !this.state.checked })}
           />
         </div>
+                  {legendRows.length>0?
+
         <div style={{ padding: "0px 10px" }}>
           <div className={this.classes.container}>
             <Collapse in={this.state.checked}>
@@ -129,9 +135,7 @@ class Legend extends Component {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filter(this.props.availableMDs, (v) => {
-                        return accountForLegend.includes(v.name);
-                      }).map((row) => {
+                      {legendRows.map((row) => {
                         let viewLegend =
                           row.extent.length <= 12 ? (
                             <React.Fragment>
@@ -212,7 +216,7 @@ class Legend extends Component {
               </Paper>
             </Collapse>
           </div>
-        </div>
+        </div>:<Alert severity={"info"}>No data selected yet.</Alert>}
       </React.Fragment>
     );
   }

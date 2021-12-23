@@ -5,7 +5,11 @@ import Alert from '@material-ui/lab/Alert';
 
 
 class FileUploadForm extends Component {
-    state = {visFiles: {nwk: null, snp: null, taxainfo: null}, statisticsFiles: {goterm: null, gff: null}, error: false};
+    state = {
+        visFiles: {nwk: null, snp: null, taxainfo: null},
+        statisticsFiles: {goterm: null, gff: null},
+        error: false
+    };
 
     constructor(props) {
         super(props);
@@ -54,7 +58,7 @@ class FileUploadForm extends Component {
             <Form>
                 {[
                     {id: "nwk", label: "Newick Tree *"},
-                    {id: "snp", label: "SNP Table"},
+                    {id: "snp", label: "SNP Table *"},
                     {id: "taxainfo", label: "Taxa metadata"},
                     // { id: "SNPinfo", label: "SNP metadata" },
                 ].map(({id, label}) => (
@@ -80,6 +84,7 @@ class FileUploadForm extends Component {
                         />
                     </Form.Group>
                 ))}
+                <Typography>(*)=required</Typography>
             </Form>
             {this.state.error ? <Alert
                 severity={this.state.error.level === "error" ? "error" : "warning"}>{this.state.error.text}</Alert> : null}
