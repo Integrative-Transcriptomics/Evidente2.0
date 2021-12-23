@@ -185,13 +185,11 @@ class Heatmap extends Component {
                 });
             }
 
-            if (this.isSNP && this.props.visMd.length !== 0) {
                 this.appendGuideLines(
                     ticks,
                     5 + props.x_elements.length * cellWidth,
                     Math.max(expectedVizWidth, props.width) * 1.1
                 );
-            }
         }
         this.highlight_leaves(this.props.selectedNodes);
     }
@@ -374,20 +372,25 @@ class Heatmap extends Component {
         let subtype = isSNP ? type.split(this.SNPprefix)[1] : "";
         let div = d3.select("#tooltip");
 
-        let max = d3.max(
-            data.reduce((acc, d) => {
-                let temp = d[isSNP ? subtype : type];
-                return [...acc, ...Object.values(temp ? temp : {})];
-            }, [])
-        );
+        // let max = d3.max(
+        //     data.reduce((acc, d) => {
+        //         let temp = d[isSNP ? subtype : type];
+        //         return [...acc, ...Object.values(temp ? temp : {})];
+        //     }, [])
+        // );
+        // console.log(max);
+        // console.log(data)
+        // console.log(max);
+        let max = _.get(_.first(data), "clade_size", 0) // setting the max as the size
         let heatmapCell = d3
             .select(`#${this.props.containerID}`)
             .selectAll(`.histo.md-${this.transformNameToClass(type)}`)
             .data(data)
             .enter()
             .append("g")
-            .attr("class", ({Information}) => `histo node-${Information} md-${type}`)
-            .attr("transform", ({Information}) => `translate(${xScale(type)}, ${yScale(Information)})`);
+            .attr("class", ({ Information }) => `histo node-${Information} md-${type}`)
+            .attr("transform", ({ Information }) => `translate(${xScale(type)}, ${yScale(Information)})`);
+
         heatmapCell
             .on("mouseover", ({Information}) => {
                 d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", true);
@@ -403,15 +406,15 @@ class Heatmap extends Component {
             .attr("class", `.bars.md-${this.transformNameToClass(type)}`)
             .attr("fill", (d) => colorScale(isSNP ? d[0][0] : d[0]));
 
-        let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([0, cellWidth]);
-        let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight, 0]);
+        let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([cellWidth * 0.05, cellWidth * 0.95]);
+        let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight * 0.95, cellHeight * 0.05]);
 
-        let barWidth = cellWidth / dataDomain.length;
+        let barWidth = cellWidth * 0.9 / dataDomain.length;
         bars
             .attr("x", (d) => xScaleBar(isSNP ? d[0][0] : d[0]))
             .attr("y", (d) => yScaleBar(d[1]))
             .attr("width", barWidth)
-            .attr("height", (d) => cellHeight - yScaleBar(d[1]))
+            .attr("height", (d) => cellHeight * 0.95 - yScaleBar(d[1]))
             .on("mouseover", onMouseOverBars)
             .on("mouseout", function (d) {
                 div.transition().duration(500).style("opacity", 0);
@@ -429,7 +432,7 @@ class Heatmap extends Component {
                 .append("svg:rect")
                 .attr("class", `pattern-bars md-${this.transformNameToClass(type)}`)
                 .attr("width", barWidth)
-                .attr("height", (d) => cellHeight - yScaleBar(d[1]))
+                .attr("height", (d) => cellHeight * 0.95 - yScaleBar(d[1]))
                 .attr("y", (d) => yScaleBar(d[1]))
                 .attr("x", (d) => xScaleBar(d[0][0]))
                 .attr("fill", "url(#diagonalHatch)")
@@ -506,7 +509,6 @@ class Heatmap extends Component {
     }
 
     componentDidMount() {
-        console.log("mount " + this.props.containerID);
         let margin = this.props.margin;
         let svg = d3
             .select(`#${this.props.divID}`)

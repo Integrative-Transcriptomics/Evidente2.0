@@ -6,7 +6,6 @@
 
 // Own components or files
 import Phylotree from "./components/phylotree";
-import Heatmap from "./components/heatmap";
 import ColorScaleModal from "./components/color-scale-modal";
 import OrdinalModal from "./components/modal-ordinal-sort";
 import FilterModal from "./components/filter-modal";
@@ -34,6 +33,7 @@ import * as _ from "lodash";
 
 import "bootstrap";
 import HeatmapView from "./components/heatmapView";
+import Alert from "@material-ui/lab/Alert";
 
 class App extends Component {
     state = {};
@@ -866,11 +866,14 @@ class App extends Component {
             "#zoom-phylotree",
             "#container-labels",
         ]) {
-            let temp = d3.transform(d3.select(id).attr("transform"));
-            $(id).attr(
-                "transform",
-                `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
-            );
+            const selection=d3.select(id);
+            if(!selection.empty()) {
+                const temp = d3.transform(selection.attr("transform"));
+                $(id).attr(
+                    "transform",
+                    `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
+                );
+            }
         }
     }
 
@@ -896,7 +899,6 @@ class App extends Component {
     }
 
     render() {
-        console.log(this.state.visualizedSNPs, this.state.visualizedMD)
         let shownNodes = this.tree
             .get_nodes()
             .filter((node) => this.isVisibleEndNode(node))

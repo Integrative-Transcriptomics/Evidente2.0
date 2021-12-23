@@ -198,7 +198,6 @@ class Phylotree extends Component {
     }
 
     componentDidUpdate(prevProp) {
-                console.log(this.container.getBoundingClientRect().width);
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
@@ -206,7 +205,6 @@ class Phylotree extends Component {
     }
 
     componentDidMount() {
-        console.log(this.container.getBoundingClientRect().width);
         let margin_top = this.container.offsetHeight * 0.05;
         this.props.tree.size([this.container.offsetHeight, this.container.offsetWidth]).svg(
             d3

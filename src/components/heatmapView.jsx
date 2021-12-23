@@ -3,6 +3,7 @@ import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
+import Alert from "@material-ui/lab/Alert";
 
 function HeatmapView(props) {
     const [height, setheight] = useState(400)
@@ -129,6 +130,7 @@ function HeatmapView(props) {
                 clusterMethod(v, k, mdinfo, actualClade)
             );
             aggregatedData["clade"] = true;
+            aggregatedData["clade_size"] = leavesNames.length;
             allAggregatedData = [...allAggregatedData, aggregatedData];
         });
 
@@ -168,6 +170,7 @@ function HeatmapView(props) {
     const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, height]);
     let snpWidth = 0
     let mdWidth = 0;
+    let showAlert = false;
     if (props.visualizedMD.length > 0) {
         if (props.visSNPs.length > 0) {
             snpWidth = width / 2;
@@ -178,6 +181,8 @@ function HeatmapView(props) {
     } else {
         if (props.visSNPs.length > 0) {
             snpWidth = width;
+        } else {
+            showAlert = true;
         }
     }
     return <div ref={container} style={{height: "100%", display: "flex"}}>
@@ -199,7 +204,6 @@ function HeatmapView(props) {
             selectedNodes={props.selectedNodes}
             snpPerColumn={props.snpPerColumn}
             ids={props.ids}
-            visMd={props.visualizedMD}
             SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
             snpdata={props.snpdata}
             isSNP={true}
@@ -222,11 +226,20 @@ function HeatmapView(props) {
             collapsedClades={props.collapsedClades}
             selectedNodes={props.selectedNodes}
             ids={props.ids}
-            visMd={props.visualizedMD}
             taxadata={props.taxamd}
             isSNP={false}
             createdFilters={props.createdFilters}
         /> : null}
+        {showAlert ? <Alert severity={"info"} style={{
+            height: "100%",
+            margin: "10px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+        }}>
+            No SNPs or metadata selected yet. Please use "Visualize Data" tool to add data or select a node and
+            visualize its SNPs
+        </Alert> : null}
     </div>
 }
 
