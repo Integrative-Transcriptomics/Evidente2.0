@@ -338,7 +338,6 @@ class App extends Component {
         });
         let json = await response.json();
         if (response.status === 400 || response.status === 500) {
-            console.error(json.message);
             this.handleLoadingToggle(false);
             alert("Error by compute enrichment. Details in console.");
         } else {
@@ -880,6 +879,7 @@ class App extends Component {
     }
 
     render() {
+        console.log(this.state.visualizedSNPs, this.state.visualizedMD)
         let shownNodes = this.tree
             .get_nodes()
             .filter((node) => this.isVisibleEndNode(node))
@@ -925,27 +925,26 @@ class App extends Component {
                                     onZoom={this.state.zoom}
                                     onDrag={this.lr}
                                 />
-                                <Heatmap
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
-                                    divID={"heatmap_viz"}
-                                    containerID={"heatmap-container"}
-                                    margin={{top: 0, right: 20, bottom: 0, left: 5}}
-                                    tree={this.tree}
-                                    nodes={this.state.nodes}
-                                    hiddenNodes={this.state.hiddenNodes}
-                                    collapsedClades={this.state.collapsedClades}
-                                    selectedNodes={this.state.selectedNodes}
-                                    snpPerColumn={this.state.snpPerColumn}
-                                    ids={this.state.ids}
-                                    visMd={this.state.visualizedMD}
-                                    visSNPs={this.state.visualizedSNPs}
-                                    SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
-                                    snpdata={this.state.snpdata}
-                                    isSNP={true}
-                                />
-
-                                <Heatmap
+                               <Heatmap
+                                        onZoom={this.state.zoom}
+                                        onDrag={this.lr}
+                                        divID={"heatmap_viz"}
+                                        containerID={"heatmap-container"}
+                                        margin={{top: 0, right: 20, bottom: 0, left: 5}}
+                                        tree={this.tree}
+                                        nodes={this.state.nodes}
+                                        hiddenNodes={this.state.hiddenNodes}
+                                        collapsedClades={this.state.collapsedClades}
+                                        selectedNodes={this.state.selectedNodes}
+                                        snpPerColumn={this.state.snpPerColumn}
+                                        ids={this.state.ids}
+                                        visMd={this.state.visualizedMD}
+                                        visSNPs={this.state.visualizedSNPs}
+                                        SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+                                        snpdata={this.state.snpdata}
+                                        isSNP={true}
+                                    />
+                                    <Heatmap
                                     onZoom={this.state.zoom}
                                     onDrag={this.lr}
                                     divID={"md_viz"}
@@ -962,7 +961,7 @@ class App extends Component {
                                     mdinfo={this.state.mdinfo}
                                     isSNP={false}
                                     createdFilters={this.state.createdFilters}
-                                />
+                                    />
                             </div>
                             <Toolbox
                                 loadFiles={this.handleSubmitAllFiles}
@@ -991,7 +990,7 @@ class App extends Component {
                                 onDeleteFilter={this.handleDeleteFilter}
                                 onDeleteAllFilters={this.handleDeleteAllFilters}
                                 handleLoadingToggle={this.handleLoadingToggle}
-                            ></Toolbox>
+                            />
                         </div>
                         {this.state.statisticsModalShow && (
                             <StatisticsModal
