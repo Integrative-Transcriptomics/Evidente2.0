@@ -33,6 +33,7 @@ import * as $ from "jquery";
 import * as _ from "lodash";
 
 import "bootstrap";
+import HeatmapView from "./components/heatmapView";
 
 class App extends Component {
     state = {};
@@ -66,6 +67,7 @@ class App extends Component {
         .scaleExtent([1, 15])
         .on("zoom", this.handleZoom);
     initialState = {
+        isLoaded: false,
         zoom: this.zoom,
         // tree: this.tree,
         hiddenNodes: [],
@@ -143,6 +145,21 @@ class App extends Component {
             metadataInfo = this.createColorScales(metadataInfo);
 
             this.setState({
+                newick: json.newick,
+                snpPerColumn: json.snpPerColumn,
+                snpdata: {support: json.support, notsupport: json.notSupport},
+                availableSNPs: json.availableSNPs,
+                ids: json.ids,
+                taxamd: json.taxaInfo || [],
+                snpmd: json.snpInfo || [],
+                mdinfo: metadataInfo,
+                node_to_snps: json.node_to_snps,
+                tree_size: json.tree_size,
+                tree_snps: json.num_snps,
+                all_snps: json.all_snps,
+            });
+            this.setState({
+                isLoaded: true,
                 newick: json.newick,
                 snpPerColumn: json.snpPerColumn,
                 snpdata: {support: json.support, notsupport: json.notSupport},
@@ -925,46 +942,34 @@ class App extends Component {
                                     onZoom={this.state.zoom}
                                     onDrag={this.lr}
                                 />
-                               <Heatmap
+                                <div className="mchild">
+                                {this.state.isLoaded ?
+                                    <HeatmapView
                                         onZoom={this.state.zoom}
                                         onDrag={this.lr}
-                                        divID={"heatmap_viz"}
-                                        containerID={"heatmap-container"}
-                                        margin={{top: 0, right: 20, bottom: 0, left: 5}}
-                                        tree={this.tree}
+                                        divID={"md_viz"}
+                                        containerID={"md-container"}
                                         nodes={this.state.nodes}
                                         hiddenNodes={this.state.hiddenNodes}
-                                        collapsedClades={this.state.collapsedClades}
                                         selectedNodes={this.state.selectedNodes}
-                                        snpPerColumn={this.state.snpPerColumn}
-                                        ids={this.state.ids}
-                                        visMd={this.state.visualizedMD}
-                                        visSNPs={this.state.visualizedSNPs}
-                                        SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+                                        createdFilters={this.state.createdFilters}
+                                        tree={this.tree}
                                         snpdata={this.state.snpdata}
-                                        isSNP={true}
-                                    />
-                                    <Heatmap
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
-                                    divID={"md_viz"}
-                                    containerID={"md-container"}
-                                    margin={{top: 0, right: 20, bottom: 0, left: 0}}
-                                    tree={this.tree}
-                                    nodes={this.state.nodes}
-                                    hiddenNodes={this.state.hiddenNodes}
-                                    collapsedClades={this.state.collapsedClades}
-                                    selectedNodes={this.state.selectedNodes}
-                                    ids={this.state.ids}
-                                    visMd={this.state.visualizedMD}
-                                    taxadata={this.state.taxamd}
-                                    mdinfo={this.state.mdinfo}
-                                    isSNP={false}
-                                    createdFilters={this.state.createdFilters}
-                                    />
+                                        snpPerColumn={this.state.snpPerColumn}
+                                        visSNPs={this.state.visualizedSNPs}
+                                        visualizedMD={this.state.visualizedMD}
+                                        collapsedClades={this.state.collapsedClades}
+                                        ids={this.state.ids}
+                                        taxadata={this.state.taxamd}
+                                        mdinfo={this.state.mdinfo}
+                                        margin={{top: 0, right: 20, bottom: 0, left: 0}}
+                                        SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+
+                                    /> : null}
+                                    </div>
                             </div>
+
                             <Toolbox
-                                loadFiles={this.handleSubmitAllFiles}
                                 onChangeOrder={this.handleChangeOrder}
                                 onApplyAllFilters={this.handleApplyAllFilter}
                                 onSNPaddition={this.handleSNPaddition}
