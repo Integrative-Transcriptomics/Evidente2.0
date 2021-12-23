@@ -2,11 +2,11 @@ import React, {createRef, useCallback, useEffect, useState} from "react";
 import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
-import Heatmap from "./heatmap";
+import Heatmap from "../heatmap";
 
 function HeatmapView(props) {
     const [heightGlobal, setHeightGlobal] = useState(400)
-        const [maxWidth, setMaxWidth] = useState(400)
+    const [maxWidth, setMaxWidth] = useState(400)
 
     const SNPprefix = "Pos";
     const container = createRef();
@@ -21,6 +21,13 @@ function HeatmapView(props) {
         }
         container.current && container.current.addEventListener('resize', handleResize)
     })
+
+    /**
+     * Helper function for the extraction of the SNPs from the nodes
+     * @param {Object} SNPdata contains the SNP distribution to the nodes
+     * @param {Object} labelToID contains the dictionary that distributes the labels
+     * @param {Boolean} notSupport Boolean to know which category is meant
+     */
     const modifySNPs = useCallback((SNPdata, labelToID, notSupport = false) => {
         let nodes = props.tree.get_nodes();
         let mappedSNPs = SNPdata.map((SNP) => {
@@ -42,6 +49,13 @@ function HeatmapView(props) {
         let flattenSNPs = _.flatten(mappedSNPs);
         return flattenSNPs;
     }, [props.tree]);
+    /**
+     *
+     * @param {Object} supportSNPs Contains the SNPs label as supporting
+     * @param {Object} nonSupportSNPs Similar, but for non-supporting SNPs
+     * @param {Array} visualizedSNPs List of the SNPs to visualize
+     * @param {Object} IDs Contains the id to label dictinoary
+     */
     const preprocessSNPs = useCallback(() => {
         // Include only those that are visualized
         let reducedSupportSNPs = props.snpdata.support.filter(({pos}) => props.visSNPs.includes(pos));
@@ -57,19 +71,38 @@ function HeatmapView(props) {
         }, []);
         return mergedSNPs;
     }, [modifySNPs, props.ids.labToNum, props.snpdata.notsupport, props.snpdata.support, props.visSNPs])
-
+    /**
+     *
+     * @param {*} v Value -- Data for the group to aggregate
+     * @param {*} k Key -- The metadata the group belongs to
+     * @param {*} actualClade Object for the actual clade
+     */
     const clusterSNPs = (v, k, mdinfo, actualClade) =>
         k === "Information"
             ? actualClade.showname
             : _.countBy(v.map((d) => `${d.allele}${d.notsupport ? "-" : "+"}`));
-
+    /**
+     *
+     * @param {*} v Value -- Data for the group to aggregate
+     * @param {*} k Key -- The metadata the group belongs to
+     * @param {*} mdinfo Object containing all metadata info
+     * @param {*} actualClade Object for the actual clade
+     */
     const clusterMetadata = (v, k, mdinfo, actualClade) =>
         mdinfo[k].type.toLowerCase() === "numerical"
             ? boxplot.boxplotStats(v)
             : ["categorical", "ordinal"].includes(mdinfo[k].type.toLowerCase())
             ? _.countBy(v)
             : actualClade.showname;
-
+    /**
+     *
+     * Helper function to aggregate the inforamtion of a clade
+     *
+     * @param {*} data
+     * @param {*} actualClades
+     * @param {*} clusterMethod
+     * @param {*} mdinfo
+     */
     const clusterData = useCallback((data, clusterMethod, mdinfo = {}) => {
         let allAggregatedData = [];
         let hiddenLeaves = [];
@@ -129,13 +162,48 @@ function HeatmapView(props) {
     const filteredSNPData = snpData.filter(({Information}) => shownNodes.includes(Information));
     const filteredTaxaData = taxaData.filter(({Information}) => shownNodes.includes(Information));
     const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, heightGlobal]);
-    return <div ref={container} style={{width:maxWidth}}>
-        <Heatmap data={filteredSNPData} yScale={yScale} margin={props.margin}
-                 isCollapsed={props.collapsedClades.length > 0} x_elements={props.visSNPs} height={heightGlobal}
-                colorScale={props.SNPcolorScale} mdinfo={props.mdinfo} isSNP={true}/>
-        <Heatmap data={filteredTaxaData} yScale={yScale} margin={props.margin}
-                 isCollapsed={props.collapsedClades.length > 0} x_elements={props.visMd} height={heightGlobal}
-                mdinfo={props.mdinfo} isSNP={false}/>
+    return <div ref={container} style={{width: maxWidth}}>
+        <Heatmap
+            data={filteredSNPData}
+            yScale={yScale}
+            x_elements={props.visSNPs}
+            mdinfo={props.mdinfo}
+            onZoom={props.zoom}
+            onDrag={props.lr}
+            divID={"heatmap_viz"}
+            containerID={"heatmap-container"}
+            margin={{top: 0, right: 20, bottom: 0, left: 5}}
+            nodes={props.nodes}
+            hiddenNodes={props.hiddenNodes}
+            collapsedClades={props.collapsedClades}
+            selectedNodes={props.selectedNodes}
+            snpPerColumn={props.snpPerColumn}
+            ids={props.ids}
+            visMd={props.visualizedMD}
+            SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
+            snpdata={props.snpdata}
+            isSNP={true}
+        />
+        <Heatmap
+             data={filteredTaxaData}
+            yScale={yScale}
+            x_elements={props.visSNPs}
+            mdinfo={props.mdinfo}
+            onZoom={props.zoom}
+            onDrag={props.lr}
+            divID={"md_viz"}
+            containerID={"md-container"}
+            margin={{top: 0, right: 20, bottom: 0, left: 0}}
+            nodes={props.nodes}
+            hiddenNodes={props.hiddenNodes}
+            collapsedClades={props.collapsedClades}
+            selectedNodes={props.selectedNodes}
+            ids={props.ids}
+            visMd={props.visualizedMD}
+            taxadata={props.taxamd}
+            isSNP={false}
+            createdFilters={props.createdFilters}
+        />
     </div>
 }
 

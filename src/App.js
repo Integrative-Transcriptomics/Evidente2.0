@@ -916,50 +916,20 @@ class App extends Component {
                                     onDrag={this.lr}
                                 />
 
-                                <Heatmap
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
-                                    divID={"heatmap_viz"}
-                                    containerID={"heatmap-container"}
-                                    margin={{top: 0, right: 20, bottom: 0, left: 5}}
-                                    tree={this.tree}
-                                    nodes={this.state.nodes}
-                                    hiddenNodes={this.state.hiddenNodes}
-                                    collapsedClades={this.state.collapsedClades}
-                                    selectedNodes={this.state.selectedNodes}
-                                    snpPerColumn={this.state.snpPerColumn}
-                                    ids={this.state.ids}
-                                    visMd={this.state.visualizedMD}
-                                    visSNPs={this.state.visualizedSNPs}
-                                    SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
-                                    snpdata={this.state.snpdata}
-                                    isSNP={true}
-                                />
-
-                                <Heatmap
-                                    onZoom={this.state.zoom}
+                                {this.state.isLoaded ?
+                                    <HeatmapView
+                                        onZoom={this.state.zoom}
                                     onDrag={this.lr}
                                     divID={"md_viz"}
                                     containerID={"md-container"}
-                                    margin={{top: 0, right: 20, bottom: 0, left: 0}}
-                                    tree={this.tree}
                                     nodes={this.state.nodes}
                                     hiddenNodes={this.state.hiddenNodes}
-                                    collapsedClades={this.state.collapsedClades}
                                     selectedNodes={this.state.selectedNodes}
-                                    ids={this.state.ids}
-                                    visMd={this.state.visualizedMD}
-                                    taxadata={this.state.taxamd}
-                                    mdinfo={this.state.mdinfo}
-                                    isSNP={false}
                                     createdFilters={this.state.createdFilters}
-                                />
-                                {this.state.isLoaded ?
-                                    <HeatmapView
                                         tree={this.tree}
                                         snpdata={this.state.snpdata}
                                         visSNPs={this.state.visualizedSNPs}
-                                        visMd={this.state.visualizedMD}
+                                        visualizedMD={this.state.visualizedMD}
                                         collapsedClades={this.state.collapsedClades}
                                         ids={this.state.ids}
                                         taxadata={this.state.taxamd}
