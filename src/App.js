@@ -33,7 +33,7 @@ import * as $ from "jquery";
 import * as _ from "lodash";
 
 import "bootstrap";
-import HeatmapView from "./components/newHeatmap/heatmapView";
+import HeatmapView from "./components/heatmapView";
 
 class App extends Component {
     state = {};
@@ -915,19 +915,20 @@ class App extends Component {
                                     onZoom={this.state.zoom}
                                     onDrag={this.lr}
                                 />
-
+                                <div className="mchild">
                                 {this.state.isLoaded ?
                                     <HeatmapView
                                         onZoom={this.state.zoom}
-                                    onDrag={this.lr}
-                                    divID={"md_viz"}
-                                    containerID={"md-container"}
-                                    nodes={this.state.nodes}
-                                    hiddenNodes={this.state.hiddenNodes}
-                                    selectedNodes={this.state.selectedNodes}
-                                    createdFilters={this.state.createdFilters}
+                                        onDrag={this.lr}
+                                        divID={"md_viz"}
+                                        containerID={"md-container"}
+                                        nodes={this.state.nodes}
+                                        hiddenNodes={this.state.hiddenNodes}
+                                        selectedNodes={this.state.selectedNodes}
+                                        createdFilters={this.state.createdFilters}
                                         tree={this.tree}
                                         snpdata={this.state.snpdata}
+                                        snpPerColumn={this.state.snpPerColumn}
                                         visSNPs={this.state.visualizedSNPs}
                                         visualizedMD={this.state.visualizedMD}
                                         collapsedClades={this.state.collapsedClades}
@@ -938,7 +939,9 @@ class App extends Component {
                                         SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
 
                                     /> : null}
+                                    </div>
                             </div>
+
                             <Toolbox
                                 onChangeOrder={this.handleChangeOrder}
                                 onApplyAllFilters={this.handleApplyAllFilter}
@@ -965,7 +968,7 @@ class App extends Component {
                                 onDeleteFilter={this.handleDeleteFilter}
                                 onDeleteAllFilters={this.handleDeleteAllFilters}
                                 handleLoadingToggle={this.handleLoadingToggle}
-                            ></Toolbox>
+                            />
                         </div>
                         {this.state.statisticsModalShow && (
                             <StatisticsModal

@@ -2,19 +2,23 @@ import React, {createRef, useCallback, useEffect, useState} from "react";
 import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
-import Heatmap from "../heatmap";
+import Heatmap from "./heatmap";
 
 function HeatmapView(props) {
-    const [heightGlobal, setHeightGlobal] = useState(400)
-    const [maxWidth, setMaxWidth] = useState(400)
+    const [height, setheight] = useState(400)
+    const [width, setwidth] = useState(400);
+    const [marginTop, setMarginTop] = useState(100);
 
     const SNPprefix = "Pos";
     const container = createRef();
     const handleResize = useCallback(() => {
-        setHeightGlobal(container.current.offsetHeight - props.margin.top - props.margin.bottom)
-        setMaxWidth(container.current.offsetWidth - props.margin.left - props.margin.right)
+        const margin = container.current.offsetHeight * 0.05
+        setMarginTop(margin);
+        setheight(container.current.offsetHeight - margin - props.margin.bottom)
+        setwidth(container.current.offsetWidth - props.margin.left - props.margin.right)
 
-    }, [container, props.margin.bottom, props.margin.left, props.margin.right, props.margin.top])
+
+    }, [container, props.margin])
     useEffect(() => {
         if (container.current !== null) {
             handleResize();
@@ -161,18 +165,34 @@ function HeatmapView(props) {
     }
     const filteredSNPData = snpData.filter(({Information}) => shownNodes.includes(Information));
     const filteredTaxaData = taxaData.filter(({Information}) => shownNodes.includes(Information));
-    const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, heightGlobal]);
-    return <div ref={container} style={{width: maxWidth}}>
-        <Heatmap
+    const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, height]);
+    let snpWidth = 0
+    let mdWidth = 0;
+    if (props.visualizedMD.length > 0) {
+        if (props.visSNPs.length > 0) {
+            snpWidth = width / 2;
+            mdWidth = width / 2;
+        } else {
+            mdWidth = width;
+        }
+    } else {
+        if (props.visSNPs.length > 0) {
+            snpWidth = width;
+        }
+    }
+    return <div ref={container} style={{height: "100%", display: "flex"}}>
+        {props.visSNPs.length > 0 ? <Heatmap
+            height={height}
+            width={snpWidth}
             data={filteredSNPData}
-            yScale={yScale}
-            x_elements={props.visSNPs}
+            x_elements={props.visSNPs.map((d) => `${SNPprefix}${d}`)}
+            y_elements={shownNodes}
             mdinfo={props.mdinfo}
-            onZoom={props.zoom}
-            onDrag={props.lr}
+            onZoom={props.onZoom}
+            onDrag={props.onDrag}
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
-            margin={{top: 0, right: 20, bottom: 0, left: 5}}
+            margin={{top: marginTop, right: 20, bottom: 0, left: 5}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -183,17 +203,20 @@ function HeatmapView(props) {
             SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
             snpdata={props.snpdata}
             isSNP={true}
-        />
-        <Heatmap
-             data={filteredTaxaData}
+        /> : null}
+        {props.visualizedMD.length > 0 ? <Heatmap
+            height={height}
+            width={mdWidth}
+            data={filteredTaxaData}
             yScale={yScale}
-            x_elements={props.visSNPs}
+            x_elements={props.visualizedMD}
+            y_elements={shownNodes}
             mdinfo={props.mdinfo}
-            onZoom={props.zoom}
-            onDrag={props.lr}
+            onZoom={props.onZoom}
+            onDrag={props.onDrag}
             divID={"md_viz"}
             containerID={"md-container"}
-            margin={{top: 0, right: 20, bottom: 0, left: 0}}
+            margin={{top: marginTop, right: 20, bottom: 0, left: 0}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -203,7 +226,7 @@ function HeatmapView(props) {
             taxadata={props.taxamd}
             isSNP={false}
             createdFilters={props.createdFilters}
-        />
+        /> : null}
     </div>
 }
 

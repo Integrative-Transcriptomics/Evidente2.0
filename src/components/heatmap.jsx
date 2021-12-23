@@ -46,9 +46,8 @@ class Heatmap extends Component {
             return false;
         }
     }
-
-    componentDidUpdate(prevProp, prevState) {
-        // console.log("Updating");
+    updateComponent(init){
+          // console.log("Updating");
         // Object.entries(this.props).forEach(
         //   ([key, val]) => prevProp[key] !== val && console.log(`Prop '${key}' changed`)
         // );
@@ -62,10 +61,10 @@ class Heatmap extends Component {
         let cellWidthMin =
             props.collapsedClades.length > 0
                 ? this.minCollapsedCellWidth
-                : Math.min(this.minNormalCellWidth, this.widthGlobal / props.yScale.domain().length);
-        let cellWidthMax = this.widthGlobal * (props.collapsedClades.length > 0 ? 0.25 : 0.1);
+                : Math.min(this.minNormalCellWidth, props.width / props.y_elements.length);
+        let cellWidthMax = props.width * (props.collapsedClades.length > 0 ? 0.25 : 0.1);
         let cellWidth = Math.max(
-            Math.min(this.widthGlobal / props.x_elements.length, cellWidthMax),
+            Math.min(props.width / props.x_elements.length, cellWidthMax),
             cellWidthMin
         );
 
@@ -75,22 +74,24 @@ class Heatmap extends Component {
         const modLR = d3.behavior.drag().on("drag", () => {
             let t = d3.transform(container.attr("transform"));
             let intendedDrag = t.translate[0] + d3.event.dx;
-            let diffWidths = expectedVizWidth === 0 ? 0 : this.widthGlobal - expectedVizWidth;
+            let diffWidths = expectedVizWidth === 0 ? 0 : props.width - expectedVizWidth;
             container.attr(
                 "transform",
                 `translate( ${Math.max(
                     Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
                     t.scale[0] *
-                    Math.min(diffWidths, -(t.scale[0] * this.widthGlobal) / 2 + this.widthGlobal / 2)
+                    Math.min(diffWidths, -(t.scale[0] * props.width) / 2 + props.width / 2)
                 )}, ${t.translate[1]})scale(${t.scale})`
             );
         });
-        console.log( d3.select(`#display_${this.props.divID}`));
-        d3.select(`#display_${this.props.divID}`).call(modLR);
+        //console.log(props.x_elements)
+        //console.log( d3.select(`#display_${this.props.divID}`));
+        d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(modLR);
 
-        if (props.nodes && !prevProp.nodes) {
+        if (init) {
             this.initHeatmap(container);
-        } else if (props.yScale.domain().length !== this.props.nodes.length) {
+        }
+        if (props.y_elements.length !== this.props.nodes.length) {
             let cellSize = cellWidth - 0.5;
 
             let xScale = d3.scale
@@ -104,15 +105,15 @@ class Heatmap extends Component {
                 .tickFormat((d) => d)
                 .orient("top");
 
+            let yScale = d3.scale.ordinal().domain(props.y_elements).rangeBands([0, this.props.height]);
 
             let yAxis = d3.svg
                 .axis()
-                .scale(props.yScale)
+                .scale(yScale)
                 .tickFormat((d) => d)
                 .orient("left");
 
-            let cellHeight = this.heightGlobal / props.yScale.domain().length - 1;
-
+            let cellHeight = this.props.height / props.y_elements.length - 1;
             container
                 .selectAll(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
                 .call(yAxis)
@@ -142,13 +143,12 @@ class Heatmap extends Component {
             container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
 
             if (props.x_elements.length > 0) {
-                this.appendGuideLines(ticks, -5, -this.widthGlobal);
-
+                this.appendGuideLines(ticks, -5, -props.width);
                 props.x_elements.forEach((x_elem) => {
                     let typeOfMD = _.get(props.mdinfo, `${x_elem}.type`, "").toLowerCase();
                     let singleData = props.data.filter((d) => !_.get(d, "clade", false));
                     let actualColorScale = _.get(props.mdinfo, `${x_elem}.colorScale`, this.SNPcolorScale);
-                    let scales = {xScale: xScale, yScale: props.yScale, colorScale: actualColorScale};
+                    let scales = {xScale: xScale, yScale: yScale, colorScale: actualColorScale};
                     let cellDimensions = {cellHeight: cellHeight, cellWidth: cellSize};
                     this.updateCells(
                         singleData,
@@ -189,11 +189,14 @@ class Heatmap extends Component {
                 this.appendGuideLines(
                     ticks,
                     5 + props.x_elements.length * cellWidth,
-                    Math.max(expectedVizWidth, this.widthGlobal) * 1.1
+                    Math.max(expectedVizWidth, props.width) * 1.1
                 );
             }
         }
         this.highlight_leaves(this.props.selectedNodes);
+    }
+    componentDidUpdate(prevProp, prevState) {
+      this.updateComponent(prevProp.nodes !== this.props.nodes)
     }
 
     /**
@@ -503,29 +506,23 @@ class Heatmap extends Component {
     }
 
     componentDidMount() {
-        console.log("mount")
+        console.log("mount " + this.props.containerID);
         let margin = this.props.margin;
-        margin.top = 0.05 * this.container.offsetHeight;
-        let width = this.container.offsetWidth - margin.right - margin.left,
-            height = this.container.offsetHeight - margin.top - margin.bottom;
-        console.log(width);
         let svg = d3
             .select(`#${this.props.divID}`)
             .append("svg")
             .attr("id", `display_${this.props.divID}`)
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+            .attr("width", this.props.width + margin.left + margin.right)
+            .attr("height", this.props.height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", `translate( ${margin.left}, ${margin.top})`);
 
         svg.append("g").attr("id", this.props.containerID);
-
-        this.heightGlobal = height;
-        this.widthGlobal = width;
+        this.updateComponent(true)
     }
 
     render() {
-        return <div id={this.props.divID} className='mchild' ref={(el) => (this.container = el)}></div>;
+        return <div id={this.props.divID} style={{width:this.props.width}}/>;
     }
 }
 
