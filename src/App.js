@@ -181,17 +181,20 @@ class App extends Component {
   }
 
   /**
-     *get position of all snps in subtree chosen by client
+     *get position of all snps found in leaves in subtree chosen by client
      *sets State variables subtree_snps, subtree_size to
      number of snps and number of nodes
      *returns list of positions
      **/
   getSnpOfSubtree = (node, subtree) => {
     let chosen = [];
-    chosen = chosen.concat(this.state.node_to_snps[node.tempid]);
+    if (!("children" in node)){
+      chosen = chosen.concat(this.state.node_to_snps[node.tempid]);
+    }
     subtree.forEach((sub_node) => {
+      if (!("children" in sub_node)){
       chosen = chosen.concat(this.state.node_to_snps[sub_node.tempid]);
-    });
+    }});
     this.setState({ subtree_size: subtree.length + 1 });
     this.setState({ subtree_snps: chosen.length });
     return chosen;
