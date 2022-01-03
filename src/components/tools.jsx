@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip , ButtonGroup} from "react-bootstrap";
 import Select, { components } from "react-select";
 import { filter, keys } from "lodash";
 import * as $ from "jquery";
@@ -14,6 +14,7 @@ import HelpIcon from "@material-ui/icons/Help";
 
 import FilterList from "./filter-list";
 import VisualizeDataCard from "./visualize-card";
+import FileUploadForm from "./file-upload-form";
 
 /**
  * Helper Function for showing an information text box by hovering over "analyse tree"
@@ -229,62 +230,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
-                <Form id='fileform' onSubmit={this.props.onFileUpload}>
-                  {[
-                    { id: "nwk", label: "Newick Tree" },
-                    { id: "snp", label: "SNP Table" },
-                    { id: "taxainfo", label: "Taxa metadata" },
-                    // { id: "SNPinfo", label: "SNP metadata" },
-                  ].map(({ id, label }) => (
-                    <Form.Group key={id}>
-                      <Form.File
-                        id={id}
-                        label={label}
-                        name={id}
-                        custom
-                        onChange={(el) => this.onFileChange(el, label)}
-                      />
-                    </Form.Group>
-                  ))}
-                  <Button variant='primary' type='submit'>
-                    Submit
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='1'
-              id='statfiles-card'
-              className='noselect header-accordion'
-            >
-              Load statistic files
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='1'>
-              <Card.Body>
-                <Form id='statfileform' onSubmit={this.props.onStatisticFileUpload}>
-                  {[
-                    { id: "goterm", label: "GO" },
-                    { id: "gff", label: "GFF-file" },
-                    //{ id: "snp_info", label: "SNP info" },
-                  ].map(({ id, label }) => (
-                    <Form.Group key={id}>
-                      <Form.File
-                        id={id}
-                        label={label}
-                        name={id}
-                        custom
-                        onChange={(el) => this.onFileChange(el, label)}
-                      />
-                    </Form.Group>
-                  ))}
-                  <Button variant='primary' type='submit'>
-                    Submit
-                  </Button>
-                </Form>
+               <FileUploadForm loadFiles={this.props.loadFiles}/>
               </Card.Body>
             </Accordion.Collapse>
           </Card>
@@ -393,53 +339,38 @@ class Tools extends Component {
               onMouseOver={enterMouse}
               onMouseOut={outMouse}
             >
-              Analyse Tree
+              Statistical Analysis
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='4'>
               <Card.Body>
+                <Typography variant={"h6"}>Tree Analysis</Typography>
                 <Form id='tree-enrichment'>
                   <Form.Group id='group'>
-                    <Form.Label>Significance Level:</Form.Label>
-                    <Form.Control id='sig-level-tree' type='text' defaultValue='0.05' />
+                    <Form.Label size={"sm"}>
+                        <Typography variant={"h6"}>Significance Level</Typography>
+                    </Form.Label>
+                    <Form.Control size={"sm"} id='sig-level-tree' type='text' defaultValue='0.05' />
                   </Form.Group>
                 </Form>
                 <Button variant='primary' onClick={this.props.onStatisticsTreeRequest}>
                   Find enriched Clades
                 </Button>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-
-          <Card>
-            <Accordion.Toggle
-              as={Card.Header}
-              eventKey='5'
-              id='result-card'
-              className='noselect header-accordion'
-            >
-              Enrichment Results
-            </Accordion.Toggle>
-            <Accordion.Collapse eventKey='5'>
-              <Card.Body>
-                <Typography variant='h6' gutterBottom={true}>
-                  Latest Results
+                                <Typography variant='h6' gutterBottom={true}>
+                  Previous Results
                 </Typography>
-                <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
+                <ButtonGroup aria-label="Basic example">
                   {["Clade", "Tree"].map((typeOfResult) => (
-                    <Grid key={typeOfResult} item>
                       <Button
                         variant='primary'
                         onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
                       >
                         {typeOfResult} analysis
                       </Button>
-                    </Grid>
                   ))}
-                </Grid>
+                </ButtonGroup>
               </Card.Body>
             </Accordion.Collapse>
           </Card>
-
           <Card>
             <Accordion.Toggle
               as={Card.Header}
