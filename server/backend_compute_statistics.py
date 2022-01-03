@@ -101,8 +101,6 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
     #start_find_clades = perf_counter()
     tree = Tree()
     tree.parse_nwk_string(nwk)
-    #TODO: This part here filters the num of clades to only those where a sup SNP has been allocated. 
-    # TODO: Does this make sense?
     find_clades = FindClades(support, num_to_lab)
     tree.traverse_tree(find_clades)
     clades = find_clades.get_clades()
