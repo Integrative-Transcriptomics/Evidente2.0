@@ -32,7 +32,7 @@ import * as $ from "jquery";
 import * as _ from "lodash";
 
 import "bootstrap";
-import HeatmapView from "./components/heatmapView";
+import HeatmapView from "./components/heatmap-view";
 
 class App extends Component {
     state = {};
@@ -168,27 +168,6 @@ class App extends Component {
     //----------------------------------------------------------------------------------------
     // All methods in this section have been added in order to process statistical input data,
     // perform an enrichment analysis and visualize the results.
-
-    /**
-     *Sort snpdata by node
-     **/
-    sortSnpData() {
-        this.state.snpdata.support.sort((r1, r2) =>
-            r1.node > r2.node ? 1 : r1.node < r2.node ? -1 : 0
-        );
-        this.state.snpdata.notsupport.sort((r1, r2) =>
-            r1.node > r2.node ? 1 : r1.node < r2.node ? -1 : 0
-        );
-        //console.log(this.state.snpdata);
-    }
-
-  };
-
-  //----------------------------------------------------------------------------------------
-  //----------------------------------------------------------------------------------------
-  //----------------------------------------------------------------------------------------
-  // All methods in this section have been added in order to process statistical input data,
-  // perform an enrichment analysis and visualize the results.
 
   /**
    *Sort snpdata by node

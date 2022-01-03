@@ -9,8 +9,6 @@ class Heatmap extends Component {
     isSNP = this.props.isSNP;
     state = {};
     SNPcolorScale = this.props.SNPcolorScale;
-    heightGlobal = 0;
-    widthGlobal = 0;
     SNPprefix = "Pos";
     minCollapsedCellWidth = 40;
     minNormalCellWidth = 5;
@@ -185,11 +183,13 @@ class Heatmap extends Component {
                 });
             }
 
+            if (this.props.appendLines) {
                 this.appendGuideLines(
                     ticks,
-                    5 + props.x_elements.length * cellWidth,
+                    5 + this.props.x_elements.length * cellWidth,
                     Math.max(expectedVizWidth, props.width) * 1.1
                 );
+            }
         }
         this.highlight_leaves(this.props.selectedNodes);
     }

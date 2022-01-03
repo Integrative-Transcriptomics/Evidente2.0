@@ -207,6 +207,7 @@ function HeatmapView(props) {
             SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
             snpdata={props.snpdata}
             isSNP={true}
+            appendLines={props.visualizedMD.length>0}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
             height={height}
@@ -229,6 +230,7 @@ function HeatmapView(props) {
             taxadata={props.taxamd}
             isSNP={false}
             createdFilters={props.createdFilters}
+            appendLines={false}
         /> : null}
         {showAlert ? <Alert severity={"info"} style={{
             height: "100%",

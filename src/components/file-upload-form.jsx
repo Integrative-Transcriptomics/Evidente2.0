@@ -11,10 +11,6 @@ class FileUploadForm extends Component {
         error: false
     };
 
-    constructor(props) {
-        super(props);
-    }
-
     loadFile = (file, type, id) => {
         if (type === "statistics") {
             let object = Object.assign({}, this.state.statisticsFiles);
