@@ -33,7 +33,6 @@ import * as _ from "lodash";
 
 import "bootstrap";
 import HeatmapView from "./components/heatmapView";
-import Alert from "@material-ui/lab/Alert";
 
 class App extends Component {
     state = {};
@@ -144,20 +143,6 @@ class App extends Component {
             }
             metadataInfo = this.createColorScales(metadataInfo);
 
-            this.setState({
-                newick: json.newick,
-                snpPerColumn: json.snpPerColumn,
-                snpdata: {support: json.support, notsupport: json.notSupport},
-                availableSNPs: json.availableSNPs,
-                ids: json.ids,
-                taxamd: json.taxaInfo || [],
-                snpmd: json.snpInfo || [],
-                mdinfo: metadataInfo,
-                node_to_snps: json.node_to_snps,
-                tree_size: json.tree_size,
-                tree_snps: json.num_snps,
-                all_snps: json.all_snps,
-            });
             this.setState({
                 isLoaded: true,
                 newick: json.newick,
@@ -428,6 +413,7 @@ class App extends Component {
     //----------------------------------------------------------------------------------------
 
     handleSubmitAllFiles = async (files) => {
+        this.setState({isLoaded: false})
         const visFormData = new FormData();
         Object.entries(files.visFiles).forEach(([key, value]) => {
             if (value !== null) {
@@ -435,8 +421,7 @@ class App extends Component {
             }
         })
         await this.handleSubmit(visFormData);
-        const filenames = Object.keys(files.statisticsFiles);
-        if (filenames.includes("goterm") && filenames.includes("gff")) {
+        if (Object.values(files.statisticsFiles).every(file => file !== null)) {
             const statisticsFormData = new FormData();
             Object.entries(files.statisticsFiles).forEach(([key, value]) => {
                 if (value !== null) {
@@ -444,6 +429,9 @@ class App extends Component {
                 }
             })
             await this.handleStatisticSubmit(statisticsFormData);
+            this.setState({isLoaded: true})
+        } else {
+            this.setState({isLoaded: true})
         }
     }
     /**
@@ -866,8 +854,8 @@ class App extends Component {
             "#zoom-phylotree",
             "#container-labels",
         ]) {
-            const selection=d3.select(id);
-            if(!selection.empty()) {
+            const selection = d3.select(id);
+            if (!selection.empty()) {
                 const temp = d3.transform(selection.attr("transform"));
                 $(id).attr(
                     "transform",
@@ -945,30 +933,30 @@ class App extends Component {
                                     onDrag={this.lr}
                                 />
                                 <div className="mchild">
-                                {this.state.isLoaded ?
-                                    <HeatmapView
-                                        onZoom={this.state.zoom}
-                                        onDrag={this.lr}
-                                        divID={"md_viz"}
-                                        containerID={"md-container"}
-                                        nodes={this.state.nodes}
-                                        hiddenNodes={this.state.hiddenNodes}
-                                        selectedNodes={this.state.selectedNodes}
-                                        createdFilters={this.state.createdFilters}
-                                        tree={this.tree}
-                                        snpdata={this.state.snpdata}
-                                        snpPerColumn={this.state.snpPerColumn}
-                                        visSNPs={this.state.visualizedSNPs}
-                                        visualizedMD={this.state.visualizedMD}
-                                        collapsedClades={this.state.collapsedClades}
-                                        ids={this.state.ids}
-                                        taxadata={this.state.taxamd}
-                                        mdinfo={this.state.mdinfo}
-                                        margin={{top: 0, right: 20, bottom: 0, left: 0}}
-                                        SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+                                    {this.state.isLoaded ?
+                                        <HeatmapView
+                                            onZoom={this.state.zoom}
+                                            onDrag={this.lr}
+                                            divID={"md_viz"}
+                                            containerID={"md-container"}
+                                            nodes={this.state.nodes}
+                                            hiddenNodes={this.state.hiddenNodes}
+                                            selectedNodes={this.state.selectedNodes}
+                                            createdFilters={this.state.createdFilters}
+                                            tree={this.tree}
+                                            snpdata={this.state.snpdata}
+                                            snpPerColumn={this.state.snpPerColumn}
+                                            visSNPs={this.state.visualizedSNPs}
+                                            visualizedMD={this.state.visualizedMD}
+                                            collapsedClades={this.state.collapsedClades}
+                                            ids={this.state.ids}
+                                            taxadata={this.state.taxamd}
+                                            mdinfo={this.state.mdinfo}
+                                            margin={{top: 0, right: 20, bottom: 0, left: 0}}
+                                            SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
 
-                                    /> : null}
-                                    </div>
+                                        /> : null}
+                                </div>
                             </div>
 
                             <Toolbox
