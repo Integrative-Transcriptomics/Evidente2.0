@@ -13,6 +13,14 @@ import * as d3 from "d3";
 class Toolbox extends Component {
     state = {};
 
+    calculateTextColor=(fill=>{
+        const aRgbHex = fill.slice(1).match(/.{1,2}/g);
+        if (parseInt(aRgbHex[0], 16)*0.299 +  parseInt(aRgbHex[1], 16)*0.587 + parseInt(aRgbHex[2], 16)*0.114>186){
+            return("#000000")
+        } else{
+            return("#ffffff")
+        }
+    })
     /**
      * Creates the legend within the given container.
      * It is updated everytime the user changes the scale
@@ -27,7 +35,7 @@ class Toolbox extends Component {
         let div = d3.select("#tooltip");
         let elementHeight = 15;
 
-        const addTexts = (element, posX, posY, anchor, attributes, text) => {
+        const addTexts = (element, posX, posY, anchor, text, background) => {
             return element
                 .append("g")
                 .append("text")
@@ -36,7 +44,7 @@ class Toolbox extends Component {
                     x: posX,
                     y: posY,
                 })
-                .attr(attributes)
+                .attr("fill",this.calculateTextColor(background))
                 .classed("noselect", true)
                 .text(text);
         };
@@ -55,8 +63,6 @@ class Toolbox extends Component {
                 });
         };
 
-        let attrShadow = {stroke: "white", "stroke-width": "5px", opacity: 0.75};
-        let attrsFronttext = {fill: "black"};
         let marginText = 2;
         let yPosition = 15 * 0.75;
         switch (type.toLowerCase()) {
@@ -89,13 +95,13 @@ class Toolbox extends Component {
                     .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")})`);
 
                 let minExtent = parseFloat(extent[0].toFixed(2));
-                addTexts(group, marginText, yPosition, "start", attrShadow, minExtent);
-                let textLeft = addTexts(group, marginText, yPosition, "start", attrsFronttext, minExtent);
+                addTexts(group, marginText, yPosition, "start", minExtent,colorScale(extent[0]));
+                let textLeft = addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
 
                 let maxExtent = parseFloat(extent[1].toFixed(2));
                 let posRight = cellWidth - marginText;
-                addTexts(group, posRight, yPosition, "end", attrShadow, maxExtent);
-                let textRight = addTexts(group, posRight, yPosition, "end", attrsFronttext, maxExtent);
+                addTexts(group, posRight, yPosition, "end", maxExtent, colorScale(extent[1]));
+                let textRight = addTexts(group, posRight, yPosition, "end", maxExtent,colorScale(extent[1]));
 
                 if (!isStatic) {
                     addMouseOver(textLeft, minExtent);
@@ -168,14 +174,13 @@ class Toolbox extends Component {
                 let cubeWidth = cellWidth / extent.length;
                 let groupCategory = svg.selectAll("g").data(extent).enter().append("g");
 
-                let shadow = addTexts(groupCategory, 0, yPosition, "middle", attrShadow, (d) => d).each(
+
+                let text = addTexts(groupCategory, 0, yPosition, "middle", (d) => d,"#ffffff").each(
                     function () {
                         let thisWidth = Math.max(cubeWidth, this.getComputedTextLength() + 10); // Text width + margin
                         textWidth.push(thisWidth);
                     }
                 );
-
-                let text = addTexts(groupCategory, 0, yPosition, "middle", attrsFronttext, (d) => d);
                 if (!isStatic) {
                     addMouseOver(text);
                 }
@@ -195,24 +200,17 @@ class Toolbox extends Component {
                         height: Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight),
                     });
                 }
-                shadow.attr(
-                    isStatic
-                        ? {
-                            x: (d, i) => positionX[i] + textWidth[i] * 0.5,
-                            y: (d, i) => positionY[i] + 12,
-                        }
-                        : {
-                            x: (d, i) => positions[i] + textWidth[i] * 0.5,
-                        }
-                );
+
                 text.attr(
                     isStatic
                         ? {
                             x: (d, i) => positionX[i] + textWidth[i] * 0.5,
                             y: (d, i) => positionY[i] + 12,
+                            fill: (d)=>this.calculateTextColor(colorScale(d)),
                         }
                         : {
                             x: (d, i) => positions[i] + textWidth[i] * 0.5,
+                            fill: (d)=>this.calculateTextColor(colorScale(d)),
                         }
                 );
 
