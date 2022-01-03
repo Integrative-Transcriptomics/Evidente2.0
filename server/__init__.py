@@ -9,6 +9,8 @@ from server.backend_prepare_statistics import read_statistic_file_content, prepa
 from server.backend_compute_statistics import go_enrichment, tree_enrichment
 from flask import Flask, request, session, jsonify
 from markupsafe import escape
+import multiprocessing as mp
+
 import sys
 
 
@@ -191,4 +193,6 @@ def index():
     return app.send_static_file('index.html')
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn')    
+
     app.run(debug=True, port=int("3001"))
