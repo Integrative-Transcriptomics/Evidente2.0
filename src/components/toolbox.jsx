@@ -112,20 +112,26 @@ class Toolbox extends Component {
 
             case "snp":
                 let cladeSpecificity = ["+", "—"];
+                let specificityLabels=["sup.", "non-sup."];
                 let [posSpecificity, negSpecificity] = cladeSpecificity;
+                let marginLeft=40;
 
-                const createAxis = (extent, maxRange, orient) => {
-                    let tempScale = d3.scale.ordinal().domain(extent).rangeBands([0, maxRange]);
+                const createScale = (extent,maxRange)=>{
+                    return(d3.scale.ordinal().domain(extent).rangeBands([0, maxRange]));
+                }
+                const createAxis = (scale,orient) => {
                     let tempAxis = d3.svg
                         .axis()
-                        .scale(tempScale)
+                        .scale(scale)
                         .tickFormat((d) => d)
                         .orient(orient);
-                    return [tempScale, tempAxis];
+                    return tempAxis;
                 };
 
-                let [xScale, xAxis] = createAxis(extent, cellWidth - 10, "top");
-                let [yScale, yAxis] = createAxis(cladeSpecificity, 30, "left");
+                let xScale=createScale(extent,cellWidth-marginLeft);
+                let yScale=createScale(cladeSpecificity,30);
+                let xAxis = createAxis(xScale,"top");
+                let yAxis = createAxis(createScale(specificityLabels,30), "left");
 
                 const renderAxis = (classType, axis, transform = "") => {
                     return svg
@@ -139,15 +145,11 @@ class Toolbox extends Component {
                         .style("text-anchor", "start");
                 };
 
-                let maxWidth = 0;
 
-                renderAxis("y-axis", yAxis).each(function () {
-                    maxWidth = Math.max(maxWidth, this.getComputedTextLength());
-                });
+                renderAxis("y-axis", yAxis,'translate('+(-marginLeft+10)+',0)')
                 renderAxis("x-axis", xAxis, `translate(-5, 5)`);
 
-                let margin = maxWidth + 5;
-                let legendCubeWidth = (cellWidth - margin) / extent.length;
+                let legendCubeWidth = (cellWidth - marginLeft) / extent.length;
                 let legendCubeHeight = elementHeight;
 
                 let groupAllele = svg.selectAll("rect").data(extent).enter();
@@ -159,14 +161,15 @@ class Toolbox extends Component {
                         .attr("height", legendCubeHeight)
                         .attr("y", posY)
                         .attr("x", (d) => xScale(d))
-                        .attr("fill", fill);
+                        .attr("fill", fill)
+                        .attr("stroke","white");
                 };
 
                 addRectangle(yScale(posSpecificity), (d) => colorScale(d)); // adds Positive SNPs
                 addRectangle(yScale(negSpecificity), (d) => colorScale(d)); // adds Negative SNPs
                 addRectangle(yScale(negSpecificity), "url(#diagonalHatch)"); // adds Pattern over Negative SNPs
 
-                svg.attr("transform", `translate(${margin}, 12)`);
+                svg.attr("transform", `translate(${marginLeft}, 12)`);
                 break;
 
             default:
@@ -227,7 +230,8 @@ class Toolbox extends Component {
                                 x: (d, i) => positions[i],
                             }
                     )
-                    .style("fill", (value) => colorScale(value));
+                    .style("fill", (value) => colorScale(value))
+                    .style("stroke","white");
 
                 if (round(last(positions)) > cellWidth && !isStatic) {
                     let drag = d3.behavior.drag().on("drag", dragmove);
