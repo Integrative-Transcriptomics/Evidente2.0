@@ -110,7 +110,6 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
     #end_find_clades = perf_counter()
     #time_find_clades = end_find_clades-start_find_clades
     #print(f"Needed {time_find_clades:0.4f} seconds for finding clades")
-    mp.set_start_method('spawn')    
     all_results = dict()
     in_gene_tree = ""
     with ThreadPool(int(mp.cpu_count()/2)) as pool:
