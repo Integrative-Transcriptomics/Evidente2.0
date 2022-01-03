@@ -182,85 +182,109 @@ class App extends Component {
         //console.log(this.state.snpdata);
     }
 
-    /**
-     *get position of all snps in subtree chosen by client
+  };
+
+  //----------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------
+  //----------------------------------------------------------------------------------------
+  // All methods in this section have been added in order to process statistical input data,
+  // perform an enrichment analysis and visualize the results.
+
+  /**
+   *Sort snpdata by node
+   **/
+  sortSnpData() {
+    this.state.snpdata.support.sort((r1, r2) =>
+      r1.node > r2.node ? 1 : r1.node < r2.node ? -1 : 0
+    );
+    this.state.snpdata.notsupport.sort((r1, r2) =>
+      r1.node > r2.node ? 1 : r1.node < r2.node ? -1 : 0
+    );
+    //console.log(this.state.snpdata);
+  }
+
+  /**
+     *get position of all snps found in leaves in subtree chosen by client
      *sets State variables subtree_snps, subtree_size to
      number of snps and number of nodes
      *returns list of positions
      **/
-    getSnpOfSubtree = (node, subtree) => {
-        let chosen = [];
-        chosen = chosen.concat(this.state.node_to_snps[node.tempid]);
-        subtree.forEach((sub_node) => {
-            chosen = chosen.concat(this.state.node_to_snps[sub_node.tempid]);
-        });
-        this.setState({subtree_size: subtree.length + 1});
-        this.setState({subtree_snps: chosen.length});
-        return chosen;
-    };
+  getSnpOfSubtree = (node, subtree) => {
+    let chosen = [];
+    if (!("children" in node)){
+      chosen = chosen.concat(this.state.node_to_snps[node.tempid]);
+    }
+    subtree.forEach((sub_node) => {
+      if (!("children" in sub_node)){
+      chosen = chosen.concat(this.state.node_to_snps[sub_node.tempid]);
+    }});
+    this.setState({ subtree_size: subtree.length + 1 });
+    this.setState({ subtree_snps: chosen.length });
+    return chosen;
+  };
 
-    /*
-        saves clade selection in state variable, used for result visualization and export
-      */
-    rememberCladeSelection = (node, descendants) => {
-        this.setState({cladeSelection: [node, descendants]});
-    };
+  /*
+      saves clade selection in state variable, used for result visualization and export
+    */
+  rememberCladeSelection = (node, descendants) => {
+    this.setState({ cladeSelection: [node, descendants] });
+  };
 
-    //manage visibility of modals created for statistics-visualization:
+  //manage visibility of modals created for statistics-visualization:
 
-    showStatisticsModal = () => {
-        this.setState({statisticsModalShow: true});
-    };
-    closeStatisticsModal = () => {
-        this.setState({statisticsModalShow: false});
-    };
-    showGOModal = () => {
-        this.setState({statisticsModalShow: false, goModalShow: true});
-    };
-    closeGOModal = () => {
-        this.setState({goModalShow: false});
-    };
-    showGoResultsModal = () => {
-        this.setState({goModalShow: false, goResultModalShow: true});
-    };
-    showLatestResults = () => {
-        this.setState({goResultModalShow: true});
-    };
-    showLatestResultsTree = () => {
-        this.setState({treeResultModalShow: true});
-    };
-    closeGoResultModal = () => {
-        this.setState({goResultModalShow: false});
-    };
+  showStatisticsModal = () => {
+    this.setState({ statisticsModalShow: true });
+  };
+  closeStatisticsModal = () => {
+    this.setState({ statisticsModalShow: false });
+  };
+  showGOModal = () => {
+    this.setState({ statisticsModalShow: false, goModalShow: true });
+  };
+  closeGOModal = () => {
+    this.setState({ goModalShow: false });
+  };
+  showGoResultsModal = () => {
+    this.setState({ goModalShow: false, goResultModalShow: true });
+  };
+  showLatestResults = () => {
+    this.setState({ goResultModalShow: true });
+  };
+  showLatestResultsTree = () => {
+    this.setState({ treeResultModalShow: true });
+  };
+  closeGoResultModal = () => {
+    this.setState({ goResultModalShow: false });
+  };
 
-    allowComputeStatistics = () => {
-        this.setState({computeStatistics: true});
-    };
-    showUploadFilesModal = () => {
-        this.setState({uploadFilesModalShow: true});
-    };
+  allowComputeStatistics = () => {
+    this.setState({ computeStatistics: true });
+  };
+  showUploadFilesModal = () => {
+    this.setState({ uploadFilesModalShow: true });
+  };
 
-    closeUploadFilesModal = () => {
-        $("#statfiles-card").click();
-        this.setState({uploadFilesModalShow: false});
-    };
-    closeUploadGOFilesModal = () => {
-        //$("#statfiles-card").click();
-        //$("#statfiles-card").click();
-        this.setState({uploadGOFilesModalShow: false});
-    };
-    showUploadGOFilesModal = () => {
-        this.setState({uploadGOFilesModalShow: true, statisticsModalShow: false});
-    };
+  closeUploadFilesModal = () => {
+    $("#statfiles-card").click();
+    this.setState({ uploadFilesModalShow: false });
+  };
+  closeUploadGOFilesModal = () => {
+    //$("#statfiles-card").click();
+    //$("#statfiles-card").click();
+    this.setState({ uploadGOFilesModalShow: false });
+  };
+  showUploadGOFilesModal = () => {
+    this.setState({ uploadGOFilesModalShow: true, statisticsModalShow: false });
+  };
 
-    showTreeResultModal = () => {
-        this.setState({treeResultModalShow: true});
-    };
-    closeTreeResultModal = () => {
-        this.setState({treeResultModalShow: false});
-    };
+  showTreeResultModal = () => {
+    this.setState({ treeResultModalShow: true });
+  };
+  closeTreeResultModal = () => {
+    this.setState({ treeResultModalShow: false });
+  };
 
-    /**
+  /**
      * Handles extra files being sent to the server for statistical computation.
      Checks which files have been uploaded and enables statistical computations that are possible now
      Sends additional all snp-positions within the phylogenetic tree as availableSnps

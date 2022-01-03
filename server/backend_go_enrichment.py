@@ -3,9 +3,11 @@
 # needs snps of selection, snps of background, snp-gene-association,
 # gene-go-association, significance-level and go-hierarchy as input
 # Written by Sophie Pesch 2021
+# Modified by Mathias Witte Paz 2021 to match our expected GoEA
 
 import numpy as np
 from scipy.stats import fisher_exact
+# from icecream import ic
 
 
 #computes go-enrichment, adds descriptions for enriched go-terms
@@ -32,6 +34,8 @@ class GOEnrichment:
         tree_go_terms, in_gene_tree = self.__associated_go_terms(self.__tree_snps)
         clade_go_terms, in_gene_clade = self.__associated_go_terms(self.__clade_snps)
         for go_term in set(clade_go_terms):
+            if go_term == "No associated GO ID":
+                continue
             fishers_exact = self.__fishers_exact_test(go_term, tree_go_terms, clade_go_terms)
             if fishers_exact:
                 description = self.__go_to_description(go_term)
@@ -56,6 +60,8 @@ class GOEnrichment:
                 if gene in self.__gene_to_go_terms:
                     go_terms = self.__gene_to_go_terms[gene]
                     associated.extend(go_terms)
+                else:
+                    associated.extend(["No associated GO ID"])
         return associated, in_gene
 
     def __fill_contingency_table(self, go_term, go_terms_tree, go_terms_clade):

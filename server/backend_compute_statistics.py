@@ -11,8 +11,8 @@ import os
 import time
 from goatools import obo_parser
 import multiprocessing as mp
-# import multiprocessing.pool
-
+from multiprocessing.pool import ThreadPool
+# from icecream import ic
 from server.backend_go_enrichment import GOEnrichment
 from server.backend_nwk_parser import Tree
 from server.backend_tree_enrichment import FindClades
@@ -101,18 +101,21 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
     #start_find_clades = perf_counter()
     tree = Tree()
     tree.parse_nwk_string(nwk)
+    #TODO: This part here filters the num of clades to only those where a sup SNP has been allocated. 
+    # TODO: Does this make sense?
     find_clades = FindClades(support, num_to_lab)
     tree.traverse_tree(find_clades)
     clades = find_clades.get_clades()
+    leaves_tree = tree.get_leaves()
     #end_find_clades = perf_counter()
     #time_find_clades = end_find_clades-start_find_clades
     #print(f"Needed {time_find_clades:0.4f} seconds for finding clades")
-    mp.set_start_method('spawn')
+    mp.set_start_method('spawn')    
     all_results = dict()
     in_gene_tree = ""
-    with mp.Pool(int(mp.cpu_count()/2)) as pool:
+    with ThreadPool(int(mp.cpu_count()/2)) as pool:
         #perform enrichment analysis for all clades found
-        multiple_results = [pool.apply_async(helper_multiprocess_enrichment, (clade, node_to_snp, all_snps, snps_to_gene, gene_to_go, sig_level, go_hierarchy)) for clade in clades.items()]
+        multiple_results = [pool.apply_async(helper_multiprocess_enrichment, (clade, node_to_snp, leaves_tree, all_snps, snps_to_gene, gene_to_go, sig_level, go_hierarchy)) for clade in clades.items()]
         all_res = [res.get() for res in multiple_results]
         # After computation, save in all_results
         for response in all_res:
@@ -133,12 +136,13 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
     return jsonify(json)
 
 
-def helper_multiprocess_enrichment(clade, node_to_snp, all_snps, snps_to_gene, gene_to_go, sig_level, go_hierarchy):
+def helper_multiprocess_enrichment(clade, node_to_snp, leaves_tree, all_snps, snps_to_gene, gene_to_go, sig_level, go_hierarchy):
     """Computes the enrichment analysis given a specific clade
 
     Args:
         clade (set): [1] set with the node the substree starts on and [2] list of children ID 
         node_to_snp (dict):  node-snp association 
+        leaves_Tree (list):  list of all IDs of the leaves of the tree 
         all_snps (list): snp-positons of all snps in tree 
         snps_to_gene (dict): snp-gene association
         gene_to_go (dict):  gene-go asscociation
@@ -150,22 +154,23 @@ def helper_multiprocess_enrichment(clade, node_to_snp, all_snps, snps_to_gene, g
             with significant results in the enrichment analysis stored
     """        
 
-    snps = clade_snps(clade[1], node_to_snp)
+    snps = clade_snps(clade[1], node_to_snp, leaves_tree)
     #compute enrichment:
     go_en = GOEnrichment(all_snps, snps, snps_to_gene, gene_to_go, sig_level,go_hierarchy)
     result, num_assoc_go_terms,in_gene_clade, in_gene_tree = go_en.compute_enrichment()
     return (clade, result, snps, in_gene_clade, num_assoc_go_terms, in_gene_tree)
 
-def clade_snps (clade_nodes, node_to_snp):
+def clade_snps (clade_nodes, node_to_snp, leaves_tree):
     """Gets snps of given clade
 
     :param clade_nodes: nodes in clade as :type list
     :param node_to_snp: node-snp association as :type dict
+    leaves_tree (list):  list of all IDs of the leaves of the tree
     :return: snps of clade as :type list
     """
     snps = []
     for node in clade_nodes:
-        if str(node) in node_to_snp:
+        if str(node) in node_to_snp and node in leaves_tree:
             snps.extend(node_to_snp[str(node)])
     return snps
 
