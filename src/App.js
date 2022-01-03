@@ -32,7 +32,7 @@ import * as $ from "jquery";
 import * as _ from "lodash";
 
 import "bootstrap";
-import HeatmapView from "./components/heatmapView";
+import HeatmapView from "./components/heatmap-view";
 
 class App extends Component {
     state = {};
