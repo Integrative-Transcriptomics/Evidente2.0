@@ -198,6 +198,7 @@ class Phylotree extends Component {
     }
 
     componentDidUpdate(prevProp) {
+
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
         }
@@ -306,7 +307,7 @@ class Phylotree extends Component {
     };
 
     render() {
-        return <div className='lchild' ref={(el) => (this.container = el)}></div>;
+        return <div className='lchild' ref={(el) => (this.container = el)}/>;
     }
 }
 

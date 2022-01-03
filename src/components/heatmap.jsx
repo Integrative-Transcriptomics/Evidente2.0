@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import * as d3 from "d3";
 import * as d3v5 from "d3v5";
 import * as boxplot from "d3-boxplot";
@@ -9,8 +9,6 @@ class Heatmap extends Component {
     isSNP = this.props.isSNP;
     state = {};
     SNPcolorScale = this.props.SNPcolorScale;
-    heightGlobal = 0;
-    widthGlobal = 0;
     SNPprefix = "Pos";
     minCollapsedCellWidth = 40;
     minNormalCellWidth = 5;
@@ -46,9 +44,8 @@ class Heatmap extends Component {
             return false;
         }
     }
-
-    componentDidUpdate(prevProp, prevState) {
-        // console.log("Updating");
+    updateComponent(init){
+          // console.log("Updating");
         // Object.entries(this.props).forEach(
         //   ([key, val]) => prevProp[key] !== val && console.log(`Prop '${key}' changed`)
         // );
@@ -59,74 +56,46 @@ class Heatmap extends Component {
         // }
         let props = this.props;
         this.SNPcolorScale = this.props.SNPcolorScale;
-        let shownNodes = props.tree
-            .get_nodes()
-            .filter((node) => this.isVisibleEndNode(node))
-            .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
-
-        let x_elements = this.isSNP
-            ? this.props.visSNPs.map((d) => `${this.SNPprefix}${d}`)
-            : this.props.visMd,
-            y_elements = shownNodes;
-
         let cellWidthMin =
             props.collapsedClades.length > 0
                 ? this.minCollapsedCellWidth
-                : Math.min(this.minNormalCellWidth, this.widthGlobal / shownNodes.length);
-        let cellWidthMax = this.widthGlobal * (props.collapsedClades.length > 0 ? 0.25 : 0.1);
+                : Math.min(this.minNormalCellWidth, props.width / props.y_elements.length);
+        let cellWidthMax = props.width * (props.collapsedClades.length > 0 ? 0.25 : 0.1);
         let cellWidth = Math.max(
-            Math.min(this.widthGlobal / x_elements.length, cellWidthMax),
+            Math.min(props.width / props.x_elements.length, cellWidthMax),
             cellWidthMin
         );
 
         let container = d3.select(`#${this.props.containerID}`);
-        let expectedVizWidth = cellWidth * x_elements.length;
+        let expectedVizWidth = cellWidth * props.x_elements.length;
 
         const modLR = d3.behavior.drag().on("drag", () => {
             let t = d3.transform(container.attr("transform"));
             let intendedDrag = t.translate[0] + d3.event.dx;
-            let diffWidths = expectedVizWidth === 0 ? 0 : this.widthGlobal - expectedVizWidth;
+            let diffWidths = expectedVizWidth === 0 ? 0 : props.width - expectedVizWidth;
             container.attr(
                 "transform",
                 `translate( ${Math.max(
                     Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
                     t.scale[0] *
-                    Math.min(diffWidths, -(t.scale[0] * this.widthGlobal) / 2 + this.widthGlobal / 2)
+                    Math.min(diffWidths, -(t.scale[0] * props.width) / 2 + props.width / 2)
                 )}, ${t.translate[1]})scale(${t.scale})`
             );
         });
-
+        //console.log(props.x_elements)
+        //console.log( d3.select(`#display_${this.props.divID}`));
         d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(modLR);
 
-        if (props.nodes && !prevProp.nodes) {
+        if (init) {
             this.initHeatmap(container);
-        } else if (shownNodes.length !== this.props.nodes.length) {
-            let processedData = this.isSNP
-                ? this.preprocessSNPs(
-                    props.snpdata.support,
-                    props.snpdata.notsupport,
-                    props.visSNPs,
-                    props.ids.labToNum
-                )
-                : props.taxadata;
-
-            // Cluster the data
-            if (props.collapsedClades.length !== 0 || false) {
-                processedData = this.clusterData(
-                    processedData,
-                    props.collapsedClades,
-                    this.isSNP ? this.clusterSNPs : this.clusterMetadata,
-                    props.mdinfo
-                );
-            }
+        }
+        if (props.y_elements.length !== this.props.nodes.length) {
             let cellSize = cellWidth - 0.5;
-
-            let finalData = processedData.filter(({ Information }) => shownNodes.includes(Information));
 
             let xScale = d3.scale
                 .ordinal()
-                .domain(x_elements)
-                .rangeBands([0, x_elements.length * cellWidth]);
+                .domain(props.x_elements)
+                .rangeBands([0, props.x_elements.length * cellWidth]);
 
             let xAxis = d3.svg
                 .axis()
@@ -134,7 +103,7 @@ class Heatmap extends Component {
                 .tickFormat((d) => d)
                 .orient("top");
 
-            let yScale = d3.scale.ordinal().domain(y_elements).rangeBands([0, this.heightGlobal]);
+            let yScale = d3.scale.ordinal().domain(props.y_elements).rangeBands([0, this.props.height]);
 
             let yAxis = d3.svg
                 .axis()
@@ -142,8 +111,7 @@ class Heatmap extends Component {
                 .tickFormat((d) => d)
                 .orient("left");
 
-            let cellHeight = this.heightGlobal / y_elements.length - 1;
-
+            let cellHeight = this.props.height / props.y_elements.length - 1;
             container
                 .selectAll(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
                 .call(yAxis)
@@ -172,15 +140,14 @@ class Heatmap extends Component {
 
             container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
 
-            if (x_elements.length > 0) {
-                this.appendGuideLines(ticks, -5, -this.widthGlobal);
-
-                x_elements.forEach((x_elem) => {
+            if (props.x_elements.length > 0) {
+                this.appendGuideLines(ticks, -5, -props.width);
+                props.x_elements.forEach((x_elem) => {
                     let typeOfMD = _.get(props.mdinfo, `${x_elem}.type`, "").toLowerCase();
-                    let singleData = finalData.filter((d) => !_.get(d, "clade", false));
+                    let singleData = props.data.filter((d) => !_.get(d, "clade", false));
                     let actualColorScale = _.get(props.mdinfo, `${x_elem}.colorScale`, this.SNPcolorScale);
-                    let scales = { xScale: xScale, yScale: yScale, colorScale: actualColorScale };
-                    let cellDimensions = { cellHeight: cellHeight, cellWidth: cellSize };
+                    let scales = {xScale: xScale, yScale: yScale, colorScale: actualColorScale};
+                    let cellDimensions = {cellHeight: cellHeight, cellWidth: cellSize};
                     this.updateCells(
                         singleData,
                         scales,
@@ -192,7 +159,7 @@ class Heatmap extends Component {
                     let dataDomain = this.isSNP
                         ? this.props.snpPerColumn[x_elem.split(this.SNPprefix)[1]] // Take only those SNPs present in the column
                         : _.get(props.mdinfo, `${x_elem}.extent`); // Take corresponding extent of metadata
-                    let onlyClusteredData = finalData.filter(({ clade }) => clade);
+                    let onlyClusteredData = props.data.filter(({clade}) => clade);
                     if (typeOfMD === "numerical") {
                         let coordForCenter = cellHeight / 4;
                         this.createBoxplots(
@@ -216,15 +183,18 @@ class Heatmap extends Component {
                 });
             }
 
-            if (this.isSNP && this.props.visMd.length !== 0) {
+            if (this.props.appendLines) {
                 this.appendGuideLines(
                     ticks,
-                    5 + x_elements.length * cellWidth,
-                    Math.max(expectedVizWidth, this.widthGlobal) * 1.1
+                    5 + this.props.x_elements.length * cellWidth,
+                    Math.max(expectedVizWidth, props.width) * 1.1
                 );
             }
         }
         this.highlight_leaves(this.props.selectedNodes);
+    }
+    componentDidUpdate(prevProp, prevState) {
+      this.updateComponent(prevProp.nodes !== this.props.nodes)
     }
 
     /**
@@ -246,88 +216,7 @@ class Heatmap extends Component {
             .style("stroke-opacity", 0.25);
     }
 
-    /**
-     * Test if the given node is visible
-     *
-     * @param {Object} node
-     */
-    isVisibleEndNode = (node) => {
-        return (
-            (this.props.tree.is_leafnode(node) || node["own-collapse"]) &&
-            d3.layout.phylotree.is_node_visible(node)
-        );
-    };
 
-    /**
-     * Helper function for the extraction of the SNPs from the nodes
-     * @param {Object} SNPdata contains the SNP distribution to the nodes
-     * @param {Object} labelToID contains the dictionary that distributes the labels
-     * @param {Boolean} notSupport Boolean to know which category is meant
-     */
-    modifySNPs = (SNPdata, labelToID, notSupport = false) => {
-        let nodes = this.props.tree.get_nodes();
-        let mappedSNPs = SNPdata.map((SNP) => {
-            let actualID = labelToID[SNP.node];
-            let actualPos = SNP.pos;
-            let actualAllele = SNP.allele;
-            let node = nodes.find(({ tempid }) => {
-                return String(tempid) === actualID;
-            });
-
-            return this.props.tree
-                .descendants(node)
-                .filter(this.props.tree.is_leafnode)
-                .map(({ name }) => ({
-                    Information: name,
-                    [actualPos]: { allele: actualAllele, notsupport: notSupport },
-                }));
-        });
-        let flattenSNPs = _.flatten(mappedSNPs);
-
-        return flattenSNPs;
-    };
-
-    /**
-     *
-     * Helper function to aggregate the inforamtion of a clade
-     *
-     * @param {*} data
-     * @param {*} actualClades
-     * @param {*} clusterMethod
-     * @param {*} mdinfo
-     */
-    clusterData(data, actualClades, clusterMethod, mdinfo = {}) {
-        let allAggregatedData = [];
-        let hiddenLeaves = [];
-
-        actualClades = actualClades.sort(
-            // sort to avoid the showing of smaller clusters that are already hidden
-            (a, b) => b.cladeLeaves.length - a.cladeLeaves.length
-        );
-        actualClades.forEach((actualClade) => {
-            let leavesNames = actualClade.cladeLeaves.map(({ name }) => name);
-            if (leavesNames.every((n) => hiddenLeaves.includes(n))) {
-                return; // this cluster is already included in another one
-            }
-
-            hiddenLeaves = hiddenLeaves.concat(leavesNames);
-
-            let metadataToAggregate = data.filter(({ Information }) => leavesNames.includes(Information));
-
-            let jointMetadataInformation = _.mergeWith({}, ...metadataToAggregate, (a = [], b) =>
-                a.concat(b)
-            );
-            let aggregatedData = _.mapValues(jointMetadataInformation, (v, k) =>
-                clusterMethod(v, k, mdinfo, actualClade)
-            );
-            aggregatedData["clade"] = true;
-            aggregatedData["clade_size"] = leavesNames.length;
-
-            allAggregatedData = [...allAggregatedData, aggregatedData];
-        });
-
-        return [...allAggregatedData, ...data];
-    }
 
     /**
      * Updates the cells of the heatmap
@@ -340,8 +229,8 @@ class Heatmap extends Component {
      */
     updateCells(
         data,
-        { xScale, yScale, colorScale },
-        { cellHeight, cellWidth },
+        {xScale, yScale, colorScale},
+        {cellHeight, cellWidth},
         type,
         isSNP,
         isNumerical
@@ -354,13 +243,14 @@ class Heatmap extends Component {
                     isNumerical
                         ? `${type} <br/>${parseFloat((+d[type]).toFixed(3))}`
                         : `${isSNP ? `SNP:${subtype}` : type}<br/>${_.get(
-                            d,
-                            isSNP ? `${subtype}.allele` : type
+                        d,
+                        isSNP ? `${subtype}.allele` : type
                         )}`
                 )
                 .style("left", d3.event.pageX + "px")
                 .style("top", d3.event.pageY - 28 + "px");
         };
+
         let subtype = isSNP ? type.split(this.SNPprefix)[1] : "";
         data = data.filter((d) => _.keys(d).includes(isSNP ? subtype : type));
         let div = d3.select("#tooltip");
@@ -370,10 +260,10 @@ class Heatmap extends Component {
             .data(data)
             .enter()
             .append("svg:rect")
-            .attr("class", ({ Information }) => `cell node-${Information} md-${type}`)
+            .attr("class", ({Information}) => `cell node-${Information} md-${type}`)
             .attr("width", cellWidth)
             .attr("height", cellHeight)
-            .attr("y", ({ Information }) => yScale(Information))
+            .attr("y", ({Information}) => yScale(Information))
             .attr("x", () => xScale(type))
             .attr("fill", (d) => colorScale(_.get(d, isSNP ? `${subtype}.allele` : type)));
 
@@ -383,10 +273,10 @@ class Heatmap extends Component {
                 .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
                 .enter()
                 .append("svg:rect")
-                .attr("class", ({ Information }) => `pattern node-${Information} md-${type}`)
+                .attr("class", ({Information}) => `pattern node-${Information} md-${type}`)
                 .attr("width", cellWidth)
                 .attr("height", cellHeight)
-                .attr("y", ({ Information }) => yScale(Information))
+                .attr("y", ({Information}) => yScale(Information))
                 .attr("x", () => xScale(type))
                 .attr("fill", "url(#diagonalHatch)")
                 .on("mouseover", onMouseOverCell)
@@ -395,7 +285,7 @@ class Heatmap extends Component {
                     div.transition().duration(500).style("opacity", 0);
                 });
         }
-        cells.on("mouseover", onMouseOverCell).on("mouseout", function ({ Information }) {
+        cells.on("mouseover", onMouseOverCell).on("mouseout", function ({Information}) {
             d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
 
             div.transition().duration(500).style("opacity", 0);
@@ -411,7 +301,7 @@ class Heatmap extends Component {
      * @param {Array} data_extent
      * @param {String} type
      */
-    createBoxplots(data, { xScale, yScale }, { cellHeight, cellWidth }, center, data_extent, type) {
+    createBoxplots(data, {xScale, yScale}, {cellHeight, cellWidth}, center, data_extent, type) {
         let boxplot_x = d3v5.scaleLinear().domain(data_extent).range([0, cellWidth]);
         let div = d3.select("#tooltip");
 
@@ -421,12 +311,12 @@ class Heatmap extends Component {
             .data(data)
             .enter()
             .append("g")
-            .attr("class", ({ Information }) => `boxplot node-${Information} md-${type}`)
+            .attr("class", ({Information}) => `boxplot node-${Information} md-${type}`)
             .attr(
                 "transform",
-                ({ Information }) => `translate(${xScale(type)}, ${center + yScale(Information)})`
+                ({Information}) => `translate(${xScale(type)}, ${center + yScale(Information)})`
             )
-            .datum((d) => ({ ...d[type], nodeName: d["Information"] }))
+            .datum((d) => ({...d[type], nodeName: d["Information"]}))
             .call(
                 boxplot
                     .boxplot()
@@ -466,8 +356,8 @@ class Heatmap extends Component {
      */
     createHistogram(
         data,
-        { xScale, yScale, colorScale },
-        { cellHeight, cellWidth },
+        {xScale, yScale, colorScale},
+        {cellHeight, cellWidth},
         dataDomain,
         type,
         isSNP
@@ -492,7 +382,6 @@ class Heatmap extends Component {
         // console.log(data)
         // console.log(max);
         let max = _.get(_.first(data), "clade_size", 0) // setting the max as the size
-
         let heatmapCell = d3
             .select(`#${this.props.containerID}`)
             .selectAll(`.histo.md-${this.transformNameToClass(type)}`)
@@ -503,13 +392,12 @@ class Heatmap extends Component {
             .attr("transform", ({ Information }) => `translate(${xScale(type)}, ${yScale(Information)})`);
 
         heatmapCell
-            .on("mouseover", ({ Information }) => {
+            .on("mouseover", ({Information}) => {
                 d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", true);
             })
-            .on("mouseout", ({ Information }) => {
+            .on("mouseout", ({Information}) => {
                 d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
             });
-
         let bars = heatmapCell
             .selectAll(`.bars.md-${this.transformNameToClass(type)}`)
             .data((d) => Object.entries(_.get(d, isSNP ? subtype : type, {})))
@@ -597,53 +485,6 @@ class Heatmap extends Component {
         }
     }
 
-    /**
-     *
-     * @param {Object} supportSNPs Contains the SNPs label as supporting
-     * @param {Object} nonSupportSNPs Similar, but for non-supporting SNPs
-     * @param {Array} visualizedSNPs List of the SNPs to visualize
-     * @param {Object} IDs Contains the id to label dictinoary
-     */
-    preprocessSNPs(supportSNPs, nonSupportSNPs, visualizedSNPs, IDs) {
-        // Include only those that are visualized
-        let reducedSupportSNPs = supportSNPs.filter(({ pos }) => visualizedSNPs.includes(pos));
-        let reducedNotSupportSNPs = nonSupportSNPs.filter(({ pos }) => visualizedSNPs.includes(pos));
-        // Get the correct labelling
-        let modifiedSNPData = this.modifySNPs(reducedSupportSNPs, IDs);
-        modifiedSNPData = modifiedSNPData.concat(this.modifySNPs(reducedNotSupportSNPs, IDs, true));
-        // Unify to one entry per ndoe
-        let mergedSNPs = modifiedSNPData.reduce((acc, cur) => {
-            let obj = acc.find((d) => d.Information === cur.Information) || {};
-            let filteredOutput = acc.filter((d) => d.Information !== cur.Information);
-            return [...filteredOutput, { ...obj, ...cur }];
-        }, []);
-        return mergedSNPs;
-    }
-
-    /**
-     *
-     * @param {*} v Value -- Data for the group to aggregate
-     * @param {*} k Key -- The metadata the group belongs to
-     * @param {*} mdinfo Object containing all metadata info
-     * @param {*} actualClade Object for the actual clade
-     */
-    clusterMetadata = (v, k, mdinfo, actualClade) =>
-        mdinfo[k].type.toLowerCase() === "numerical"
-            ? boxplot.boxplotStats(v)
-            : ["categorical", "ordinal"].includes(mdinfo[k].type.toLowerCase())
-                ? _.countBy(v)
-                : actualClade.showname;
-
-    /**
-     *
-     * @param {*} v Value -- Data for the group to aggregate
-     * @param {*} k Key -- The metadata the group belongs to
-     * @param {*} actualClade Object for the actual clade
-     */
-    clusterSNPs = (v, k, mdinfo, actualClade) =>
-        k === "Information"
-            ? actualClade.showname
-            : _.countBy(v.map((d) => `${d.allele}${d.notsupport ? "-" : "+"}`));
 
     /**
      * Initiates the heatmap within the given container
@@ -664,32 +505,26 @@ class Heatmap extends Component {
                 patternTransform: "rotate(60)",
             })
             .append("rect")
-            .attr({ width: "4", height: "8", transform: "translate(0,0)", fill: "white" });
+            .attr({width: "4", height: "8", transform: "translate(0,0)", fill: "white"});
     }
 
     componentDidMount() {
         let margin = this.props.margin;
-        margin.top = 0.05 * this.container.offsetHeight;
-        let width = this.container.offsetWidth - margin.right - margin.left,
-            height = this.container.offsetHeight - margin.top - margin.bottom;
-
         let svg = d3
             .select(`#${this.props.divID}`)
             .append("svg")
             .attr("id", `display_${this.props.divID}`)
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+            .attr("width", this.props.width + margin.left + margin.right)
+            .attr("height", this.props.height + margin.top + margin.bottom)
             .append("g")
             .attr("transform", `translate( ${margin.left}, ${margin.top})`);
 
         svg.append("g").attr("id", this.props.containerID);
-
-        this.heightGlobal = height;
-        this.widthGlobal = width;
+        this.updateComponent(true)
     }
 
     render() {
-        return <div id={this.props.divID} className='mchild' ref={(el) => (this.container = el)}></div>;
+        return <div id={this.props.divID} style={{width:this.props.width}}/>;
     }
 }
 
