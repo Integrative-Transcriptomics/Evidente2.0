@@ -972,12 +972,11 @@ class App extends Component {
                             </div>
 
                             <Toolbox
+                                loadFiles={this.handleSubmitAllFiles}
                                 onChangeOrder={this.handleChangeOrder}
                                 onApplyAllFilters={this.handleApplyAllFilter}
                                 onSNPaddition={this.handleSNPaddition}
                                 onMultipleSNPaddition={this.handleMultipleSNPaddition}
-                                onFileUpload={this.handleSubmit}
-                                onStatisticFileUpload={this.handleStatisticSubmit}
                                 onStatisticsTreeRequest={this.sendStatisticsRequestTree}
                                 showLatestResults={this.showLatestResults}
                                 showLatestResultsTree={this.showLatestResultsTree}
