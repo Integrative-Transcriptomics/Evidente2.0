@@ -3,8 +3,9 @@
 # of Evidente backend
 # Parses a given newick tree, provides tree traversal
 # Written by Sophie Pesch 2021
+# Modified by Mathias Witte Paz 2021 for leave saving
 
-
+# from icecream import ic
 import re
 #from backend_tree_enrichment import FindClades
 
@@ -22,6 +23,7 @@ class Tree:
         self.__number = number
         self.__children = children  # list of Trees
         self.__idx = 0  # helper counting nodes
+        # self.__leaves = []
 
 
     def parse_nwk_string(self, txt):
@@ -52,6 +54,17 @@ class Tree:
     def get_children(self):
         """returns children of top node"""
         return self.__children
+
+    def get_leaves(self):
+        """returns leaves from tree starting at top node"""
+        children = self.get_children()
+        if not children.__len__() > 0:
+            return [self.get_number()]
+        else:
+            leaves = []
+            for child in children:
+                leaves.extend(child.get_leaves())
+            return leaves
 
 
     def traverse_tree_func(self, enter_func, leave_func, data):
@@ -192,8 +205,11 @@ class Snps:
                      snp["node"] == self.__ids[str(node.get_number())]])
         if self.__stack.__len__() > 0:
             snps.extend(self.__node_to_snps[self.__stack[-1]])
-        self.__num_snps += snps.__len__()
-        self.__all_snps.extend(snps)
+        # Account only for snps that are found in leaves
+        # Others are just projections of SNPs
+        if not node.get_children():
+            self.__num_snps += snps.__len__()
+            self.__all_snps.extend(snps)
         return snps
 
     def leave(self, node):
