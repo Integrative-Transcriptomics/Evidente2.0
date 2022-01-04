@@ -117,14 +117,6 @@ class Labels extends Component {
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
 
-        const zoomHorizontal = d3v5.zoom().scaleExtent([1, 10]).translateExtent([
-            [0, 0],
-            [this.globalWidth, this.globalHeight]
-        ]).on("zoom", (d, event, i) => {
-            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
-            this.setState({ zoomHorizontal: zoomState })
-        });
-
         const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight)
         d3v5.select(`#parent-svg`).call(verticalZoom);
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
