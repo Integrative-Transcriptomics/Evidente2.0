@@ -60,7 +60,7 @@ class Heatmap extends Component {
         let cellWidthMin =
             props.collapsedClades.length > 0
                 ? this.minCollapsedCellWidth
-                : Math.min(this.minNormalCellWidth, props.width / props.y_elements.length);
+                : Math.min(this.minNormalCellWidth, props.width / props.x_elements.length);
         let cellWidthMax = props.width * (props.collapsedClades.length > 0 ? 0.25 : 0.1);
         let cellWidth = Math.max(
             Math.min(props.width / props.x_elements.length, cellWidthMax),
