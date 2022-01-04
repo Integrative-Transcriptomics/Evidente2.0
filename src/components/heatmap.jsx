@@ -88,7 +88,7 @@ class Heatmap extends Component {
         if (this.state.horizontalZoom) {
             const horizontalZoom = this.state.horizontalZoom
             scaleX = horizontalZoom.k
-            translateX = Math.min(expectedVizWidth * scaleX, Math.max(horizontalZoom.x, -1 * expectedVizWidth * scaleX))
+            translateX = Math.min(this.state.expectedWidth * scaleX, Math.max(horizontalZoom.x, -1 * this.state.expectedWidth * scaleX))
         }
 
         if (this.props.verticalZoom || this.state.horizontalZoom) {
