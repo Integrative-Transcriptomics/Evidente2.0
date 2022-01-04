@@ -71,7 +71,7 @@ class Heatmap extends Component {
         let scaleX = 1
         if (this.props.verticalZoom) {
             const verticalZoom = this.props.verticalZoom
-            translateY = verticalZoom.y
+            translateY = verticalZoom.k === 1 ? 0 : verticalZoom.y
             scaleY = verticalZoom.k
         }
         if (this.state.horizontalZoom) {
@@ -513,7 +513,7 @@ class Heatmap extends Component {
             const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
             this.setState({ horizontalZoom: zoomState })
         });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height)
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height + margin.top)
         d3v5.select(`#parent-svg`).call(verticalZoom);
         d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.props.width - margin.left - margin.right, this.props.height));
 
