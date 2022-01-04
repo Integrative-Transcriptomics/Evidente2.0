@@ -144,8 +144,6 @@ class Toolbox extends Component {
                         .style("font-size", `${Math.min(cellWidth, 10)}px`)
                         .style("text-anchor", "start");
                 };
-
-
                 renderAxis("y-axis", yAxis,'translate('+(-marginLeft+10)+',0)')
                 renderAxis("x-axis", xAxis, `translate(-5, 5)`);
 
