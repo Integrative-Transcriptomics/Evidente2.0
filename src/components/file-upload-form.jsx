@@ -5,6 +5,10 @@ import Alert from '@material-ui/lab/Alert';
 
 
 class FileUploadForm extends Component {
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        return (this.props.loadFiles === nextProps.loadFiles)
+    }
+
     state = {
         visFiles: {nwk: null, snp: null, taxainfo: null},
         statisticsFiles: {goterm: null, gff: null},
@@ -31,6 +35,7 @@ class FileUploadForm extends Component {
                     statisticsFiles: this.state.statisticsFiles,
                     visFiles: this.state.visFiles,
                 })
+                this.setState({error: false})
             } else {
                 const errorText = [];
                 if ((this.state.statisticsFiles.goterm === null) && (this.state.statisticsFiles.gff === null)) {
@@ -57,15 +62,18 @@ class FileUploadForm extends Component {
                     {id: "snp", label: "SNP Table *"},
                     {id: "taxainfo", label: "Taxa metadata"},
                     // { id: "SNPinfo", label: "SNP metadata" },
-                ].map(({id, label}) => (
-                    <Form.Group key={id}>
-                        <Form.File
-                            label={this.state.visFiles[id] !== null ? label + ": " + this.state.visFiles[id].name : label}
-                            custom
-                            onChange={(e) => this.loadFile(e.target.files[0], "vis", id)}
-                        />
-                    </Form.Group>
-                ))}
+                ].map(({id, label}) => {
+                    const currentLabel=this.state.visFiles[id] !== null ? label + ": " + this.state.visFiles[id].name : label;
+                    return (
+                        <Form.Group key={id}>
+                            <Form.File
+                                label={currentLabel}
+                                custom
+                                onChange={(e) => this.loadFile(e.target.files[0], "vis", id)}
+                            />
+                        </Form.Group>
+                    )
+                })}
                 <Typography variant='h6'>Statistic Files (optional)</Typography>
                 {[
                     {id: "goterm", label: "GO"},

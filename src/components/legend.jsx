@@ -91,7 +91,7 @@ class Legend extends Component {
   }
 
   componentDidUpdate() {
-    let cellWidth = document.getElementById("metadata-card").offsetWidth / 4;
+    let cellWidth = document.getElementById("metadata-card").offsetWidth / 2;
 
     this.props.availableMDs.forEach((row) => {
       let isSNP = row.type.toLowerCase() === "snp";

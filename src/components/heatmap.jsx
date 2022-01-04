@@ -44,8 +44,9 @@ class Heatmap extends Component {
             return false;
         }
     }
-    updateComponent(init){
-          // console.log("Updating");
+
+    updateComponent(init) {
+        // console.log("Updating");
         // Object.entries(this.props).forEach(
         //   ([key, val]) => prevProp[key] !== val && console.log(`Prop '${key}' changed`)
         // );
@@ -59,7 +60,7 @@ class Heatmap extends Component {
         let cellWidthMin =
             props.collapsedClades.length > 0
                 ? this.minCollapsedCellWidth
-                : Math.min(this.minNormalCellWidth, props.width / props.y_elements.length);
+                : Math.min(this.minNormalCellWidth, props.width / props.x_elements.length);
         let cellWidthMax = props.width * (props.collapsedClades.length > 0 ? 0.25 : 0.1);
         let cellWidth = Math.max(
             Math.min(props.width / props.x_elements.length, cellWidthMax),
@@ -193,8 +194,9 @@ class Heatmap extends Component {
         }
         this.highlight_leaves(this.props.selectedNodes);
     }
+
     componentDidUpdate(prevProp, prevState) {
-      this.updateComponent(prevProp.nodes !== this.props.nodes)
+        this.updateComponent(prevProp.nodes !== this.props.nodes)
     }
 
     /**
@@ -215,7 +217,6 @@ class Heatmap extends Component {
             .style("stroke-dasharray", "10,3")
             .style("stroke-opacity", 0.25);
     }
-
 
 
     /**
@@ -265,6 +266,7 @@ class Heatmap extends Component {
             .attr("height", cellHeight)
             .attr("y", ({Information}) => yScale(Information))
             .attr("x", () => xScale(type))
+            .attr("stroke", "white")
             .attr("fill", (d) => colorScale(_.get(d, isSNP ? `${subtype}.allele` : type)));
 
         if (isSNP) {
@@ -278,6 +280,7 @@ class Heatmap extends Component {
                 .attr("height", cellHeight)
                 .attr("y", ({Information}) => yScale(Information))
                 .attr("x", () => xScale(type))
+                .attr("stroke", "white")
                 .attr("fill", "url(#diagonalHatch)")
                 .on("mouseover", onMouseOverCell)
                 .on("mouseout", function (d) {
@@ -388,8 +391,8 @@ class Heatmap extends Component {
             .data(data)
             .enter()
             .append("g")
-            .attr("class", ({ Information }) => `histo node-${Information} md-${type}`)
-            .attr("transform", ({ Information }) => `translate(${xScale(type)}, ${yScale(Information)})`);
+            .attr("class", ({Information}) => `histo node-${Information} md-${type}`)
+            .attr("transform", ({Information}) => `translate(${xScale(type)}, ${yScale(Information)})`);
 
         heatmapCell
             .on("mouseover", ({Information}) => {
@@ -524,7 +527,7 @@ class Heatmap extends Component {
     }
 
     render() {
-        return <div id={this.props.divID} style={{width:this.props.width}}/>;
+        return <div id={this.props.divID} style={{width: this.props.width}}/>;
     }
 }
 

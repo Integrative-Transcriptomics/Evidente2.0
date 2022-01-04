@@ -120,6 +120,8 @@ class App extends Component {
         super();
         this.state = this.initialState;
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleSubmitAllFiles=this.handleSubmitAllFiles.bind(this);
+        this.handleStatisticSubmit=this.handleStatisticSubmit.bind(this);
     }
 
     handleInitTool = async () => {
@@ -416,6 +418,7 @@ class App extends Component {
     //----------------------------------------------------------------------------------------
 
     handleSubmitAllFiles = async (files) => {
+        console.log("submit")
         this.setState({isLoaded: false})
         const visFormData = new FormData();
         Object.entries(files.visFiles).forEach(([key, value]) => {
