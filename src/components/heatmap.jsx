@@ -482,11 +482,12 @@ class Heatmap extends Component {
             [w, h]
         ]).on("zoom", (d, event, i) => {
             const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
+            console.log(zoomState);
             this.setState({ horizontalZoom: zoomState })
         });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height)
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.state.actualWidth, this.props.height)
         d3v5.select(`#parent-svg`).call(verticalZoom);
-        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.props.width - this.props.margin.left - this.props.margin.right, this.props.height));
+        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.state.actualWidth - this.props.margin.left - this.props.margin.right, this.props.height));
 
         this.updateComponent(true)
     }
