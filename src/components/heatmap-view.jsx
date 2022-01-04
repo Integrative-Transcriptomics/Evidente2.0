@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
 import Alert from "@material-ui/lab/Alert";
+import GuideLines from "./guide-lines";
 
 function HeatmapView(props) {
     const [height, setheight] = useState(400)
@@ -170,11 +171,12 @@ function HeatmapView(props) {
     const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, height]);
     let snpWidth = 0
     let mdWidth = 0;
+    let linesWidth = 50;
     let showAlert = false;
     if (props.visualizedMD.length > 0) {
         if (props.visSNPs.length > 0) {
-            snpWidth = width / 2;
-            mdWidth = width / 2;
+            snpWidth = (width - linesWidth) / 2;
+            mdWidth = (width - linesWidth) / 2;
         } else {
             mdWidth = width;
         }
@@ -188,16 +190,16 @@ function HeatmapView(props) {
     return <div ref={container} style={{height: "100%", display: "flex"}}>
         {props.visSNPs.length > 0 ? <Heatmap
             height={height}
-            width={snpWidth}
+            maxWidth={snpWidth}
             data={filteredSNPData}
+            yScale={yScale}
             x_elements={props.visSNPs.map((d) => `${SNPprefix}${d}`)}
             y_elements={shownNodes}
             mdinfo={props.mdinfo}
             onZoom={props.onZoom}
-            onDrag={props.onDrag}
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
-            margin={{top: marginTop, right: 20, bottom: 0, left: 5}}
+            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -207,21 +209,20 @@ function HeatmapView(props) {
             SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
             snpdata={props.snpdata}
             isSNP={true}
-            appendLines={props.visualizedMD.length>0}
+            appendLines={props.visualizedMD.length > 0}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
             height={height}
-            width={mdWidth}
+            maxWidth={mdWidth}
             data={filteredTaxaData}
             yScale={yScale}
             x_elements={props.visualizedMD}
             y_elements={shownNodes}
             mdinfo={props.mdinfo}
             onZoom={props.onZoom}
-            onDrag={props.onDrag}
             divID={"md_viz"}
             containerID={"md-container"}
-            margin={{top: marginTop, right: 20, bottom: 0, left: 0}}
+            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}

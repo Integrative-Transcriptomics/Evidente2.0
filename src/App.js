@@ -859,6 +859,7 @@ class App extends Component {
             "#md-container",
             "#zoom-phylotree",
             "#container-labels",
+            "#guidelines-container",
         ]) {
             const selection = d3.select(id);
             if (!selection.empty()) {
@@ -877,6 +878,7 @@ class App extends Component {
             display_heatmap_viz: "#heatmap-container",
             display_md_viz: "#md-container",
             display_labels_viz: "#container-labels",
+            display_guide_lines_viz: "#guidelines-container"
         };
         let container = $(translate[this.id]);
         let t = d3.transform(container.attr("transform"));
@@ -942,7 +944,6 @@ class App extends Component {
                                     {this.state.isLoaded ?
                                         <HeatmapView
                                             onZoom={this.state.zoom}
-                                            onDrag={this.lr}
                                             divID={"md_viz"}
                                             containerID={"md-container"}
                                             nodes={this.state.nodes}
