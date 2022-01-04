@@ -38,13 +38,14 @@ import HeatmapView from "./components/heatmap-view";
 class App extends Component {
   state = {};
   chosenMD = "";
-  zoomVertical = (startx, starty, w, h) => d3v5.zoom().scaleExtent([1, 10]).translateExtent([
+// Create vertical zoom for all components
+  zoomVertical = (startx, starty, w, h) => d3v5.zoom().filter(function () {
+    return !d3v5.event.shiftKey;
+}).scaleExtent([1, 10]).translateExtent([
     [startx, starty],
-    [w + startx, h]
+    [w, h]
 ]).on("zoom", (d, event, i) => {
-    console.log(event)
     const zoomState = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
-    // console.log(zoomState);
     this.setState({ zoomStateAll: zoomState })
 });
  
@@ -68,16 +69,8 @@ class App extends Component {
         .branch_name(function () {
             return "";
         });
-    zoom = d3.behavior
-        .zoom()
-        .translate([0, 0])
-        .scale(1)
-        .scaleExtent([1, 15])
-        .on("zoom", this.handleZoom);
     initialState = {
         isLoaded: false,
-        zoom: this.zoom,
-        // tree: this.tree,
         hiddenNodes: [],
         cladeNumber: 0,
         mdinfo: [],
@@ -577,7 +570,6 @@ class App extends Component {
         });
     };
     handleMultipleSNPaddition = (listOfSnps) => {
-        // console.log(listOfSnps);
         document.body.style.cursor = "wait !important";
         setTimeout(() => {
             this.setState({
@@ -697,8 +689,6 @@ class App extends Component {
         }
         this.handleHide(nodeList);
         this.tree.update_has_hidden_nodes().update();
-
-        d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
         this.handleSelection(this.tree.get_selection());
     }
 
@@ -759,7 +749,6 @@ class App extends Component {
                 collapsedClades: jointNodes,
                 renameModalShow: false,
             });
-            d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom);
         }
     };
     handleColorChange = (metadataName) => {
@@ -828,7 +817,6 @@ class App extends Component {
         this.tree.modify_selection(nodes, "notshown", true, true, "false");
         this.tree.update_has_hidden_nodes().update();
         this.handleShowOnHeatmap(this.tree.descendants(node));
-        d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
         this.handleSelection(this.tree.get_selection());
     };
     handleShowOnHeatmap = (showNodes) => {
@@ -859,45 +847,6 @@ class App extends Component {
         this.handleInitTool();
     }
 
-    // handleZoom() {
-    //     for (let id of [
-    //         "#heatmap-container",
-    //         "#md-container",
-    //         "#zoom-phylotree",
-    //         "#container-labels",
-    //     ]) {
-    //         const selection = d3.select(id);
-    //         if (!selection.empty()) {
-    //             const temp = d3.transform(selection.attr("transform"));
-    //             $(id).attr(
-    //                 "transform",
-    //                 `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
-    //             );
-    //         }
-    //     }
-    // }
-
-    handleLR() {
-        let translate = {
-            "tree-display": "#zoom-phylotree",
-            display_heatmap_viz: "#heatmap-container",
-            display_md_viz: "#md-container",
-            display_labels_viz: "#container-labels",
-        };
-        let container = $(translate[this.id]);
-        let t = d3.transform(container.attr("transform"));
-        container.attr(
-            "transform",
-            `translate( ${Math.max(
-                Math.min(
-                    t.translate[0] + d3.event.dx,
-                    t.scale[0] * this.getBoundingClientRect().width * 0.95
-                ),
-                -t.scale[0] * this.getBoundingClientRect().width * 0.95
-            )}, ${t.translate[1]})scale(${t.scale})`
-        );
-    }
-
     render() {
         let shownNodes = this.tree
             .get_nodes()
@@ -924,8 +873,6 @@ class App extends Component {
                                     updateSNPTable={this.updateSNPTable}
                                     tree={this.tree}
                                     onShowMyNodes={this.handleShowNodes}
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
                                     onCollapse={this.handleCollapse}
                                     onDecollapse={this.handleDecollapse}
                                     onUploadTree={this.handleUploadTree}
@@ -943,18 +890,14 @@ class App extends Component {
                                 <Labels
                                     divID={"labels_viz"}
                                     shownNodes={shownNodes}
-                                    onZoom={this.state.zoom}
                                     onVerticalZoom={this.zoomVertical}
                                     verticalZoom={this.state.zoomStateAll}
-                                    onDrag={this.lr}
                                 />
                                 <div className="mchild">
                                     {this.state.isLoaded ?
                                         <HeatmapView
                                             onVerticalZoom={this.zoomVertical}
                                             verticalZoom={this.state.zoomStateAll}
-                                            onZoom={this.state.zoom}
-                                            onDrag={this.lr}
                                             divID={"md_viz"}
                                             containerID={"md-container"}
                                             nodes={this.state.nodes}

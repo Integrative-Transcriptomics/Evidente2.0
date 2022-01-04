@@ -21,8 +21,6 @@ class Labels extends Component {
         if (this.props.verticalZoom) {
             const selection = d3v5.select(`#container-labels`);
             if (!selection.empty()) {
-                // const temp = d3v5.transform(selection.attr("transform"));
-                // console.log(temp)
                 selection.attr(
                     "transform",
                     `translate(0, ${this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
@@ -96,22 +94,6 @@ class Labels extends Component {
             .attr("y1", 0)
             .attr("y2", 0)
             .style(guideStyle);
-        let container = d3.select(`#container-labels`);
-
-        const dragLabels = d3.behavior.drag().on("drag", () => {
-            let t = d3.transform(container.attr("transform"));
-            let intendedDrag = t.translate[0] + d3.event.dx;
-            let diffWidths = Math.max(...textWidth) + textMargin - this.globalWidth;
-            container.attr(
-                "transform",
-                `translate( ${Math.max(
-                    Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
-                    t.scale[0] *
-                    Math.min(diffWidths, (-t.scale[0] * this.globalWidth) / 2 + this.globalWidth / 2)
-                )}, ${t.translate[1]})scale(${t.scale})`
-            );
-        });
-        // d3.select(`#display_${this.props.divID}`).call().call(dragLabels);
     }
 
     componentDidMount() {
@@ -142,10 +124,9 @@ class Labels extends Component {
             const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
             this.setState({ zoomHorizontal: zoomState })
         });
+
         const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight)
-
         d3v5.select(`#parent-svg`).call(verticalZoom);
-
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
     }
 

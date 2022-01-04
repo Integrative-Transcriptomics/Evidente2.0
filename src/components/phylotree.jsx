@@ -7,6 +7,8 @@ import * as _ from "lodash";
 import React, { Component } from "react";
 
 class Phylotree extends Component {
+    state = {};
+
     /**
      * For general node styling within the phylogenetic tree
      *
@@ -188,14 +190,15 @@ class Phylotree extends Component {
                 .update_has_hidden_nodes()
                 .update();
 
-            // d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
             this.props.onHide(this.props.tree.descendants(node));
             this.props.onSelection(this.props.tree.get_selection());
         }
     }
 
     shouldComponentUpdate(nextProp, nextState) {
-        return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) || !_.isEqual(this.props.verticalZoom, nextProp.verticalZoom);
+        return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) ||
+            !_.isEqual(this.props.verticalZoom, nextProp.verticalZoom) ||
+            !_.isEqual(this.state.horizontalZoom, nextState.horizontalZoom)
     }
 
     componentDidUpdate(prevProp) {
@@ -204,14 +207,26 @@ class Phylotree extends Component {
             this.renderTree(this.props.newick);
         }
         const selection = d3v5.select("#zoom-phylotree")
+        let translateY = 0
+        let scaleY = 1
+        let translateX = 0
+        let scaleX = 1
         if (this.props.verticalZoom) {
-            if (!selection.empty()) {
-                // const temp = d3.transform(selection.attr("transform"));
-                selection.attr(
-                    "transform",
-                    `translate(0, ${this.props.verticalZoom.y} )scale(1, ${this.props.verticalZoom.k})`
-                );
-            }
+            const verticalZoom = this.props.verticalZoom
+            translateY = verticalZoom.y
+            scaleY = verticalZoom.k
+        }
+        if (this.state.horizontalZoom) {
+            const horizontalZoom = this.state.horizontalZoom
+            translateX = horizontalZoom.x
+            scaleX = horizontalZoom.k
+        }
+
+        if (this.props.verticalZoom || this.state.horizontalZoom) {
+            selection.attr(
+                "transform",
+                `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
+            );
         }
     }
 
@@ -232,9 +247,19 @@ class Phylotree extends Component {
 
 
 
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.container.offsetWidth, this.container.offsetHeight)
 
+        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
+            return d3v5.event.shiftKey;
+        }).scaleExtent([1, 10]).translateExtent([
+            [startx, starty],
+            [w, h]
+        ]).on("zoom", (d, event, i) => {
+            const zoomState = d3v5.zoomTransform(d3v5.select(`#tree-display`).node());
+            this.setState({ horizontalZoom: zoomState })
+        });
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.container.offsetWidth, this.container.offsetHeight)
         d3v5.select(`#parent-svg`).call(verticalZoom);
+        d3v5.select(`#tree-display`).call(zoomHorizontal(0, 0, this.container.offsetWidth, this.container.offsetHeight));
 
 
     }
@@ -286,7 +311,7 @@ class Phylotree extends Component {
                 () =>
                     addTimeoutCursor(
                         () =>
-                            this.collapseNode(tnode, this.props.tree, this.props.onZoom, this.props.onCollapse),
+                            this.collapseNode(tnode, this.props.tree, this.props.onCollapse),
                         1
                     ),
 
@@ -295,7 +320,7 @@ class Phylotree extends Component {
             d3.layout.phylotree.add_custom_menu(
                 tnode, // add to this node
                 (node) => "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree"), // display this text for the menu
-                () => addTimeoutCursor(() => this.hideNode(tnode, this.props.tree, this.props.onZoom)),
+                () => addTimeoutCursor(() => this.hideNode(tnode, this.props.tree,)),
                 (node) => node.name !== "root" // condition on when to display the menu
             );
             d3.layout.phylotree.add_custom_menu(
@@ -311,7 +336,6 @@ class Phylotree extends Component {
                 (node) => node["own-collapse"] || false
             );
         });
-        // d3.select("#tree-display").call(this.props.onZoom).call(this.props.onDrag);
 
         this.runSelection();
     }

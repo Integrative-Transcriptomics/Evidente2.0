@@ -197,8 +197,6 @@ function HeatmapView(props) {
             mdinfo={props.mdinfo}
             onVerticalZoom={props.onVerticalZoom}
             verticalZoom={props.verticalZoom}
-            onZoom={props.onZoom}
-            onDrag={props.onDrag}
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
             margin={{ top: marginTop, right: 20, bottom: 0, left: 5 }}
@@ -223,8 +221,6 @@ function HeatmapView(props) {
             onVerticalZoom={props.onVerticalZoom}
             verticalZoom={props.verticalZoom}
             mdinfo={props.mdinfo}
-            onZoom={props.onZoom}
-            onDrag={props.onDrag}
             divID={"md_viz"}
             containerID={"md-container"}
             margin={{ top: marginTop, right: 20, bottom: 0, left: 0 }}

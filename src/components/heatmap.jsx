@@ -76,34 +76,16 @@ class Heatmap extends Component {
         }
         if (this.state.horizontalZoom) {
             const horizontalZoom = this.state.horizontalZoom
-            translateX = horizontalZoom.x
             scaleX = horizontalZoom.k
+            translateX = Math.min(expectedVizWidth * scaleX, Math.max(horizontalZoom.x, -1 * expectedVizWidth * scaleX))
         }
 
         if (this.props.verticalZoom || this.state.horizontalZoom) {
-            // const temp = d3.transform(selection.attr("transform"));
             selection.attr(
                 "transform",
                 `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
             );
         }
-
-
-
-
-        // const modLR = d3.behavior.drag().on("drag", () => {
-        //     let t = d3.transform(container.attr("transform"));
-        //     let intendedDrag = t.translate[0] + d3.event.dx;
-        //     let diffWidths = expectedVizWidth === 0 ? 0 : props.width - expectedVizWidth;
-        //     container.attr(
-        //         "transform",
-        //         `translate( ${Math.max(
-        //             Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
-        //             t.scale[0] *
-        //             Math.min(diffWidths, -(t.scale[0] * props.width) / 2 + props.width / 2)
-        //         )}, ${t.translate[1]})scale(${t.scale})`
-        //     );
-        // });
 
         if (init) {
             this.initHeatmap(container);
@@ -391,15 +373,6 @@ class Heatmap extends Component {
         let subtype = isSNP ? type.split(this.SNPprefix)[1] : "";
         let div = d3.select("#tooltip");
 
-        // let max = d3.max(
-        //     data.reduce((acc, d) => {
-        //         let temp = d[isSNP ? subtype : type];
-        //         return [...acc, ...Object.values(temp ? temp : {})];
-        //     }, [])
-        // );
-        // console.log(max);
-        // console.log(data)
-        // console.log(max);
         let max = _.get(_.first(data), "clade_size", 0) // setting the max as the size
         let heatmapCell = d3
             .select(`#${this.props.containerID}`)
@@ -460,18 +433,6 @@ class Heatmap extends Component {
                     div.transition().duration(500).style("opacity", 0);
                 });
 
-            // let xAxis = d3.svg
-            //   .axis()
-            //   .scale(xScaleBar)
-            //   .tickFormat((d) => d);
-
-            // heatmapCell
-            //   .append("g")
-            //   .attr("class", "x axis-bar")
-            //   .call(xAxis)
-            //   .call((g) => g.selectAll("text").remove())
-            //   .select("path")
-            //   .style({ "stroke-width": 0.1, fill: "none", stroke: "black", width: 0.1 });
         }
     }
 
@@ -541,18 +502,19 @@ class Heatmap extends Component {
         svg.append("g").attr("id", this.props.containerID);
 
 
-        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().scaleExtent([1, 10]).translateExtent([
+        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
+            return d3v5.event.shiftKey;
+        }).scaleExtent([1, 10]).translateExtent([
             [startx, starty],
-            [w + startx, h]
+            [w, h]
         ]).on("zoom", (d, event, i) => {
             const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
-            console.log("t")
             this.setState({ horizontalZoom: zoomState })
         });
-        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal);
         const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height)
-
         d3v5.select(`#parent-svg`).call(verticalZoom);
+        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.props.width - margin.left - margin.right, this.props.height));
+
         this.updateComponent(true)
     }
 
