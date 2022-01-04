@@ -1,6 +1,7 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import * as d3 from "d3";
-import {isEqual} from "lodash";
+import * as d3v5 from "d3v5";
+import { isEqual } from "lodash";
 
 class Labels extends Component {
     state = {};
@@ -10,14 +11,22 @@ class Labels extends Component {
     shouldComponentUpdate(nextProp, nextState) {
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
-        return !isEqual(newNodes, oldNodes);
+        return !isEqual(newNodes, oldNodes) || !isEqual(this.props.verticalZoom, nextProp.verticalZoom);
     }
 
     componentDidUpdate(prevProps, prevState) {
         let margin_top = this.globalHeight * 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
-
+        if (this.props.verticalZoom) {
+            const selection = d3v5.select(`#container-labels`);
+            if (!selection.empty()) {
+                selection.attr(
+                    "transform",
+                    `translate(0, ${this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
+                );
+            }
+        }
         let div = d3.select("#tooltip");
         let height = this.globalHeight;
         let props = this.props;
@@ -85,22 +94,6 @@ class Labels extends Component {
             .attr("y1", 0)
             .attr("y2", 0)
             .style(guideStyle);
-        let container = d3.select(`#container-labels`);
-
-        const dragLabels = d3.behavior.drag().on("drag", () => {
-            let t = d3.transform(container.attr("transform"));
-            let intendedDrag = t.translate[0] + d3.event.dx;
-            let diffWidths = Math.max(...textWidth) + textMargin - this.globalWidth;
-            container.attr(
-                "transform",
-                `translate( ${Math.max(
-                    Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
-                    t.scale[0] *
-                    Math.min(diffWidths, (-t.scale[0] * this.globalWidth) / 2 + this.globalWidth / 2)
-                )}, ${t.translate[1]})scale(${t.scale})`
-            );
-        });
-        d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(dragLabels);
     }
 
     componentDidMount() {
@@ -124,6 +117,8 @@ class Labels extends Component {
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
 
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight)
+        d3v5.select(`#parent-svg`).call(verticalZoom);
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
     }
 
