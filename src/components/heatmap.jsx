@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import * as d3 from "d3";
 import * as d3v5 from "d3v5";
 import * as boxplot from "d3-boxplot";
@@ -37,6 +37,9 @@ class Heatmap extends Component {
             !_.isEqual(actualNodes, newNodes) ||
             !_.isEqual(actualHiddenNodes, newHiddenNodes) ||
             !_.isEqual(actualCollapsedClades, newCollapsedClades) ||
+            !_.isEqual(this.props.verticalZoom, nextProp.verticalZoom) ||
+            !_.isEqual(this.state.verticalZoom, nextProp.verticalZoom) ||
+
             (!_.isEqual(actualState.mdinfo, nextProp.mdinfo) && newNodes.length > 0)
         ) {
             return true;
@@ -44,16 +47,8 @@ class Heatmap extends Component {
             return false;
         }
     }
-    updateComponent(init){
-          // console.log("Updating");
-        // Object.entries(this.props).forEach(
-        //   ([key, val]) => prevProp[key] !== val && console.log(`Prop '${key}' changed`)
-        // );
-        // if (this.state) {
-        //   Object.entries(this.state).forEach(
-        //     ([key, val]) => prevState[key] !== val && console.log(`State '${key}' changed`)
-        //   );
-        // }
+    updateComponent(init) {
+
         let props = this.props;
         this.SNPcolorScale = this.props.SNPcolorScale;
         let cellWidthMin =
@@ -69,22 +64,46 @@ class Heatmap extends Component {
         let container = d3.select(`#${this.props.containerID}`);
         let expectedVizWidth = cellWidth * props.x_elements.length;
 
-        const modLR = d3.behavior.drag().on("drag", () => {
-            let t = d3.transform(container.attr("transform"));
-            let intendedDrag = t.translate[0] + d3.event.dx;
-            let diffWidths = expectedVizWidth === 0 ? 0 : props.width - expectedVizWidth;
-            container.attr(
+        const selection = container
+        let translateY = 0
+        let scaleY = 1
+        let translateX = 0
+        let scaleX = 1
+        if (this.props.verticalZoom) {
+            const verticalZoom = this.props.verticalZoom
+            translateY = verticalZoom.y
+            scaleY = verticalZoom.k
+        }
+        if (this.state.horizontalZoom) {
+            const horizontalZoom = this.state.horizontalZoom
+            translateX = horizontalZoom.x
+            scaleX = horizontalZoom.k
+        }
+
+        if (this.props.verticalZoom || this.state.horizontalZoom) {
+            // const temp = d3.transform(selection.attr("transform"));
+            selection.attr(
                 "transform",
-                `translate( ${Math.max(
-                    Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
-                    t.scale[0] *
-                    Math.min(diffWidths, -(t.scale[0] * props.width) / 2 + props.width / 2)
-                )}, ${t.translate[1]})scale(${t.scale})`
+                `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
             );
-        });
-        //console.log(props.x_elements)
-        //console.log( d3.select(`#display_${this.props.divID}`));
-        d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(modLR);
+        }
+
+
+
+
+        // const modLR = d3.behavior.drag().on("drag", () => {
+        //     let t = d3.transform(container.attr("transform"));
+        //     let intendedDrag = t.translate[0] + d3.event.dx;
+        //     let diffWidths = expectedVizWidth === 0 ? 0 : props.width - expectedVizWidth;
+        //     container.attr(
+        //         "transform",
+        //         `translate( ${Math.max(
+        //             Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
+        //             t.scale[0] *
+        //             Math.min(diffWidths, -(t.scale[0] * props.width) / 2 + props.width / 2)
+        //         )}, ${t.translate[1]})scale(${t.scale})`
+        //     );
+        // });
 
         if (init) {
             this.initHeatmap(container);
@@ -146,8 +165,8 @@ class Heatmap extends Component {
                     let typeOfMD = _.get(props.mdinfo, `${x_elem}.type`, "").toLowerCase();
                     let singleData = props.data.filter((d) => !_.get(d, "clade", false));
                     let actualColorScale = _.get(props.mdinfo, `${x_elem}.colorScale`, this.SNPcolorScale);
-                    let scales = {xScale: xScale, yScale: yScale, colorScale: actualColorScale};
-                    let cellDimensions = {cellHeight: cellHeight, cellWidth: cellSize};
+                    let scales = { xScale: xScale, yScale: yScale, colorScale: actualColorScale };
+                    let cellDimensions = { cellHeight: cellHeight, cellWidth: cellSize };
                     this.updateCells(
                         singleData,
                         scales,
@@ -159,7 +178,7 @@ class Heatmap extends Component {
                     let dataDomain = this.isSNP
                         ? this.props.snpPerColumn[x_elem.split(this.SNPprefix)[1]] // Take only those SNPs present in the column
                         : _.get(props.mdinfo, `${x_elem}.extent`); // Take corresponding extent of metadata
-                    let onlyClusteredData = props.data.filter(({clade}) => clade);
+                    let onlyClusteredData = props.data.filter(({ clade }) => clade);
                     if (typeOfMD === "numerical") {
                         let coordForCenter = cellHeight / 4;
                         this.createBoxplots(
@@ -194,7 +213,7 @@ class Heatmap extends Component {
         this.highlight_leaves(this.props.selectedNodes);
     }
     componentDidUpdate(prevProp, prevState) {
-      this.updateComponent(prevProp.nodes !== this.props.nodes)
+        this.updateComponent(prevProp.nodes !== this.props.nodes)
     }
 
     /**
@@ -229,8 +248,8 @@ class Heatmap extends Component {
      */
     updateCells(
         data,
-        {xScale, yScale, colorScale},
-        {cellHeight, cellWidth},
+        { xScale, yScale, colorScale },
+        { cellHeight, cellWidth },
         type,
         isSNP,
         isNumerical
@@ -243,8 +262,8 @@ class Heatmap extends Component {
                     isNumerical
                         ? `${type} <br/>${parseFloat((+d[type]).toFixed(3))}`
                         : `${isSNP ? `SNP:${subtype}` : type}<br/>${_.get(
-                        d,
-                        isSNP ? `${subtype}.allele` : type
+                            d,
+                            isSNP ? `${subtype}.allele` : type
                         )}`
                 )
                 .style("left", d3.event.pageX + "px")
@@ -260,10 +279,10 @@ class Heatmap extends Component {
             .data(data)
             .enter()
             .append("svg:rect")
-            .attr("class", ({Information}) => `cell node-${Information} md-${type}`)
+            .attr("class", ({ Information }) => `cell node-${Information} md-${type}`)
             .attr("width", cellWidth)
             .attr("height", cellHeight)
-            .attr("y", ({Information}) => yScale(Information))
+            .attr("y", ({ Information }) => yScale(Information))
             .attr("x", () => xScale(type))
             .attr("fill", (d) => colorScale(_.get(d, isSNP ? `${subtype}.allele` : type)));
 
@@ -273,10 +292,10 @@ class Heatmap extends Component {
                 .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
                 .enter()
                 .append("svg:rect")
-                .attr("class", ({Information}) => `pattern node-${Information} md-${type}`)
+                .attr("class", ({ Information }) => `pattern node-${Information} md-${type}`)
                 .attr("width", cellWidth)
                 .attr("height", cellHeight)
-                .attr("y", ({Information}) => yScale(Information))
+                .attr("y", ({ Information }) => yScale(Information))
                 .attr("x", () => xScale(type))
                 .attr("fill", "url(#diagonalHatch)")
                 .on("mouseover", onMouseOverCell)
@@ -285,7 +304,7 @@ class Heatmap extends Component {
                     div.transition().duration(500).style("opacity", 0);
                 });
         }
-        cells.on("mouseover", onMouseOverCell).on("mouseout", function ({Information}) {
+        cells.on("mouseover", onMouseOverCell).on("mouseout", function ({ Information }) {
             d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
 
             div.transition().duration(500).style("opacity", 0);
@@ -301,7 +320,7 @@ class Heatmap extends Component {
      * @param {Array} data_extent
      * @param {String} type
      */
-    createBoxplots(data, {xScale, yScale}, {cellHeight, cellWidth}, center, data_extent, type) {
+    createBoxplots(data, { xScale, yScale }, { cellHeight, cellWidth }, center, data_extent, type) {
         let boxplot_x = d3v5.scaleLinear().domain(data_extent).range([0, cellWidth]);
         let div = d3.select("#tooltip");
 
@@ -311,12 +330,12 @@ class Heatmap extends Component {
             .data(data)
             .enter()
             .append("g")
-            .attr("class", ({Information}) => `boxplot node-${Information} md-${type}`)
+            .attr("class", ({ Information }) => `boxplot node-${Information} md-${type}`)
             .attr(
                 "transform",
-                ({Information}) => `translate(${xScale(type)}, ${center + yScale(Information)})`
+                ({ Information }) => `translate(${xScale(type)}, ${center + yScale(Information)})`
             )
-            .datum((d) => ({...d[type], nodeName: d["Information"]}))
+            .datum((d) => ({ ...d[type], nodeName: d["Information"] }))
             .call(
                 boxplot
                     .boxplot()
@@ -356,8 +375,8 @@ class Heatmap extends Component {
      */
     createHistogram(
         data,
-        {xScale, yScale, colorScale},
-        {cellHeight, cellWidth},
+        { xScale, yScale, colorScale },
+        { cellHeight, cellWidth },
         dataDomain,
         type,
         isSNP
@@ -392,10 +411,10 @@ class Heatmap extends Component {
             .attr("transform", ({ Information }) => `translate(${xScale(type)}, ${yScale(Information)})`);
 
         heatmapCell
-            .on("mouseover", ({Information}) => {
+            .on("mouseover", ({ Information }) => {
                 d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", true);
             })
-            .on("mouseout", ({Information}) => {
+            .on("mouseout", ({ Information }) => {
                 d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
             });
         let bars = heatmapCell
@@ -505,7 +524,7 @@ class Heatmap extends Component {
                 patternTransform: "rotate(60)",
             })
             .append("rect")
-            .attr({width: "4", height: "8", transform: "translate(0,0)", fill: "white"});
+            .attr({ width: "4", height: "8", transform: "translate(0,0)", fill: "white" });
     }
 
     componentDidMount() {
@@ -520,11 +539,25 @@ class Heatmap extends Component {
             .attr("transform", `translate( ${margin.left}, ${margin.top})`);
 
         svg.append("g").attr("id", this.props.containerID);
+
+
+        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().scaleExtent([1, 10]).translateExtent([
+            [startx, starty],
+            [w + startx, h]
+        ]).on("zoom", (d, event, i) => {
+            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
+            console.log("t")
+            this.setState({ horizontalZoom: zoomState })
+        });
+        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal);
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height)
+
+        d3v5.select(`#parent-svg`).call(verticalZoom);
         this.updateComponent(true)
     }
 
     render() {
-        return <div id={this.props.divID} style={{width:this.props.width}}/>;
+        return <div id={this.props.divID} style={{ width: this.props.width }} />;
     }
 }
 

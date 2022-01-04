@@ -1,6 +1,7 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import * as d3 from "d3";
-import {isEqual} from "lodash";
+import * as d3v5 from "d3v5";
+import { isEqual } from "lodash";
 
 class Labels extends Component {
     state = {};
@@ -10,14 +11,24 @@ class Labels extends Component {
     shouldComponentUpdate(nextProp, nextState) {
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
-        return !isEqual(newNodes, oldNodes);
+        return !isEqual(newNodes, oldNodes) || !isEqual(this.props.verticalZoom, nextProp.verticalZoom);
     }
 
     componentDidUpdate(prevProps, prevState) {
         let margin_top = this.globalHeight * 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
-
+        if (this.props.verticalZoom) {
+            const selection = d3v5.select(`#container-labels`);
+            if (!selection.empty()) {
+                // const temp = d3v5.transform(selection.attr("transform"));
+                // console.log(temp)
+                selection.attr(
+                    "transform",
+                    `translate(0, ${this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
+                );
+            }
+        }
         let div = d3.select("#tooltip");
         let height = this.globalHeight;
         let props = this.props;
@@ -100,7 +111,7 @@ class Labels extends Component {
                 )}, ${t.translate[1]})scale(${t.scale})`
             );
         });
-        d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(dragLabels);
+        // d3.select(`#display_${this.props.divID}`).call().call(dragLabels);
     }
 
     componentDidMount() {
@@ -123,6 +134,17 @@ class Labels extends Component {
         this.globalHeight = this.container.offsetHeight;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
+
+        const zoomHorizontal = d3v5.zoom().scaleExtent([1, 10]).translateExtent([
+            [0, 0],
+            [this.globalWidth, this.globalHeight]
+        ]).on("zoom", (d, event, i) => {
+            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
+            this.setState({ zoomHorizontal: zoomState })
+        });
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight)
+
+        d3v5.select(`#parent-svg`).call(verticalZoom);
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
     }

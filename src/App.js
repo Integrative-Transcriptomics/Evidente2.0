@@ -28,6 +28,7 @@ import LoadingOverlay from "react-loading-overlay";
 // Important libraries
 import React, {Component} from "react";
 import * as d3 from "d3";
+import * as d3v5 from "d3v5";
 import * as $ from "jquery";
 import * as _ from "lodash";
 
@@ -35,10 +36,18 @@ import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
 
 class App extends Component {
-    state = {};
-    lr = d3.behavior.drag().on("drag", this.handleLR);
-    chosenMD = "";
-
+  state = {};
+  chosenMD = "";
+  zoomVertical = (startx, starty, w, h) => d3v5.zoom().scaleExtent([1, 10]).translateExtent([
+    [startx, starty],
+    [w + startx, h]
+]).on("zoom", (d, event, i) => {
+    console.log(event)
+    const zoomState = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+    // console.log(zoomState);
+    this.setState({ zoomStateAll: zoomState })
+});
+ 
     tree = d3.layout
         .phylotree()
         .options({
@@ -850,23 +859,23 @@ class App extends Component {
         this.handleInitTool();
     }
 
-    handleZoom() {
-        for (let id of [
-            "#heatmap-container",
-            "#md-container",
-            "#zoom-phylotree",
-            "#container-labels",
-        ]) {
-            const selection = d3.select(id);
-            if (!selection.empty()) {
-                const temp = d3.transform(selection.attr("transform"));
-                $(id).attr(
-                    "transform",
-                    `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
-                );
-            }
-        }
-    }
+    // handleZoom() {
+    //     for (let id of [
+    //         "#heatmap-container",
+    //         "#md-container",
+    //         "#zoom-phylotree",
+    //         "#container-labels",
+    //     ]) {
+    //         const selection = d3.select(id);
+    //         if (!selection.empty()) {
+    //             const temp = d3.transform(selection.attr("transform"));
+    //             $(id).attr(
+    //                 "transform",
+    //                 `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
+    //             );
+    //         }
+    //     }
+    // }
 
     handleLR() {
         let translate = {
@@ -925,6 +934,8 @@ class App extends Component {
                                     onOpenRenameClade={this.handleRenameOpenModal}
                                     newick={this.state.newick}
                                     snpdata={this.state.snpdata}
+                                    onVerticalZoom={this.zoomVertical}
+                                    verticalZoom={this.state.zoomStateAll}
                                     ids={this.state.ids}
                                     dialog={this.dialog}
                                 />
@@ -933,11 +944,15 @@ class App extends Component {
                                     divID={"labels_viz"}
                                     shownNodes={shownNodes}
                                     onZoom={this.state.zoom}
+                                    onVerticalZoom={this.zoomVertical}
+                                    verticalZoom={this.state.zoomStateAll}
                                     onDrag={this.lr}
                                 />
                                 <div className="mchild">
                                     {this.state.isLoaded ?
                                         <HeatmapView
+                                            onVerticalZoom={this.zoomVertical}
+                                            verticalZoom={this.state.zoomStateAll}
                                             onZoom={this.state.zoom}
                                             onDrag={this.lr}
                                             divID={"md_viz"}

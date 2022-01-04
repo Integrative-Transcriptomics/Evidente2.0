@@ -1,9 +1,10 @@
 import * as d3 from "d3";
+import * as d3v5 from "d3v5";
 import "../../node_modules/phylotree/src/main";
 
 import * as $ from "jquery";
 import * as _ from "lodash";
-import React, {Component} from "react";
+import React, { Component } from "react";
 
 class Phylotree extends Component {
     /**
@@ -20,7 +21,7 @@ class Phylotree extends Component {
             container
                 .selectAll("circle")
                 .style("fill", "black")
-                .attr({r: 2})
+                .attr({ r: 2 })
                 .on("mouseover", () => {
                     d3.selectAll(`.node-${lookFor}.guides`).classed("highlighted-guide", true);
                     div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
@@ -37,7 +38,7 @@ class Phylotree extends Component {
             container
                 .selectAll("circle")
                 .style("fill", "lightgray")
-                .attr({r: 3})
+                .attr({ r: 3 })
                 .on("mouseout", null)
                 .on("mouseover", null);
         }
@@ -45,7 +46,7 @@ class Phylotree extends Component {
             this.props.selectedNodeID &&
             this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
         ) {
-            container.selectAll("circle").style({fill: "purple"}).attr({r: 5});
+            container.selectAll("circle").style({ fill: "purple" }).attr({ r: 5 });
         }
     };
 
@@ -187,20 +188,30 @@ class Phylotree extends Component {
                 .update_has_hidden_nodes()
                 .update();
 
-            d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
+            // d3.select("#tree-display").call(this.props.onZoom).call(this.props.onZoom.event);
             this.props.onHide(this.props.tree.descendants(node));
             this.props.onSelection(this.props.tree.get_selection());
         }
     }
 
     shouldComponentUpdate(nextProp, nextState) {
-        return nextProp.newick !== undefined && nextProp.newick !== this.props.newick;
+        return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) || !_.isEqual(this.props.verticalZoom, nextProp.verticalZoom);
     }
 
     componentDidUpdate(prevProp) {
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
+        }
+        const selection = d3v5.select("#zoom-phylotree")
+        if (this.props.verticalZoom) {
+            if (!selection.empty()) {
+                // const temp = d3.transform(selection.attr("transform"));
+                selection.attr(
+                    "transform",
+                    `translate(0, ${this.props.verticalZoom.y} )scale(1, ${this.props.verticalZoom.k})`
+                );
+            }
         }
     }
 
@@ -211,13 +222,21 @@ class Phylotree extends Component {
                 .select(this.container)
                 .append("svg")
                 .attr("id", "tree-display")
-                .attr({height: this.container.offsetHeight, width: this.container.offsetWidth})
+                .attr({ height: this.container.offsetHeight, width: this.container.offsetWidth })
                 .append("g")
                 .attr("id", "transform-group")
                 .attr("transform", `translate(${[0, margin_top]})`)
                 .append("g")
                 .attr("id", "zoom-phylotree")
         );
+
+
+
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.container.offsetWidth, this.container.offsetHeight)
+
+        d3v5.select(`#parent-svg`).call(verticalZoom);
+
+
     }
 
     /**
@@ -292,7 +311,7 @@ class Phylotree extends Component {
                 (node) => node["own-collapse"] || false
             );
         });
-        d3.select("#tree-display").call(this.props.onZoom).call(this.props.onDrag);
+        // d3.select("#tree-display").call(this.props.onZoom).call(this.props.onDrag);
 
         this.runSelection();
     }
@@ -307,7 +326,7 @@ class Phylotree extends Component {
     };
 
     render() {
-        return <div className='lchild' ref={(el) => (this.container = el)}/>;
+        return <div className='lchild' ref={(el) => (this.container = el)} />;
     }
 }
 
