@@ -28,6 +28,7 @@ import LoadingOverlay from "react-loading-overlay";
 // Important libraries
 import React, {Component} from "react";
 import * as d3 from "d3";
+import * as d3v5 from "d3v5";
 import * as $ from "jquery";
 import * as _ from "lodash";
 
@@ -35,10 +36,19 @@ import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
 
 class App extends Component {
-    state = {};
-    lr = d3.behavior.drag().on("drag", this.handleLR);
-    chosenMD = "";
-
+  state = {};
+  chosenMD = "";
+// Create vertical zoom for all components
+  zoomVertical = (startx, starty, w, h) => d3v5.zoom().filter(function () {
+    return !d3v5.event.shiftKey;
+}).scaleExtent([1, 10]).translateExtent([
+    [startx, starty],
+    [w, h]
+]).on("zoom", (d, event, i) => {
+    const zoomState = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+    this.setState({ zoomStateAll: zoomState })
+});
+ 
     tree = d3.layout
         .phylotree()
         .options({
@@ -59,16 +69,8 @@ class App extends Component {
         .branch_name(function () {
             return "";
         });
-    zoom = d3.behavior
-        .zoom()
-        .translate([0, 0])
-        .scale(1)
-        .scaleExtent([1, 15])
-        .on("zoom", this.handleZoom);
     initialState = {
         isLoaded: false,
-        zoom: this.zoom,
-        // tree: this.tree,
         hiddenNodes: [],
         cladeNumber: 0,
         mdinfo: [],
@@ -571,7 +573,6 @@ class App extends Component {
         });
     };
     handleMultipleSNPaddition = (listOfSnps) => {
-        // console.log(listOfSnps);
         document.body.style.cursor = "wait !important";
         setTimeout(() => {
             this.setState({
@@ -691,8 +692,6 @@ class App extends Component {
         }
         this.handleHide(nodeList);
         this.tree.update_has_hidden_nodes().update();
-
-        d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
         this.handleSelection(this.tree.get_selection());
     }
 
@@ -753,7 +752,6 @@ class App extends Component {
                 collapsedClades: jointNodes,
                 renameModalShow: false,
             });
-            d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom);
         }
     };
     handleColorChange = (metadataName) => {
@@ -822,7 +820,6 @@ class App extends Component {
         this.tree.modify_selection(nodes, "notshown", true, true, "false");
         this.tree.update_has_hidden_nodes().update();
         this.handleShowOnHeatmap(this.tree.descendants(node));
-        d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
         this.handleSelection(this.tree.get_selection());
     };
     handleShowOnHeatmap = (showNodes) => {
@@ -853,45 +850,6 @@ class App extends Component {
         this.handleInitTool();
     }
 
-    handleZoom() {
-        for (let id of [
-            "#heatmap-container",
-            "#md-container",
-            "#zoom-phylotree",
-            "#container-labels",
-        ]) {
-            const selection = d3.select(id);
-            if (!selection.empty()) {
-                const temp = d3.transform(selection.attr("transform"));
-                $(id).attr(
-                    "transform",
-                    `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
-                );
-            }
-        }
-    }
-
-    handleLR() {
-        let translate = {
-            "tree-display": "#zoom-phylotree",
-            display_heatmap_viz: "#heatmap-container",
-            display_md_viz: "#md-container",
-            display_labels_viz: "#container-labels",
-        };
-        let container = $(translate[this.id]);
-        let t = d3.transform(container.attr("transform"));
-        container.attr(
-            "transform",
-            `translate( ${Math.max(
-                Math.min(
-                    t.translate[0] + d3.event.dx,
-                    t.scale[0] * this.getBoundingClientRect().width * 0.95
-                ),
-                -t.scale[0] * this.getBoundingClientRect().width * 0.95
-            )}, ${t.translate[1]})scale(${t.scale})`
-        );
-    }
-
     render() {
         let shownNodes = this.tree
             .get_nodes()
@@ -918,8 +876,6 @@ class App extends Component {
                                     updateSNPTable={this.updateSNPTable}
                                     tree={this.tree}
                                     onShowMyNodes={this.handleShowNodes}
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
                                     onCollapse={this.handleCollapse}
                                     onDecollapse={this.handleDecollapse}
                                     onUploadTree={this.handleUploadTree}
@@ -928,6 +884,8 @@ class App extends Component {
                                     onOpenRenameClade={this.handleRenameOpenModal}
                                     newick={this.state.newick}
                                     snpdata={this.state.snpdata}
+                                    onVerticalZoom={this.zoomVertical}
+                                    verticalZoom={this.state.zoomStateAll}
                                     ids={this.state.ids}
                                     dialog={this.dialog}
                                 />
@@ -935,14 +893,14 @@ class App extends Component {
                                 <Labels
                                     divID={"labels_viz"}
                                     shownNodes={shownNodes}
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
+                                    onVerticalZoom={this.zoomVertical}
+                                    verticalZoom={this.state.zoomStateAll}
                                 />
                                 <div className="mchild">
                                     {this.state.isLoaded ?
                                         <HeatmapView
-                                            onZoom={this.state.zoom}
-                                            onDrag={this.lr}
+                                            onVerticalZoom={this.zoomVertical}
+                                            verticalZoom={this.state.zoomStateAll}
                                             divID={"md_viz"}
                                             containerID={"md-container"}
                                             nodes={this.state.nodes}
