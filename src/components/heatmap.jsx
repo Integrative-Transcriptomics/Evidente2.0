@@ -32,18 +32,44 @@ class Heatmap extends Component {
         if (!_.isEqual(actualSelectedNodes, newSelectedNodes)) {
             this.highlight_leaves(newSelectedNodes);
             return false;
+        } else if (!_.isEqual(this.props.verticalZoom, nextProp.verticalZoom) ||
+            !_.isEqual(this.state.horizontalZoom, nextState.horizontalZoom)) {
+            console.log("HERE")
+            const selection = d3.select(`#${this.props.containerID}`);
+            let translateY = 0
+            let scaleY = 1
+            let translateX = 0
+            let scaleX = 1
+            if (nextProp.verticalZoom) {
+                const verticalZoom = nextProp.verticalZoom
+                translateY = verticalZoom.k === 1 ? 0 : verticalZoom.y
+                scaleY = verticalZoom.k
+            }
+            if (nextState.horizontalZoom) {
+                const horizontalZoom = nextState.horizontalZoom
+                scaleX = horizontalZoom.k
+                translateX = Math.min(this.state.expectedWidth * scaleX, Math.max(horizontalZoom.x, -1 * this.state.expectedWidth * scaleX))
+            }
+
+            if (nextProp.verticalZoom || nextState.horizontalZoom) {
+                selection.attr(
+                    "transform",
+                    `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
+                );
+            }
+            return false
         } else if (
             !_.isEqual(newVisualized, actualVisualized) ||
             !_.isEqual(actualVisualizedSNPs, newVisualizedSNPs) ||
             !_.isEqual(actualNodes, newNodes) ||
             !_.isEqual(actualHiddenNodes, newHiddenNodes) ||
             !_.isEqual(actualCollapsedClades, newCollapsedClades) ||
-            !_.isEqual(this.props.verticalZoom, nextProp.verticalZoom) ||
-            !_.isEqual(this.state.horizontalZoom, nextState.horizontalZoom) ||
+
 
             (!_.isEqual(actualState.mdinfo, nextProp.mdinfo) && newNodes.length > 0)
         ) {
             return true;
+
         } else {
             return false;
         }
@@ -75,28 +101,7 @@ class Heatmap extends Component {
             this.setState({ expectedWidth: expectedVizWidth })
         }
 
-        const selection = container
-        let translateY = 0
-        let scaleY = 1
-        let translateX = 0
-        let scaleX = 1
-        if (this.props.verticalZoom) {
-            const verticalZoom = this.props.verticalZoom
-            translateY = verticalZoom.k === 1 ? 0 : verticalZoom.y
-            scaleY = verticalZoom.k
-        }
-        if (this.state.horizontalZoom) {
-            const horizontalZoom = this.state.horizontalZoom
-            scaleX = horizontalZoom.k
-            translateX = Math.min(this.state.expectedWidth * scaleX, Math.max(horizontalZoom.x, -1 * this.state.expectedWidth * scaleX))
-        }
 
-        if (this.props.verticalZoom || this.state.horizontalZoom) {
-            selection.attr(
-                "transform",
-                `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
-            );
-        }
 
         if (init) {
             this.initHeatmap(container);
@@ -485,7 +490,7 @@ class Heatmap extends Component {
             console.log(zoomState);
             this.setState({ horizontalZoom: zoomState })
         });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height + margin.top)
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height + this.props.margin.top)
         d3v5.select(`#parent-svg`).call(verticalZoom);
         d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.state.actualWidth - this.props.margin.left - this.props.margin.right, this.props.height));
 
