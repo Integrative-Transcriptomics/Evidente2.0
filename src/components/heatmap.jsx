@@ -482,7 +482,6 @@ class Heatmap extends Component {
             [w, h]
         ]).on("zoom", (d, event, i) => {
             const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
-            console.log(zoomState);
             this.setState({ horizontalZoom: zoomState })
         });
         const verticalZoom = this.props.onVerticalZoom(0, 0, this.state.actualWidth, this.props.height)
@@ -498,13 +497,14 @@ class Heatmap extends Component {
                  width={this.state.expectedWidth}
                  height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
-
                 <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}>
                     <g id={this.props.containerID}/>
                 </g>
                  {this.props.appendLines ?
                     <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
                         <GuideLines yScale={this.props.yScale} width={this.props.margin.right}
+                                    onVerticalZoom={this.props.onVerticalZoom}
+                                    verticalZoom={this.props.verticalZoom}
                                     height={this.props.height}/>
                     </g>
                     : null}
