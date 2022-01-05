@@ -65,7 +65,15 @@ class App extends Component {
             let horizontalZoom
             if (["#guidelines-container", "#container-labels"].includes(id)  ){
                  horizontalZoom = {"x":0, "y":0, "k":1};
-            }else{
+            } else if (["#heatmap-container",
+            "#md-container",].includes(id)  ){
+                const container = getCurrentTransformation[id]
+                 const scaleHor =  d3v5.zoomTransform(d3v5.select(container).node());
+                const selection = d3.select(`${id}`);
+                const translateHor = d3.transform(selection.attr("transform")).translate[0] 
+
+                horizontalZoom = {"x":translateHor, "y":0, "k":scaleHor.k};
+           }else{
                 const container = getCurrentTransformation[id]
                  horizontalZoom =  d3v5.zoomTransform(d3v5.select(container).node());
             }
