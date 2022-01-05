@@ -4,13 +4,11 @@ import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
 import Alert from "@material-ui/lab/Alert";
-import GuideLines from "./guide-lines";
 
 function HeatmapView(props) {
     const [height, setheight] = useState(400)
     const [width, setwidth] = useState(400);
     const [marginTop, setMarginTop] = useState(100);
-
     const SNPprefix = "Pos";
     const container = createRef();
     const handleResize = useCallback(() => {
