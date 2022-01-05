@@ -451,7 +451,6 @@ class App extends Component {
     //----------------------------------------------------------------------------------------
 
     handleSubmitAllFiles = async (files) => {
-        console.log("submit")
         this.setState({isLoaded: false})
         const visFormData = new FormData();
         Object.entries(files.visFiles).forEach(([key, value]) => {
@@ -491,13 +490,6 @@ class App extends Component {
         } else {
             this.setState(this.initialState);
             // Set file to starting state
-            Array.from(document.getElementsByClassName("custom-file-input")).forEach(
-                (el) => (el.value = "")
-            );
-            Array.from(document.getElementsByClassName("custom-file-label")).forEach(
-                (el) => (el.innerText = el.innerText.split(":")[0])
-            );
-
             let {metadataInfo = {}} = json;
             let ordinalValues = _.toPairs(metadataInfo).filter(
                 (d) => d[1].type.toLowerCase() === "ordinal"

@@ -1,7 +1,5 @@
 import React, {Component} from "react";
-import {Typography} from "@material-ui/core";
-import {Button, Form} from "react-bootstrap";
-import Alert from '@material-ui/lab/Alert';
+import {Alert, Button, Form} from "react-bootstrap";
 
 
 class FileUploadForm extends Component {
@@ -55,15 +53,16 @@ class FileUploadForm extends Component {
 
     render() {
         return (<React.Fragment>
-            <Typography variant='h6'>Tree Files</Typography>
             <Form>
+                <Form.Label size={"sm"}>Tree Files</Form.Label>
+
                 {[
-                    {id: "nwk", label: "Newick Tree *"},
-                    {id: "snp", label: "SNP Table *"},
+                    {id: "nwk", label: "Newick Tree*"},
+                    {id: "snp", label: "SNP Table*"},
                     {id: "taxainfo", label: "Taxa metadata"},
                     // { id: "SNPinfo", label: "SNP metadata" },
                 ].map(({id, label}) => {
-                    const currentLabel=this.state.visFiles[id] !== null ? label + ": " + this.state.visFiles[id].name : label;
+                    const currentLabel = this.state.visFiles[id] !== null ? label + ": " + this.state.visFiles[id].name : label;
                     return (
                         <Form.Group key={id}>
                             <Form.File
@@ -74,7 +73,7 @@ class FileUploadForm extends Component {
                         </Form.Group>
                     )
                 })}
-                <Typography variant='h6'>Statistic Files (optional)</Typography>
+                <Form.Label size={"sm"}>Statistic Files (optional)</Form.Label>
                 {[
                     {id: "goterm", label: "GO"},
                     {id: "gff", label: "GFF-file"},
@@ -88,10 +87,10 @@ class FileUploadForm extends Component {
                         />
                     </Form.Group>
                 ))}
-                <Typography>(*)=required</Typography>
+                <Form.Text>(*)=required</Form.Text>
             </Form>
             {this.state.error ? <Alert
-                severity={this.state.error.level === "error" ? "error" : "warning"}>{this.state.error.text}</Alert> : null}
+                variant={this.state.error.level === "error" ? "danger" : "warning"}>{this.state.error.text}</Alert> : null}
             <Button variant='primary' disabled={this.state.nwk === null} onClick={this.submitFiles}>
                 {this.state.error === false ? "Submit" : this.state.error.level === "hint" ? "Submit anyway" : "Submit"}
             </Button>

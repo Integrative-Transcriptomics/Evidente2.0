@@ -1,6 +1,5 @@
 import React, {Component} from "react";
-import {Card} from "react-bootstrap";
-import {Typography} from "@material-ui/core";
+import {Card, Form} from "react-bootstrap";
 import {isEqual} from "lodash";
 
 import Select, {components} from "react-select";
@@ -87,7 +86,8 @@ class VisualizeDataCard extends Component {
     render() {
         return (
             <Card.Body style={{maxHeight: 250, overflow: "auto"}}>
-                <Typography variant='h6'>Select to visualize</Typography>
+                <Form>
+                <Form.Label variant='h6'>Select to visualize</Form.Label>
                 <Select
                     id='snpdatashow'
                     options={this.props.availableSNPs.map((d) => ({value: d, label: d}))}
@@ -102,7 +102,7 @@ class VisualizeDataCard extends Component {
                     menuPosition={"fixed"}
                     menuPortalTarget={document.getElementById("tools")}
                     styles={selectStates}
-                ></Select>
+                />
                 <Select
                     id='metadatashow'
                     options={this.props.getMetadata(this.props.availableMDs)}
@@ -116,7 +116,8 @@ class VisualizeDataCard extends Component {
                     menuPosition={"fixed"}
                     menuPortalTarget={document.getElementById("tools")}
                     styles={selectStates}
-                ></Select>
+                />
+                </Form>
             </Card.Body>
         );
     }
