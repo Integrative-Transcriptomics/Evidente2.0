@@ -8,7 +8,7 @@ import GuideLines from "./guide-lines";
 
 class Heatmap extends Component {
     isSNP = this.props.isSNP;
-    state = {actualWidth: this.props.maxWidth, expectedWidth: this.props.maxWidth};
+    state = { actualWidth: this.props.maxWidth, expectedWidth: this.props.maxWidth };
     SNPcolorScale = this.props.SNPcolorScale;
     SNPprefix = "Pos";
     minCollapsedCellWidth = 40;
@@ -69,10 +69,10 @@ class Heatmap extends Component {
             actualWidth = this.props.maxWidth;
         }
         if (this.state.actualWidth !== actualWidth) {
-            this.setState({actualWidth: actualWidth})
+            this.setState({ actualWidth: actualWidth })
         }
         if (this.state.expectedWidth !== expectedVizWidth) {
-            this.setState({expectedWidth: expectedVizWidth})
+            this.setState({ expectedWidth: expectedVizWidth })
         }
 
         const selection = container
@@ -82,7 +82,7 @@ class Heatmap extends Component {
         let scaleX = 1
         if (this.props.verticalZoom) {
             const verticalZoom = this.props.verticalZoom
-            translateY = verticalZoom.y
+            translateY = verticalZoom.k === 1 ? 0 : verticalZoom.y
             scaleY = verticalZoom.k
         }
         if (this.state.horizontalZoom) {
@@ -485,7 +485,7 @@ class Heatmap extends Component {
             console.log(zoomState);
             this.setState({ horizontalZoom: zoomState })
         });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.state.actualWidth, this.props.height)
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height + margin.top)
         d3v5.select(`#parent-svg`).call(verticalZoom);
         d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.state.actualWidth - this.props.margin.left - this.props.margin.right, this.props.height));
 
@@ -493,19 +493,19 @@ class Heatmap extends Component {
     }
 
     render() {
-        return <div id={this.props.divID} style={{width: this.state.actualWidth, overflow:"hidden"}} >
+        return <div id={this.props.divID} style={{ width: this.state.actualWidth, overflow: "hidden" }} >
             <svg id={`display_${this.props.divID}`}
-                 width={this.state.expectedWidth}
-                 height={this.props.height + this.props.margin.top + this.props.margin.bottom}
+                width={this.state.expectedWidth}
+                height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
 
                 <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}>
-                    <g id={this.props.containerID}/>
+                    <g id={this.props.containerID} />
                 </g>
-                 {this.props.appendLines ?
+                {this.props.appendLines ?
                     <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
                         <GuideLines yScale={this.props.yScale} width={this.props.margin.right}
-                                    height={this.props.height}/>
+                            height={this.props.height} />
                     </g>
                     : null}
             </svg>

@@ -213,7 +213,7 @@ class Phylotree extends Component {
         let scaleX = 1
         if (this.props.verticalZoom) {
             const verticalZoom = this.props.verticalZoom
-            translateY = verticalZoom.y
+            translateY = verticalZoom.k === 1 ? 0 : verticalZoom.y
             scaleY = verticalZoom.k
         }
         if (this.state.horizontalZoom) {
@@ -257,7 +257,7 @@ class Phylotree extends Component {
             const zoomState = d3v5.zoomTransform(d3v5.select(`#tree-display`).node());
             this.setState({ horizontalZoom: zoomState })
         });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.container.offsetWidth, this.container.offsetHeight)
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.container.offsetWidth, this.container.offsetHeight + margin_top)
         d3v5.select(`#parent-svg`).call(verticalZoom);
         d3v5.select(`#tree-display`).call(zoomHorizontal(0, 0, this.container.offsetWidth, this.container.offsetHeight));
 

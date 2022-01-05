@@ -23,7 +23,7 @@ class Labels extends Component {
             if (!selection.empty()) {
                 selection.attr(
                     "transform",
-                    `translate(0, ${this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
+                    `translate(0, ${this.props.verticalZoom.k === 1 ? 0 : this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
                 );
             }
         }
@@ -117,7 +117,7 @@ class Labels extends Component {
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
 
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight)
+        const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight + margin_top)
         d3v5.select(`#parent-svg`).call(verticalZoom);
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
     }
