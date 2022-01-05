@@ -196,11 +196,9 @@ function HeatmapView(props) {
             x_elements={props.visSNPs.map((d) => `${SNPprefix}${d}`)}
             y_elements={shownNodes}
             mdinfo={props.mdinfo}
-            onVerticalZoom={props.onVerticalZoom}
-            verticalZoom={props.verticalZoom}
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
-            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
+            margin={{ top: marginTop, right: linesWidth, bottom: 0, left: 0 }}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -219,12 +217,10 @@ function HeatmapView(props) {
             yScale={yScale}
             x_elements={props.visualizedMD}
             y_elements={shownNodes}
-            onVerticalZoom={props.onVerticalZoom}
-            verticalZoom={props.verticalZoom}
             mdinfo={props.mdinfo}
             divID={"md_viz"}
             containerID={"md-container"}
-            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
+            margin={{ top: marginTop, right: linesWidth, bottom: 0, left: 0 }}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}

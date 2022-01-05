@@ -8,12 +8,26 @@ import GuideLines from "./guide-lines";
 
 class Heatmap extends Component {
     isSNP = this.props.isSNP;
-    state = {actualWidth: this.props.maxWidth, expectedWidth: this.props.maxWidth};
+    state = { actualWidth: this.props.maxWidth, expectedWidth: this.props.maxWidth };
     SNPcolorScale = this.props.SNPcolorScale;
     SNPprefix = "Pos";
     minCollapsedCellWidth = 40;
     minNormalCellWidth = 5;
-
+    zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
+        return d3v5.event.shiftKey;
+    }).scaleExtent([1, 10])
+        .translateExtent([
+            [startx, starty],
+            [w, h]
+        ]).on("zoom", (d, event, i) => {
+            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
+            const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+            const selection = d3.select(`#${this.props.containerID}`);
+            selection.attr(
+                "transform",
+                `translate(${zoomState.x}, ${verticalZoom.y} )scale(${zoomState.k}, ${verticalZoom.k})`
+            );
+        });
     shouldComponentUpdate(nextProp, nextState) {
         let actualProp = this.props;
         let actualState = this.state;
@@ -38,12 +52,12 @@ class Heatmap extends Component {
             !_.isEqual(actualNodes, newNodes) ||
             !_.isEqual(actualHiddenNodes, newHiddenNodes) ||
             !_.isEqual(actualCollapsedClades, newCollapsedClades) ||
-            !_.isEqual(this.props.verticalZoom, nextProp.verticalZoom) ||
-            !_.isEqual(this.state.horizontalZoom, nextState.horizontalZoom) ||
+
 
             (!_.isEqual(actualState.mdinfo, nextProp.mdinfo) && newNodes.length > 0)
         ) {
             return true;
+
         } else {
             return false;
         }
@@ -61,42 +75,24 @@ class Heatmap extends Component {
             Math.min(props.maxWidth / props.x_elements.length, cellWidthMax),
             cellWidthMin
         );
+
         let container = d3.select(`#${this.props.containerID}`);
         let expectedVizWidth = cellWidth * props.x_elements.length;
         expectedVizWidth = expectedVizWidth + props.margin.right;
         let actualWidth = expectedVizWidth;
+
         if (this.props.maxWidth < expectedVizWidth) {
             actualWidth = this.props.maxWidth;
         }
         if (this.state.actualWidth !== actualWidth) {
-            this.setState({actualWidth: actualWidth})
+            this.setState({ actualWidth: actualWidth })
         }
         if (this.state.expectedWidth !== expectedVizWidth) {
-            this.setState({expectedWidth: expectedVizWidth})
+            this.setState({ expectedWidth: expectedVizWidth })
+
         }
 
-        const selection = container
-        let translateY = 0
-        let scaleY = 1
-        let translateX = 0
-        let scaleX = 1
-        if (this.props.verticalZoom) {
-            const verticalZoom = this.props.verticalZoom
-            translateY = verticalZoom.y
-            scaleY = verticalZoom.k
-        }
-        if (this.state.horizontalZoom) {
-            const horizontalZoom = this.state.horizontalZoom
-            scaleX = horizontalZoom.k
-            translateX = Math.min(this.state.expectedWidth * scaleX, Math.max(horizontalZoom.x, -1 * this.state.expectedWidth * scaleX))
-        }
 
-        if (this.props.verticalZoom || this.state.horizontalZoom) {
-            selection.attr(
-                "transform",
-                `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
-            );
-        }
 
         if (init) {
             this.initHeatmap(container);
@@ -458,6 +454,9 @@ class Heatmap extends Component {
      * @param {HTMLElement} container
      */
     initHeatmap(container) {
+        // get current state to align heatmap to tree and labels 
+        const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+        container.attr("transform", `translate(0,${verticalZoom.y}), scale(1,${verticalZoom.k}) `)
         container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`);
         container.append("g").attr("class", "x axis");
         container
@@ -475,37 +474,24 @@ class Heatmap extends Component {
     }
 
     componentDidMount() {
-        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
-            return d3v5.event.shiftKey;
-        }).scaleExtent([1, 10]).translateExtent([
-            [startx, starty],
-            [w, h]
-        ]).on("zoom", (d, event, i) => {
-            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
-            this.setState({ horizontalZoom: zoomState })
-        });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.state.actualWidth, this.props.height)
-        d3v5.select(`#parent-svg`).call(verticalZoom);
-        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.state.actualWidth - this.props.margin.left - this.props.margin.right, this.props.height));
 
+        d3v5.select(`#display_${this.props.divID}`).call(this.zoomHorizontal(0, 0, this.state.actualWidth, this.props.height));
         this.updateComponent(true)
     }
 
     render() {
-        return <div id={this.props.divID} style={{width: this.state.actualWidth, overflow:"hidden"}} >
+        return <div id={this.props.divID} style={{ width: this.state.actualWidth, overflow: "hidden" }} >
             <svg id={`display_${this.props.divID}`}
-                 width={this.state.expectedWidth}
-                 height={this.props.height + this.props.margin.top + this.props.margin.bottom}
+                width={this.state.expectedWidth}
+                height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
                 <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}>
-                    <g id={this.props.containerID}/>
+                    <g id={this.props.containerID} />
                 </g>
-                 {this.props.appendLines ?
+                {this.props.appendLines ?
                     <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
                         <GuideLines yScale={this.props.yScale} width={this.props.margin.right}
-                                    onVerticalZoom={this.props.onVerticalZoom}
-                                    verticalZoom={this.props.verticalZoom}
-                                    height={this.props.height}/>
+                            height={this.props.height} />
                     </g>
                     : null}
             </svg>

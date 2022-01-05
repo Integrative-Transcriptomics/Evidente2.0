@@ -11,22 +11,13 @@ class Labels extends Component {
     shouldComponentUpdate(nextProp, nextState) {
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
-        return !isEqual(newNodes, oldNodes) || !isEqual(this.props.verticalZoom, nextProp.verticalZoom);
+        return !isEqual(newNodes, oldNodes)
     }
 
     componentDidUpdate(prevProps, prevState) {
         let margin_top = this.globalHeight * 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
-        if (this.props.verticalZoom) {
-            const selection = d3v5.select(`#container-labels`);
-            if (!selection.empty()) {
-                selection.attr(
-                    "transform",
-                    `translate(0, ${this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
-                );
-            }
-        }
         let div = d3.select("#tooltip");
         let height = this.globalHeight;
         let props = this.props;
@@ -103,10 +94,11 @@ class Labels extends Component {
             .attr("width", this.container.offsetWidth)
             .attr("height", this.container.offsetHeight)
             .attr("id", `display_${this.props.divID}`)
+            .attr("transform", `translate(0,0)scale(1)`)
             .append("g")
             .attr("id", "adds-margin")
             .append("g")
-            .attr("id", "container-labels");
+            .attr("id", "container-labels")
 
         svg
             .append("g")
@@ -116,9 +108,6 @@ class Labels extends Component {
         this.globalHeight = this.container.offsetHeight;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
-
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight)
-        d3v5.select(`#parent-svg`).call(verticalZoom);
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
     }
 
