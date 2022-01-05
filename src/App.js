@@ -59,10 +59,16 @@ class App extends Component {
         "#md-container",
         "#zoom-phylotree",
         "#container-labels",
+        "#guidelines-container"
     ]) {
         if (d3v5.select(id).node()){
-            const container = getCurrentTransformation[id]
-            const horizontalZoom = d3v5.zoomTransform(d3v5.select(container).node());
+            let horizontalZoom
+            if (["#guidelines-container", "#container-labels"].includes(id)  ){
+                 horizontalZoom = {"x":0, "y":0, "k":1};
+            }else{
+                const container = getCurrentTransformation[id]
+                 horizontalZoom =  d3v5.zoomTransform(d3v5.select(container).node());
+            }
             const selection = d3v5.select(id);
             if (!selection.empty()) {
                 $(id).attr(
