@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
-import Alert from "@material-ui/lab/Alert";
+import {Alert} from "react-bootstrap";
 
 function HeatmapView(props) {
     const [height, setheight] = useState(400)
@@ -235,15 +235,17 @@ function HeatmapView(props) {
             createdFilters={props.createdFilters}
             appendLines={false}
         /> : null}
-        {showAlert ? <Alert severity={"info"} style={{
+        {showAlert ? <Alert variant={"secondary"} style={{
             height: "100%",
             margin: "10px",
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center"
         }}>
+            <div style={{             height: "100%",
+            display: "flex",justifyContent: "center",
+            alignItems: "center"}}>
             No SNPs or metadata selected yet. Please use "Visualize Data" tool to add data or select a node and
             visualize its SNPs
+                </div>
         </Alert> : null}
     </div>
 }

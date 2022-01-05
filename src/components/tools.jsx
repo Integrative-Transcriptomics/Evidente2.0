@@ -293,7 +293,7 @@ class Tools extends Component {
                     menuPortalTarget={document.getElementById("tools")}
                     menuPosition={"fixed"}
                     styles={selectStates}
-                  ></Select>
+                  />
                 </Form.Group>
                 <Button
                   variant='primary'
