@@ -485,7 +485,6 @@ class Heatmap extends Component {
                 width={this.state.expectedWidth}
                 height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
-
                 <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}>
                     <g id={this.props.containerID} />
                 </g>
