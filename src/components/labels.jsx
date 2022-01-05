@@ -9,24 +9,36 @@ class Labels extends Component {
     globalWidth = 0;
 
     shouldComponentUpdate(nextProp, nextState) {
+        // if (!isEqual(this.props.verticalZoom, nextProp.verticalZoom)) {
+        //     if (nextProp.verticalZoom) {
+        //         const selection = d3v5.select(`#container-labels`);
+        //         if (!selection.empty()) {
+        //             selection.attr(
+        //                 "transform",
+        //                 `translate(0, ${nextProp.verticalZoom.y} )scale(1,${nextProp.verticalZoom.k})`
+        //             );
+        //         }
+        //     }
+        //     return false
+        // }
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
-        return !isEqual(newNodes, oldNodes) || !isEqual(this.props.verticalZoom, nextProp.verticalZoom);
+        return !isEqual(newNodes, oldNodes)
     }
 
     componentDidUpdate(prevProps, prevState) {
         let margin_top = this.globalHeight * 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
-        if (this.props.verticalZoom) {
-            const selection = d3v5.select(`#container-labels`);
-            if (!selection.empty()) {
-                selection.attr(
-                    "transform",
-                    `translate(0, ${this.props.verticalZoom.k === 1 ? 0 : this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
-                );
-            }
-        }
+        // if (this.props.verticalZoom) {
+        //     const selection = d3v5.select(`#container-labels`);
+        //     if (!selection.empty()) {
+        //         selection.attr(
+        //             "transform",
+        //             `translate(0, ${this.props.verticalZoom.k === 1 ? 0 : this.props.verticalZoom.y} )scale(1,${this.props.verticalZoom.k})`
+        //         );
+        //     }
+        // }
         let div = d3.select("#tooltip");
         let height = this.globalHeight;
         let props = this.props;
@@ -103,10 +115,11 @@ class Labels extends Component {
             .attr("width", this.container.offsetWidth)
             .attr("height", this.container.offsetHeight)
             .attr("id", `display_${this.props.divID}`)
+            .attr("transform", `translate(0,0)scale(1)`)
             .append("g")
             .attr("id", "adds-margin")
             .append("g")
-            .attr("id", "container-labels");
+            .attr("id", "container-labels")
 
         svg
             .append("g")
@@ -116,9 +129,23 @@ class Labels extends Component {
         this.globalHeight = this.container.offsetHeight;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
-
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.globalWidth, this.globalHeight + margin_top)
-        d3v5.select(`#parent-svg`).call(verticalZoom);
+        // For some reason, if the labels do not have a zoom event, they are not correctly adapted.
+        //TODO: take a deeper look into this. 
+        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
+            return d3v5.event.shiftKey;
+        }).scaleExtent([1, 10]).translateExtent([
+            [startx, starty],
+            [w, h]
+        ]).on("zoom", (d, event, i) => {
+            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
+            const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+            const selection = d3.select(`#${this.props.containerID}`);
+            selection.attr(
+                "transform",
+                `translate(0, ${verticalZoom.y} )scale(1, ${verticalZoom.k})`
+            );
+        });
+        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.globalWidth, this.globalHeight));
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
     }
 

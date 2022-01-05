@@ -45,10 +45,35 @@ class App extends Component {
     [startx, starty],
     [w, h]
 ]).on("zoom", (d, event, i) => {
+    // To get current horizonatl zoom state of each container 
+    let getCurrentTransformation = {
+        "#zoom-phylotree" :"#tree-display",
+        "#heatmap-container" :"#display_heatmap_viz" ,
+        "#md-container" : "#display_md_viz" ,
+        "#container-labels" : "#display_labels_viz",
+    };
     const zoomState = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
-    this.setState({ zoomStateAll: zoomState })
+   
+    for (let id of [
+        "#heatmap-container",
+        "#md-container",
+        "#zoom-phylotree",
+        "#container-labels",
+    ]) {
+        if (d3v5.select(id).node()){
+            const container = getCurrentTransformation[id]
+            const horizontalZoom = d3v5.zoomTransform(d3v5.select(container).node());
+            const selection = d3v5.select(id);
+            if (!selection.empty()) {
+                $(id).attr(
+                    "transform",
+                    `translate(${horizontalZoom.x}, ${zoomState.y})scale(${horizontalZoom.k},${zoomState.k})`
+                );
+            }
+        }
+        
+    }
 });
-
     tree = d3.layout
         .phylotree()
         .options({
@@ -848,6 +873,10 @@ class App extends Component {
             .style("display", "none");
 
         this.handleInitTool();
+        const verticalZoom = this.zoomVertical(0, 0, 100,this.svgContainer.offsetHeight)
+
+        d3v5.select(`#parent-svg`).call(verticalZoom);
+
     }
 
     render() {
@@ -862,7 +891,7 @@ class App extends Component {
                         <header id='inner_fixed'>Evidente</header>
 
                         <div id='div-container-all' className='parent-div'>
-                            <div id='parent-svg' className='parent-svgs'>
+                            <div id='parent-svg' className='parent-svgs' ref={(el) => (this.svgContainer = el)}>
                                 <Phylotree
                                     sendStatisticsRequest={this.sendStatisticsRequest}
                                     handleLoadingToggle={this.handleLoadingToggle}
@@ -884,8 +913,6 @@ class App extends Component {
                                     onOpenRenameClade={this.handleRenameOpenModal}
                                     newick={this.state.newick}
                                     snpdata={this.state.snpdata}
-                                    onVerticalZoom={this.zoomVertical}
-                                    verticalZoom={this.state.zoomStateAll}
                                     ids={this.state.ids}
                                     dialog={this.dialog}
                                 />
@@ -893,14 +920,10 @@ class App extends Component {
                                 <Labels
                                     divID={"labels_viz"}
                                     shownNodes={shownNodes}
-                                    onVerticalZoom={this.zoomVertical}
-                                    verticalZoom={this.state.zoomStateAll}
                                 />
                                 <div className="mchild">
                                     {this.state.isLoaded ?
                                         <HeatmapView
-                                            onVerticalZoom={this.zoomVertical}
-                                            verticalZoom={this.state.zoomStateAll}
                                             divID={"md_viz"}
                                             containerID={"md-container"}
                                             nodes={this.state.nodes}

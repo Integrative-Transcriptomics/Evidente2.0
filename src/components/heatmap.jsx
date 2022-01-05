@@ -13,7 +13,21 @@ class Heatmap extends Component {
     SNPprefix = "Pos";
     minCollapsedCellWidth = 40;
     minNormalCellWidth = 5;
-
+    zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
+        return d3v5.event.shiftKey;
+    }).scaleExtent([1, 10])
+        .translateExtent([
+            [startx, starty],
+            [w, h]
+        ]).on("zoom", (d, event, i) => {
+            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
+            const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+            const selection = d3.select(`#${this.props.containerID}`);
+            selection.attr(
+                "transform",
+                `translate(${zoomState.x}, ${verticalZoom.y} )scale(${zoomState.k}, ${verticalZoom.k})`
+            );
+        });
     shouldComponentUpdate(nextProp, nextState) {
         let actualProp = this.props;
         let actualState = this.state;
@@ -32,32 +46,6 @@ class Heatmap extends Component {
         if (!_.isEqual(actualSelectedNodes, newSelectedNodes)) {
             this.highlight_leaves(newSelectedNodes);
             return false;
-        } else if (!_.isEqual(this.props.verticalZoom, nextProp.verticalZoom) ||
-            !_.isEqual(this.state.horizontalZoom, nextState.horizontalZoom)) {
-            console.log("HERE")
-            const selection = d3.select(`#${this.props.containerID}`);
-            let translateY = 0
-            let scaleY = 1
-            let translateX = 0
-            let scaleX = 1
-            if (nextProp.verticalZoom) {
-                const verticalZoom = nextProp.verticalZoom
-                translateY = verticalZoom.k === 1 ? 0 : verticalZoom.y
-                scaleY = verticalZoom.k
-            }
-            if (nextState.horizontalZoom) {
-                const horizontalZoom = nextState.horizontalZoom
-                scaleX = horizontalZoom.k
-                translateX = Math.min(this.state.expectedWidth * scaleX, Math.max(horizontalZoom.x, -1 * this.state.expectedWidth * scaleX))
-            }
-
-            if (nextProp.verticalZoom || nextState.horizontalZoom) {
-                selection.attr(
-                    "transform",
-                    `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
-                );
-            }
-            return false
         } else if (
             !_.isEqual(newVisualized, actualVisualized) ||
             !_.isEqual(actualVisualizedSNPs, newVisualizedSNPs) ||
@@ -87,10 +75,12 @@ class Heatmap extends Component {
             Math.min(props.maxWidth / props.x_elements.length, cellWidthMax),
             cellWidthMin
         );
+
         let container = d3.select(`#${this.props.containerID}`);
         let expectedVizWidth = cellWidth * props.x_elements.length;
         expectedVizWidth = expectedVizWidth + props.margin.right;
         let actualWidth = expectedVizWidth;
+
         if (this.props.maxWidth < expectedVizWidth) {
             actualWidth = this.props.maxWidth;
         }
@@ -99,6 +89,7 @@ class Heatmap extends Component {
         }
         if (this.state.expectedWidth !== expectedVizWidth) {
             this.setState({ expectedWidth: expectedVizWidth })
+
         }
 
 
@@ -463,6 +454,9 @@ class Heatmap extends Component {
      * @param {HTMLElement} container
      */
     initHeatmap(container) {
+        // get current state to align heatmap to tree and labels 
+        const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+        container.attr("transform", `translate(0,${verticalZoom.y}), scale(1,${verticalZoom.k}) `)
         container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`);
         container.append("g").attr("class", "x axis");
         container
@@ -480,20 +474,8 @@ class Heatmap extends Component {
     }
 
     componentDidMount() {
-        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
-            return d3v5.event.shiftKey;
-        }).scaleExtent([1, 10]).translateExtent([
-            [startx, starty],
-            [w, h]
-        ]).on("zoom", (d, event, i) => {
-            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
-            console.log(zoomState);
-            this.setState({ horizontalZoom: zoomState })
-        });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.props.width, this.props.height + this.props.margin.top)
-        d3v5.select(`#parent-svg`).call(verticalZoom);
-        d3v5.select(`#display_${this.props.divID}`).call(zoomHorizontal(0, 0, this.state.actualWidth - this.props.margin.left - this.props.margin.right, this.props.height));
 
+        d3v5.select(`#display_${this.props.divID}`).call(this.zoomHorizontal(0, 0, this.state.actualWidth, this.props.height));
         this.updateComponent(true)
     }
 
