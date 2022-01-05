@@ -48,7 +48,7 @@ class App extends Component {
     const zoomState = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
     this.setState({ zoomStateAll: zoomState })
 });
- 
+
     tree = d3.layout
         .phylotree()
         .options({
