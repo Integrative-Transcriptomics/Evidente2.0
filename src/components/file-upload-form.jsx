@@ -54,7 +54,7 @@ class FileUploadForm extends Component {
     render() {
         return (<React.Fragment>
             <Form>
-                <Form.Label>Tree Files</Form.Label>
+                <Form.Label size={"sm"}>Tree Files</Form.Label>
 
                 {[
                     {id: "nwk", label: "Newick Tree*"},
@@ -73,7 +73,7 @@ class FileUploadForm extends Component {
                         </Form.Group>
                     )
                 })}
-                <Form.Label>Statistic Files (optional)</Form.Label>
+                <Form.Label size={"sm"}>Statistic Files (optional)</Form.Label>
                 {[
                     {id: "goterm", label: "GO"},
                     {id: "gff", label: "GFF-file"},

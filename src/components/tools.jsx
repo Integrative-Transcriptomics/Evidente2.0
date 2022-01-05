@@ -8,7 +8,7 @@ import * as d3 from "d3";
 // import { jsPDF } from "jspdf";
 // import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image";
-import { Divider, Grid, Typography } from "@material-ui/core";
+import { Divider, Typography } from "@material-ui/core";
 
 import HelpIcon from "@material-ui/icons/Help";
 
@@ -268,18 +268,10 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='3'>
               <Card.Body>
-                <Grid container spacing={2} direction='row' alignItems='center'>
-                  <Grid item>
-                    <Typography variant='h6'>Create a filter group with metadata</Typography>
-                  </Grid>
-                  <Grid item>
-                    <OverlayTrigger placement='top' overlay={helpTooltip}>
-                      <HelpIcon style={{ display: "flex" }} />
-                    </OverlayTrigger>
-                  </Grid>
-                </Grid>
-
                 <Form.Group key='metadatafilter'>
+                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger placement='top' overlay={helpTooltip}>
+                      <HelpIcon style={{ display: "flex" }} />
+                    </OverlayTrigger></Form.Label>
                   <Select
                     id='select-filter'
                     options={this.getMetadata(this.props.availableMDs)}
@@ -308,13 +300,13 @@ class Tools extends Component {
                 {this.props.createdFilters.length > 0 && (
                   <React.Fragment>
                     <Divider variant='middle' style={{ marginTop: "5px", marginBottom: "5px" }} />
-                    <Typography variant='h6'>Created filter groups</Typography>
-                    <Typography variant='h6' style={{ fontWeight: "normal" }}>
+                    <h6>Created filter groups</h6>
+                    <h6 style={{ fontWeight: "normal" }}>
                       Applying following filter would result in {this.props.remainingNodes}{" "}
                       {this.props.remainingNodes > 1 || this.props.remainingNodes === 0
                         ? "nodes"
                         : "node"}
-                    </Typography>
+                    </h6>
 
                     <FilterList
                       remainingNodes={this.props.remainingNodes}
@@ -343,11 +335,11 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='4'>
               <Card.Body>
-                <Typography variant={"h6"}>Tree Analysis</Typography>
                 <Form id='tree-enrichment'>
+                  <Form.Label size={"sm"}>Tree Analysis</Form.Label>
                   <Form.Group id='group'>
                     <Form.Label size={"sm"}>
-                        <Typography variant={"h6"}>Significance Level</Typography>
+                        Significance Level
                     </Form.Label>
                     <Form.Control size={"sm"} id='sig-level-tree' type='text' defaultValue='0.05' />
                   </Form.Group>
@@ -355,9 +347,9 @@ class Tools extends Component {
                 <Button variant='primary' onClick={this.props.onStatisticsTreeRequest}>
                   Find enriched Clades
                 </Button>
-                                <Typography variant='h6' gutterBottom={true}>
+                <h6>
                   Previous Results
-                </Typography>
+                </h6>
                 <ButtonGroup aria-label="Basic example">
                   {["Clade", "Tree"].map((typeOfResult) => (
                       <Button
@@ -383,9 +375,11 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='6'>
               <Card.Body>
-                <Typography variant='h6' gutterBottom={true}>
+                <Form>
+                <Form.Label size={"sm"}>
                   Export visualizations
-                </Typography>
+                </Form.Label>
+                  <Form.Group>
                 <Button
                   variant='primary'
                   onClick={() => {
@@ -396,6 +390,8 @@ class Tools extends Component {
                 >
                   Export
                 </Button>
+                    </Form.Group>
+                  </Form>
                 {/* <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
         {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
           <Grid key={typeOfExport} item>
