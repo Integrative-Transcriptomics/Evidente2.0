@@ -196,9 +196,8 @@ class Phylotree extends Component {
     }
 
     shouldComponentUpdate(nextProp, nextState) {
-        return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) ||
-            !_.isEqual(this.props.verticalZoom, nextProp.verticalZoom) ||
-            !_.isEqual(this.state.horizontalZoom, nextState.horizontalZoom)
+
+        return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick)
     }
 
     componentDidUpdate(prevProp) {
@@ -206,28 +205,7 @@ class Phylotree extends Component {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
         }
-        const selection = d3v5.select("#zoom-phylotree")
-        let translateY = 0
-        let scaleY = 1
-        let translateX = 0
-        let scaleX = 1
-        if (this.props.verticalZoom) {
-            const verticalZoom = this.props.verticalZoom
-            translateY = verticalZoom.y
-            scaleY = verticalZoom.k
-        }
-        if (this.state.horizontalZoom) {
-            const horizontalZoom = this.state.horizontalZoom
-            translateX = horizontalZoom.x
-            scaleX = horizontalZoom.k
-        }
 
-        if (this.props.verticalZoom || this.state.horizontalZoom) {
-            selection.attr(
-                "transform",
-                `translate(${translateX}, ${translateY} )scale(${scaleX}, ${scaleY})`
-            );
-        }
     }
 
     componentDidMount() {
@@ -255,10 +233,15 @@ class Phylotree extends Component {
             [w, h]
         ]).on("zoom", (d, event, i) => {
             const zoomState = d3v5.zoomTransform(d3v5.select(`#tree-display`).node());
-            this.setState({ horizontalZoom: zoomState })
+            const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
+            const selection = d3.select(`#zoom-phylotree`);
+            selection.attr(
+                "transform",
+                `translate(${zoomState.x}, ${verticalZoom.y} )scale(${zoomState.k}, ${verticalZoom.k})`
+            );
+
         });
-        const verticalZoom = this.props.onVerticalZoom(0, 0, this.container.offsetWidth, this.container.offsetHeight)
-        d3v5.select(`#parent-svg`).call(verticalZoom);
+
         d3v5.select(`#tree-display`).call(zoomHorizontal(0, 0, this.container.offsetWidth, this.container.offsetHeight));
 
 
