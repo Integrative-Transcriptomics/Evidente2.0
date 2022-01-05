@@ -29,6 +29,7 @@ class NodeInformation extends Component {
                             <Card>
                                 <Accordion.Toggle
                                     as={Card.Header}
+                                    style={{backgroundColor:"lightblue"}}
                                     eventKey={this.state.showSupport ? "0" : "-1"}
                                     id='supportingSNPs-header'
                                 >
@@ -56,6 +57,7 @@ class NodeInformation extends Component {
                             <Card>
                                 <Accordion.Toggle
                                     as={Card.Header}
+                                    style={{backgroundColor:"lightblue"}}
                                     eventKey={this.state.showNonSupport ? "1" : "-1"}
                                     id='nonSupportingSNPs-header'
                                 >

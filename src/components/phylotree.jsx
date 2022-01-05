@@ -48,7 +48,7 @@ class Phylotree extends Component {
             this.props.selectedNodeID &&
             this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
         ) {
-            container.selectAll("circle").style({ fill: "purple" }).attr({ r: 5 });
+            container.selectAll("circle").style({ fill: "lightblue" }).attr({ r: 7 });
         }
     };
 
