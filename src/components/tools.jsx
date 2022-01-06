@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip , ButtonGroup} from "react-bootstrap";
+import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip, ButtonGroup } from "react-bootstrap";
 import Select, { components } from "react-select";
 import { filter, keys } from "lodash";
 import * as $ from "jquery";
@@ -8,7 +8,7 @@ import * as d3 from "d3";
 // import { jsPDF } from "jspdf";
 // import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image";
-import { Divider, Typography } from "@material-ui/core";
+import { Divider } from "@material-ui/core";
 
 import HelpIcon from "@material-ui/icons/Help";
 
@@ -140,8 +140,6 @@ class Tools extends Component {
     var allData = document.getElementById("parent-svg");
     allData.appendChild(divLegend);
 
-    // var borderStyle = allData.style.border;
-    // allDAta.style.border = "none";
     // labeling of the tree
     var figureName = "Evidente_" + Date.now();
 
@@ -230,7 +228,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
-               <FileUploadForm loadFiles={this.props.loadFiles}/>
+                <FileUploadForm loadFiles={this.props.loadFiles} />
               </Card.Body>
             </Accordion.Collapse>
           </Card>
@@ -270,8 +268,8 @@ class Tools extends Component {
               <Card.Body>
                 <Form.Group key='metadatafilter'>
                   <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger placement='top' overlay={helpTooltip}>
-                      <HelpIcon style={{ display: "flex" }} />
-                    </OverlayTrigger></Form.Label>
+                    <HelpIcon style={{ display: "flex" }} />
+                  </OverlayTrigger></Form.Label>
                   <Select
                     id='select-filter'
                     options={this.getMetadata(this.props.availableMDs)}
@@ -339,7 +337,7 @@ class Tools extends Component {
                   <Form.Label size={"sm"}>Tree Analysis</Form.Label>
                   <Form.Group id='group'>
                     <Form.Label size={"sm"}>
-                        Significance Level
+                      Significance Level
                     </Form.Label>
                     <Form.Control size={"sm"} id='sig-level-tree' type='text' defaultValue='0.05' />
                   </Form.Group>
@@ -352,13 +350,13 @@ class Tools extends Component {
                 </h6>
                 <ButtonGroup aria-label="Basic example">
                   {["Clade", "Tree"].map((typeOfResult) => (
-                      <Button
-                          key={typeOfResult}
-                        variant='primary'
-                        onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
-                      >
-                        {typeOfResult} analysis
-                      </Button>
+                    <Button
+                      key={typeOfResult}
+                      variant='primary'
+                      onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
+                    >
+                      {typeOfResult} analysis
+                    </Button>
                   ))}
                 </ButtonGroup>
               </Card.Body>
@@ -376,22 +374,22 @@ class Tools extends Component {
             <Accordion.Collapse eventKey='6'>
               <Card.Body>
                 <Form>
-                <Form.Label size={"sm"}>
-                  Export visualizations
-                </Form.Label>
+                  <Form.Label size={"sm"}>
+                    Export visualizations
+                  </Form.Label>
                   <Form.Group>
-                <Button
-                  variant='primary'
-                  onClick={() => {
-                    this.props.handleLoadingToggle(true);
-                    this.onExport();
-                    this.props.handleLoadingToggle(false);
-                  }}
-                >
-                  Export
-                </Button>
-                    </Form.Group>
-                  </Form>
+                    <Button
+                      variant='primary'
+                      onClick={() => {
+                        this.props.handleLoadingToggle(true);
+                        this.onExport();
+                        this.props.handleLoadingToggle(false);
+                      }}
+                    >
+                      Export
+                    </Button>
+                  </Form.Group>
+                </Form>
                 {/* <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
         {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
           <Grid key={typeOfExport} item>

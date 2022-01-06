@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import * as d3v5 from "d3v5";
 import "../../node_modules/phylotree/src/main";
 
 import * as $ from "jquery";
@@ -151,8 +150,6 @@ class Phylotree extends Component {
      * @param {Object} node selected
      */
     startStatisticsDialog(node) {
-        //console.log("in statistics dialog");
-        //console.log("dialog should be visible");
         this.props.showStatisticsModal();
         this.remberCladeSelection(node);
     }
@@ -222,29 +219,48 @@ class Phylotree extends Component {
                 .append("g")
                 .attr("id", "zoom-phylotree")
         );
+        this.container.addEventListener("mousemove", this.horizontalDrag)
+        this.container.addEventListener('wheel', this.horizontalZoom)
+    }
+    // Implements horizontal zoom only for the tree component
+    horizontalZoom = (ev) => {
+        if (ev.ctrlKey) {
+            ev.preventDefault()
+            let selection = d3.select("#zoom-phylotree")
+            let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+            transform = d3.transform(transform)
+            let scale = transform.scale[0]
+            scale = scale + ev.deltaY * -0.001;
+            scale = Math.min(Math.max(0.8, scale), 10);
+            let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
+            let translateX = Math.max(transform.translate[0], scaleDifference);
 
-
-
-
-        const zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
-            return d3v5.event.shiftKey;
-        }).scaleExtent([1, 10]).translateExtent([
-            [startx, starty],
-            [w, h]
-        ]).on("zoom", (d, event, i) => {
-            const zoomState = d3v5.zoomTransform(d3v5.select(`#tree-display`).node());
-            const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
-            const selection = d3.select(`#zoom-phylotree`);
+            let transformString = `translate(${translateX},${transform.translate[1]})scale(${scale},${transform.scale[1]})`;
             selection.attr(
                 "transform",
-                `translate(${zoomState.x}, ${verticalZoom.y} )scale(${zoomState.k}, ${verticalZoom.k})`
+                `${transformString}`
             );
 
-        });
+        }
 
-        d3v5.select(`#tree-display`).call(zoomHorizontal(0, 0, this.container.offsetWidth, this.container.offsetHeight));
+    }
 
-
+    //Implements horizontal drag only for the tree component
+    horizontalDrag = (ev) => {
+        if (this.props.dragActive) {
+            ev.preventDefault()
+            let selection = d3.select("#zoom-phylotree")
+            let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+            transform = d3.transform(transform)
+            let translateX = transform.translate[0] + ev.movementX
+            let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
+            translateX = Math.max(Math.min(10, translateX), scaleDifference);
+            let transformString = `translate(${translateX},${transform.translate[1]})scale(${transform.scale[0]},${transform.scale[1]})`;
+            selection.attr(
+                "transform",
+                `${transformString}`
+            );
+        }
     }
 
     /**

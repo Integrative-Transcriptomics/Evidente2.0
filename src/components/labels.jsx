@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import * as d3 from "d3";
-import * as d3v5 from "d3v5";
 import { isEqual } from "lodash";
 
 class Labels extends Component {
@@ -109,6 +108,11 @@ class Labels extends Component {
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
+        this.container.addEventListener("wheel", function (ev) {
+            if (ev.ctrlKey) {
+                ev.preventDefault()
+            }
+        })
     }
 
     render() {

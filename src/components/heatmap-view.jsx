@@ -3,7 +3,7 @@ import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
-import {Alert} from "react-bootstrap";
+import { Alert } from "react-bootstrap";
 
 function HeatmapView(props) {
     const [height, setheight] = useState(400)
@@ -189,6 +189,7 @@ function HeatmapView(props) {
     }
     return <div ref={container} style={{ height: "100%", display: "flex" }}>
         {props.visSNPs.length > 0 ? <Heatmap
+            dragActive={props.dragActive}
             height={height}
             maxWidth={snpWidth}
             data={filteredSNPData}
@@ -211,6 +212,7 @@ function HeatmapView(props) {
             appendLines={props.visualizedMD.length > 0}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
+            dragActive={props.dragActive}
             height={height}
             maxWidth={mdWidth}
             data={filteredTaxaData}
@@ -236,12 +238,14 @@ function HeatmapView(props) {
             margin: "10px",
             display: "flex",
         }}>
-            <div style={{             height: "100%",
-            display: "flex",justifyContent: "center",
-            alignItems: "center"}}>
-            No SNPs or metadata selected yet. Please use "Visualize Data" tool to add data or select a node and
-            visualize its SNPs
-                </div>
+            <div style={{
+                height: "100%",
+                display: "flex", justifyContent: "center",
+                alignItems: "center"
+            }}>
+                No SNPs or metadata selected yet. Please use "Visualize Data" tool to add data or select a node and
+                visualize its SNPs
+            </div>
         </Alert> : null}
     </div>
 }
