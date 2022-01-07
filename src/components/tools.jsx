@@ -107,7 +107,7 @@ class Tools extends Component {
    * Exports the main SVG to image in pdf document
    *
    */
-  async onExport() {
+  async onExport(type) {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     let allData = document.getElementById("div-export");
     let mainVisualization = document.getElementById("parent-svg").cloneNode(true);
@@ -143,20 +143,37 @@ class Tools extends Component {
 
     // labeling of the tree
     var figureName = "Evidente_" + Date.now();
+    if (type === "JPEG") {
+      domtoimage
+        .toJpeg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+        .then(function (dataUrl) {
+          var link = document.createElement("a");
+          link.download = figureName;
+          link.href = dataUrl;
+          link.click();
+          link.remove();
+          // allData.removeChild(divLegend);
+          allData.removeChild(mainVisualization);
 
-    domtoimage
-      .toJpeg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
-      .then(function (dataUrl) {
-        var link = document.createElement("a");
-        link.download = figureName;
-        link.href = dataUrl;
-        link.click();
-        link.remove();
-        // allData.removeChild(divLegend);
-        allData.removeChild(mainVisualization);
+          // allData.style.border = borderStyle;
+        });
+    }
+    else if (type === "SVG") {
+      domtoimage
+        .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+        .then(function (dataUrl) {
+          var link = document.createElement("a");
+          link.download = figureName;
+          link.href = dataUrl;
+          link.click();
+          link.remove();
+          // allData.removeChild(divLegend);
+          allData.removeChild(mainVisualization);
 
-        // allData.style.border = borderStyle;
-      });
+          // allData.style.border = borderStyle;
+        });
+    }
+
     // this.props.handleLoadingToggle(false);
 
     // element.style.height = "80vh";
@@ -384,11 +401,21 @@ class Tools extends Component {
                       variant='primary'
                       onClick={() => {
                         this.props.handleLoadingToggle(true);
-                        this.onExport();
+                        this.onExport("JPEG");
                         this.props.handleLoadingToggle(false);
                       }}
                     >
                       Export
+                    </Button>
+                    <Button
+                      variant='primary'
+                      onClick={() => {
+                        this.props.handleLoadingToggle(true);
+                        this.onExport("SVG");
+                        this.props.handleLoadingToggle(false);
+                      }}
+                    >
+                      Export SVG
                     </Button>
                   </Form.Group>
                 </Form>
