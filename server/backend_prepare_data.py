@@ -313,7 +313,6 @@ def insert_in_columns(types, columns, col, value):
     :param col: column as :type int
     :param value: value to be inserted in col as
     """
-
     if types[col].lower() == "numerical":
         x = float(value)
     else:
@@ -344,6 +343,7 @@ def parse_meta_data(taxainfo_decode, taxainfo_sep, taxainfo_mod, columns,
         if len(line) > 0:
             if row == 0:
                 headers += line
+                [columns.append(set()) for x in headers]
             elif row == 1:
                 types += line
             else:
@@ -353,10 +353,12 @@ def parse_meta_data(taxainfo_decode, taxainfo_sep, taxainfo_mod, columns,
                     if line[col] != "":
                         curr_line[title] = re.sub("[^a-zA-Z0-9._-]", "_",
                                                   line[col])
-                        insert_in_columns(types, columns, col, line[col])
+
+                        insert_in_columns(types, columns, col, curr_line[title])
                     col += 1
                 taxainfo_mod.append(curr_line)
             row += 1
+
 
 
 def propagate_snps_to_leaves(support, not_support, ids, nwk):

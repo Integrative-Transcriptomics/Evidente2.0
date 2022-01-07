@@ -13,21 +13,7 @@ class Heatmap extends Component {
     SNPprefix = "Pos";
     minCollapsedCellWidth = 40;
     minNormalCellWidth = 5;
-    zoomHorizontal = (startx, starty, w, h) => d3v5.zoom().filter(function () {
-        return d3v5.event.shiftKey;
-    }).scaleExtent([1, 10])
-        .translateExtent([
-            [startx, starty],
-            [w, h]
-        ]).on("zoom", (d, event, i) => {
-            const zoomState = d3v5.zoomTransform(d3v5.select(`#display_${this.props.divID}`).node());
-            const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
-            const selection = d3.select(`#${this.props.containerID}`);
-            selection.attr(
-                "transform",
-                `translate(${zoomState.x}, ${verticalZoom.y} )scale(${zoomState.k}, ${verticalZoom.k})`
-            );
-        });
+
     shouldComponentUpdate(nextProp, nextState) {
         let actualProp = this.props;
         let actualState = this.state;
@@ -80,6 +66,7 @@ class Heatmap extends Component {
         let expectedVizWidth = cellWidth * props.x_elements.length;
         expectedVizWidth = expectedVizWidth + props.margin.right;
         let actualWidth = expectedVizWidth;
+
 
         if (this.props.maxWidth < expectedVizWidth) {
             actualWidth = this.props.maxWidth;
@@ -142,7 +129,7 @@ class Heatmap extends Component {
                     }
                 });
 
-            let ticks = container
+            container
                 .select(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
                 .selectAll(".tick");
 
@@ -455,8 +442,9 @@ class Heatmap extends Component {
      */
     initHeatmap(container) {
         // get current state to align heatmap to tree and labels 
-        const verticalZoom = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
-        container.attr("transform", `translate(0,${verticalZoom.y}), scale(1,${verticalZoom.k}) `)
+        let transform = d3v5.select("#zoom-phylotree").attr("transform") || "translate(0,0)scale(1,1)"
+        transform = d3.transform(transform)
+        container.attr("transform", `translate(0,${transform.translate[1]}), scale(1,${transform.scale[1]}) `)
         container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`);
         container.append("g").attr("class", "x axis");
         container
@@ -475,12 +463,52 @@ class Heatmap extends Component {
 
     componentDidMount() {
 
-        d3v5.select(`#display_${this.props.divID}`).call(this.zoomHorizontal(0, 0, this.state.actualWidth, this.props.height));
         this.updateComponent(true)
+        this.container.addEventListener("mousemove", this.horizontalDrag)
+        this.container.addEventListener('wheel', this.horizontalZoom)
+    }
+
+    horizontalZoom = (ev) => {
+        if (ev.ctrlKey) {
+            ev.preventDefault()
+            let selection = d3.select(`#${this.props.containerID}`)
+            let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+            transform = d3.transform(transform)
+            let scale = transform.scale[0]
+            scale = scale + ev.deltaY * -0.001;
+            scale = Math.min(Math.max(0.8, scale), 10);
+            let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
+            let translateX = Math.max(transform.translate[0], scaleDifference);
+
+            let transformString = `translate(${translateX},${transform.translate[1]})scale(${scale},${transform.scale[1]})`;
+            selection.attr(
+                "transform",
+                `${transformString}`
+            );
+
+        }
+
+    }
+
+    horizontalDrag = (ev) => {
+        if (this.props.dragActive) {
+            ev.preventDefault()
+            let selection = d3.select(`#${this.props.containerID}`)
+            let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+            transform = d3.transform(transform)
+            let translateX = transform.translate[0] + ev.movementX
+            let scaleDifference = Math.min(0, this.state.actualWidth - (this.state.expectedWidth * transform.scale[0]))
+            translateX = Math.max(Math.min(10, translateX), scaleDifference);
+            let transformString = `translate(${translateX},${transform.translate[1]})scale(${transform.scale[0]},${transform.scale[1]})`;
+            selection.attr(
+                "transform",
+                `${transformString}`
+            );
+        }
     }
 
     render() {
-        return <div id={this.props.divID} style={{ width: this.state.actualWidth, overflow: "hidden" }} >
+        return <div id={this.props.divID} ref={(el) => (this.container = el)} style={{ width: this.state.actualWidth, overflow: "hidden" }} >
             <svg id={`display_${this.props.divID}`}
                 width={this.state.expectedWidth}
                 height={this.props.height + this.props.margin.top + this.props.margin.bottom}

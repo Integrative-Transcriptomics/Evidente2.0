@@ -1,6 +1,6 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import ModalOwn from "./modal-own";
-import {makeStyles} from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import MyColorPicker from "./color-picker";
 import {
     IconButton,
@@ -18,20 +18,26 @@ import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
 class ColorScaleModal extends Component {
     onClickChangeColor = (event) => {
-        this.setState({anchorEl: event.target});
+        this.setState({ anchorEl: event.target });
     };
 
     handleClose = () => {
-        this.setState({anchorEl: null});
+        this.setState({ anchorEl: null });
     };
     handleModalClose = (save) => {
-        this.props.handleClose(save,this.state.order.map(d => this.props.mdinfo[this.props.chosenMD].extent[d]), this.state.colorDomain)
+        this.props.handleClose(save, this.state.order.map(d => this.props.mdinfo[this.props.chosenMD].extent[d]), this.state.colorDomain)
     }
-    setColor = (index, color)=>{
-        const colorDomain=this.state.colorDomain.slice();
-        colorDomain[index]=color;
-        this.setState({colorDomain:colorDomain})
-        console.log(index,color);
+    getaRGBHex = (object) => {
+        let hex =
+            (object.r | (1 << 8)).toString(16).slice(1) +
+            (object.g | (1 << 8)).toString(16).slice(1) +
+            (object.b | (1 << 8)).toString(16).slice(1);
+        return `#${hex}`;
+    }
+    setColor = (index, color) => {
+        const colorDomain = this.state.colorDomain.slice();
+        colorDomain[index] = this.getaRGBHex(color);
+        this.setState({ colorDomain: colorDomain })
     }
     handleUp = (index) => {
         const order = this.state.order.slice();
@@ -44,7 +50,7 @@ class ColorScaleModal extends Component {
             order[order.length - 1] = order[index]
             order[index] = helper;
         }
-        this.setState({order: order})
+        this.setState({ order: order })
     };
     handleDown = (index) => {
         const order = this.state.order.slice();
@@ -57,7 +63,7 @@ class ColorScaleModal extends Component {
             order[0] = order[index]
             order[index] = helper;
         }
-        this.setState({order: order})
+        this.setState({ order: order })
     };
     state = {
         order: this.props.mdinfo[this.props.chosenMD].extent
@@ -85,7 +91,7 @@ class ColorScaleModal extends Component {
             <ModalOwn
                 id={this.props.ID}
                 show={this.props.show}
-                onClose={(save)=>this.handleModalClose(save)}
+                onClose={(save) => this.handleModalClose(save)}
                 title={`Select new color scale for metadata ${this.props.chosenMD}`}>
                 <Popover
                     id={"popover"}
@@ -120,8 +126,8 @@ class ColorScaleModal extends Component {
                                             {isOrdinal ?
                                                 <TableCell>
                                                     <IconButton
-                                                        onClick={() => this.handleUp(i)}><ArrowUpwardIcon/></IconButton>
-                                                    <IconButton onClick={() => this.handleDown(i)}><ArrowDownwardIcon/></IconButton>
+                                                        onClick={() => this.handleUp(i)}><ArrowUpwardIcon /></IconButton>
+                                                    <IconButton onClick={() => this.handleDown(i)}><ArrowDownwardIcon /></IconButton>
                                                 </TableCell> : null}
                                             <TableCell component='th' scope='row'>
                                                 {currentMD.extent[value]}
@@ -130,7 +136,7 @@ class ColorScaleModal extends Component {
                                                 <MyColorPicker
                                                     passID={value}
                                                     index={i}
-                                                    setColor={(color)=>this.setColor(i,color)}
+                                                    setColor={(color) => this.setColor(i, color)}
                                                     fill={this.state.colorDomain[i]}
                                                 />
                                             </TableCell>

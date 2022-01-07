@@ -39,47 +39,70 @@ class App extends Component {
   state = {};
   chosenMD = "";
 // Create vertical zoom for all components
-  zoomVertical = (startx, starty, w, h) => d3v5.zoom().filter(function () {
-    return !d3v5.event.shiftKey;
-}).scaleExtent([1, 10]).translateExtent([
-    [startx, starty],
-    [w, h]
-]).on("zoom", (d, event, i) => {
-    // To get current horizonatl zoom state of each container 
-    let getCurrentTransformation = {
-        "#zoom-phylotree" :"#tree-display",
-        "#heatmap-container" :"#display_heatmap_viz" ,
-        "#md-container" : "#display_md_viz" ,
-        "#container-labels" : "#display_labels_viz",
-    };
-    const zoomState = d3v5.zoomTransform(d3v5.select("#parent-svg").node());
-   
+verticalZoom=(e)=>{
+    if (!e.ctrlKey){
     for (let id of [
-        "#heatmap-container",
-        "#md-container",
-        "#zoom-phylotree",
-        "#container-labels",
-        "#guidelines-container"
+    "#heatmap-container",
+    "#md-container",
+    "#zoom-phylotree",
+    "#container-labels",
+    "#guidelines-container"
     ]) {
-        if (d3v5.select(id).node()){
-            let horizontalZoom
-            if (["#guidelines-container", "#container-labels"].includes(id)  ){
-                 horizontalZoom = {"x":0, "y":0, "k":1};
-            }else{
-                const container = getCurrentTransformation[id]
-                 horizontalZoom =  d3v5.zoomTransform(d3v5.select(container).node());
-            }
-            const selection = d3v5.select(id);
-            if (!selection.empty()) {
-                $(id).attr(
-                    "transform",
-                    `translate(${horizontalZoom.x}, ${zoomState.y})scale(${horizontalZoom.k},${zoomState.k})`
-                );
+        if (d3v5.select(id).node()) {
+            let selection = d3v5.select(id)
+            let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+            transform = d3.transform(transform)
+            let horizontalZoom = {"x": transform.translate[0], "k":transform.scale[0]}
+            let transformY =  {"y": transform.translate[1], "k":transform.scale[1]}
+            let scale=transformY.k+e.deltaY*(-0.001);
+            scale = Math.min(Math.max(0.8, scale), 10);
+            //TODO if scale is smaller than one, allow movement
+            let scaleDifference = Math.min(0, this.svgContainer.offsetHeight - (this.svgContainer.offsetHeight * transformY.k))
+            let translateY = Math.max(transformY.y, scaleDifference);
+            let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
+            selection.attr(
+                "transform",
+                `${transformString}`
+            );
+    }
+    }
+    }
+    
+
+}
+verticalDrag=(ev)=>{
+    if(this.state.dragActive) {
+            for (let id of [
+                "#heatmap-container",
+                "#md-container",
+                "#zoom-phylotree",
+                "#container-labels",
+                "#guidelines-container"
+            ]) {
+                if (d3v5.select(id).node()) {
+                    let selection = d3v5.select(id)
+                    let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+                    transform = d3.transform(transform)
+                    let horizontalZoom = {"x": transform.translate[0], "k":transform.scale[0]}
+                    let transformY =  {"y": transform.translate[1], "k":transform.scale[1]}
+
+                    let translateY = transformY.y +ev.movementY
+                    let scaleDifference = Math.min(0, this.svgContainer.offsetHeight - (this.svgContainer.offsetHeight * transformY.k))
+                    translateY = Math.max(Math.min(0, translateY), scaleDifference);
+                    let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${transformY.k})`;
+                    selection.attr(
+                        "transform",
+                        `${transformString}`
+                    );
+                }
+
             }
         }
-        
+
     }
-});
+
+
+
     tree = d3.layout
         .phylotree()
         .options({
@@ -871,9 +894,6 @@ class App extends Component {
             .style("display", "none");
 
         this.handleInitTool();
-        const verticalZoom = this.zoomVertical(0, 0, 100,this.svgContainer.offsetHeight)
-
-        d3v5.select(`#parent-svg`).call(verticalZoom);
 
     }
 
@@ -885,12 +905,15 @@ class App extends Component {
         return (
             <React.Fragment>
                 <LoadingOverlay active={this.state.loadAnimationShow} spinner text='Loading...'>
-                    <div id='outer'>
+                    <div id='outer' onMouseDown={()=>this.setState({dragActive:true})}
+                                 onMouseUp={()=>this.setState({dragActive:false})}>
                         <header id='inner_fixed'>Evidente</header>
 
                         <div id='div-container-all' className='parent-div'>
-                            <div id='parent-svg' className='parent-svgs' ref={(el) => (this.svgContainer = el)}>
-                                <Phylotree
+                            <div id='parent-svg' className='parent-svgs' ref={(el) => (this.svgContainer = el)}  onWheel={this.verticalZoom}
+                                 onMouseMove={this.verticalDrag} >
+                                    <Phylotree
+                                    dragActive={this.state.dragActive}
                                     sendStatisticsRequest={this.sendStatisticsRequest}
                                     handleLoadingToggle={this.handleLoadingToggle}
                                     showRenameModal={this.state.renameModalShow}
@@ -922,6 +945,8 @@ class App extends Component {
                                 <div className="mchild">
                                     {this.state.isLoaded ?
                                         <HeatmapView
+                                        dragActive={this.state.dragActive}
+
                                             divID={"md_viz"}
                                             containerID={"md-container"}
                                             nodes={this.state.nodes}
