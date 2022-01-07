@@ -34,6 +34,8 @@ class Heatmap extends Component {
             !_.isEqual(actualHiddenNodes, newHiddenNodes) ||
             !_.isEqual(actualCollapsedClades, newCollapsedClades) ||
             !_.isEqual(this.props.mdinfo, nextProp.mdinfo) ||
+            this.state.expectedWidth!==nextState.expectedWidth ||
+            this.state.actualWidth !== nextState.actualWidth ||
             this.props.maxWidth !== nextProp.maxWidth;
     }
     updateComponent(init) {
@@ -171,7 +173,7 @@ class Heatmap extends Component {
 
     componentDidUpdate(prevProp, prevState) {
         if(prevState.expectedWidth===this.state.expectedWidth && prevState.actualWidth === this.state.actualWidth){
-                    this.updateComponent(prevProp.nodes !== this.props.nodes)
+            this.updateComponent(prevProp.nodes !== this.props.nodes)
         }
     }
 
@@ -194,6 +196,7 @@ class Heatmap extends Component {
         isNumerical
     ) {
         const onMouseOverCell = function (d) {
+            console.log(d)
             d3.selectAll(`.node-${d.Information}.guides`).classed("highlighted-guide", true);
             div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
             div
