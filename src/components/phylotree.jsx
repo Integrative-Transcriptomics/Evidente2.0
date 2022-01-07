@@ -287,6 +287,7 @@ class Phylotree extends Component {
             return d;
         });
         this.props.tree.get_nodes().forEach((tnode) => {
+            console.log(tnode)
             d3.layout.phylotree.add_custom_menu(
                 tnode,
                 () => "Show SNPs from Node",
@@ -320,13 +321,13 @@ class Phylotree extends Component {
                 tnode, // add to this node
                 (node) => "Hide this " + (d3.layout.phylotree.is_leafnode(node) ? "node" : "subtree"), // display this text for the menu
                 () => addTimeoutCursor(() => this.hideNode(tnode, this.props.tree,)),
-                (node) => node.name !== "root" // condition on when to display the menu
+                (node) => node.depth !== 0  // condition on when to display the menu
             );
             d3.layout.phylotree.add_custom_menu(
                 tnode, // add to this node
                 () => "Show the hidden nodes", // display this text for the menu
                 () => addTimeoutCursor(() => this.props.onShowMyNodes(tnode)),
-                (node) => node.has_hidden_nodes || node.name === "root" || false
+                (node) => node.has_hidden_nodes || node.depth === 0 || false
             );
             d3.layout.phylotree.add_custom_menu(
                 tnode, // add to this node
