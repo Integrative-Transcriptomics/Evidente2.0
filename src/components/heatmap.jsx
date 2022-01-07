@@ -39,7 +39,6 @@ class Heatmap extends Component {
             this.props.maxWidth !== nextProp.maxWidth;
     }
     updateComponent(init) {
-        console.log("update")
         let props = this.props;
         this.SNPcolorScale = this.props.SNPcolorScale;
         let cellWidthMin =
@@ -196,7 +195,6 @@ class Heatmap extends Component {
         isNumerical
     ) {
         const onMouseOverCell = function (d) {
-            console.log(d)
             d3.selectAll(`.node-${d.Information}.guides`).classed("highlighted-guide", true);
             div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
             div
