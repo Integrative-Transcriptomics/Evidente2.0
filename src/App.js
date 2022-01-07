@@ -1113,6 +1113,7 @@ verticalDrag=(ev)=>{
                         <WelcomeModal id='welcome-modal'/>
                     </div>
                 </LoadingOverlay>
+                <div id='div-export' className='parent-div'/>
             </React.Fragment>
         );
     }

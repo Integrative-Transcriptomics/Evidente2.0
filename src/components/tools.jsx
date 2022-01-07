@@ -109,9 +109,8 @@ class Tools extends Component {
    */
   async onExport() {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
-    // let allData = document.createElement("div");
-    // let mainVisualization = document.getElementById("parent-svg");
-    // allData.appendChild(mainVisualization.cloneNode(true));
+    let allData = document.getElementById("div-export");
+    let mainVisualization = document.getElementById("parent-svg").cloneNode(true);
     let divLegend = document.createElement("div");
     divLegend.style.display = "flex";
     divLegend.style.flexWrap = "wrap";
@@ -137,21 +136,24 @@ class Tools extends Component {
       divLegend.appendChild(blockLegendLabel);
     });
 
-    var allData = document.getElementById("parent-svg");
-    allData.appendChild(divLegend);
+    // var allData = document.getElementById("parent-svg");
+    mainVisualization.appendChild(divLegend);
+    allData.appendChild(mainVisualization);
+
 
     // labeling of the tree
     var figureName = "Evidente_" + Date.now();
 
     domtoimage
-      .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+      .toJpeg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
       .then(function (dataUrl) {
         var link = document.createElement("a");
         link.download = figureName;
         link.href = dataUrl;
         link.click();
         link.remove();
-        allData.removeChild(divLegend);
+        // allData.removeChild(divLegend);
+        allData.removeChild(mainVisualization);
 
         // allData.style.border = borderStyle;
       });
