@@ -201,9 +201,28 @@ verticalDrag=(ev)=>{
                 });
             }
             metadataInfo = this.createColorScales(metadataInfo);
+            var availableSNPs = json.availableSNPs.toString();
+            const formDataStat = new FormData();
 
+            formDataStat.set("available_snps", availableSNPs);
+            //send request at server to preprocess statistic-files
+            let responseStat = await fetch(`/api/init-stats`, {
+                method: "post",
+                body: formDataStat,
+            });
+            let jsonStat = await responseStat.json();
+            if (responseStat.status === 400 || responseStat.status === 500) {
+                //catch server error from prepocessing statistic-files
+                console.error(jsonStat.message);
+                alert("Error by processing files. Please revise the files uploaded. Details in console.");
+            } else {
             this.setState({
-                
+                computeStatistics: true,
+                statisticFilesUploaded: true,
+                goFilesUploaded: true,
+                snpsToGene: jsonStat.snps_to_gene,
+                gene_to_go: jsonStat.id_to_go,
+                go_to_snp_pos: jsonStat.go_to_snp_pos,
                 orderChanged: true,
                 isLoaded: true,
                 newick: json.newick,
@@ -219,7 +238,7 @@ verticalDrag=(ev)=>{
                 tree_snps: json.num_snps,
                 all_snps: json.all_snps,
             });
-
+        }
             $("#welcome-modal-button").text("Run App");
         }
     };
@@ -338,6 +357,7 @@ verticalDrag=(ev)=>{
         //check if at least one file has been uploaded and if so, enable compute-statistics
         if (formData.get("gff") != null || formData.get("goterm") != null) {
             this.setState({statisticFilesUploaded: true});
+            
             //console.log(formData.get("gff"),formData.get("snp_info"), formData.get("goterm"))
             //check if data for go-enrichment has been uploaded and if so enable go enrichment
             if (formData.get("goterm").length !== 0 && formData.get("gff").length !== 0) {
