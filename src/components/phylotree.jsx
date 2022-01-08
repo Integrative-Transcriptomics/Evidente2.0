@@ -159,7 +159,6 @@ class Phylotree extends Component {
      *
      */
     isStatisticPossible(node) {
-        console.log("node?", node);
         if (this.props.computeStatistics) {
             this.startStatisticsDialog(node)
         } else {
@@ -202,7 +201,6 @@ class Phylotree extends Component {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
         }
-
     }
 
     componentDidMount() {
@@ -287,7 +285,6 @@ class Phylotree extends Component {
             return d;
         });
         this.props.tree.get_nodes().forEach((tnode) => {
-            console.log(tnode)
             d3.layout.phylotree.add_custom_menu(
                 tnode,
                 () => "Show SNPs from Node",
