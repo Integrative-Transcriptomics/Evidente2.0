@@ -9,7 +9,7 @@ import Button from "react-bootstrap/Button";
 class Table extends Component {
   render() {
     return (
-      <GOTable hideSNPsforGoTerm={this.props.hideSNPsforGoTerm} handleMultipleSNPadditon={this.props.handleMultipleSNPadditon} showSNPsforGoTerm={this.props.showSNPsforGoTerm} snpsShow={this.props.snpsShow} rows={this.props.input} />
+      <GOTable supportingSNPs={this.props.supportingSNPs} nonSupportingSNPs={this.props.nonSupportingSNPs} go_to_snps={this.props.go_to_snps} hideSNPsforGoTerm={this.props.hideSNPsforGoTerm} handleMultipleSNPadditon={this.props.handleMultipleSNPadditon} showSNPsforGoTerm={this.props.showSNPsforGoTerm} snpsShow={this.props.snpsShow} rows={this.props.input} />
     );
 
   }
@@ -19,31 +19,36 @@ class GOTable extends React.Component {
 
   render() {
     var rows = new Set();
+    let supportingSNPs = this.props.supportingSNPs
+    let nonSupportingSNPs = this.props.nonSupportingSNPs
     //var row = null;
     //var go_term = "";
     //var snpsShow = this.props.snpsShow;
     for (var r = 0; r < this.props.rows.length; r++) {
       const go_term = this.props.rows[r].go_term;
+      const supSnps = new Set(this.props.go_to_snps[go_term].filter(i => supportingSNPs.has(i)))
+      const nonSupSnps = new Set(this.props.go_to_snps[go_term].filter(i => nonSupportingSNPs.has(i)))
+
       const id = this.props.rows[r].id;
       const row = <GORow
         handleMultipleSNPadditon={() => this.props.handleMultipleSNPadditon} showSNPsforGoTerm={() => this.props.showSNPsforGoTerm} snpsShow={this.props.snpsShow}
         row={this.props.rows[r]}
         key={this.props.rows[r].id}
         button={<Button
-          onClick={() => { this.props.showSNPsforGoTerm(go_term, id, "sup") }} variant='light'
-          style={{ margin: 5, fontSize: "12px", width: "90%" }}> show sup. SNPs
+          onClick={() => { this.props.showSNPsforGoTerm(go_term, id, "sup", supSnps) }} variant='light'
+          style={{ margin: 5, fontSize: "12px", width: "90%" }}> show sup. SNPs ({supSnps.size})
         </Button>}
         hidebutton={<Button
-          onClick={() => { this.props.hideSNPsforGoTerm(go_term, id, "sup") }} variant='light'
-          style={{ margin: 5, fontSize: "12px", width: "90%" }}>hide sup. SNPs
+          onClick={() => { this.props.hideSNPsforGoTerm(go_term, id, "sup", supSnps) }} variant='light'
+          style={{ margin: 5, fontSize: "12px", width: "90%" }}>hide sup. SNPs ({supSnps.size})
         </Button>}
         buttonNonSup={<Button
-          onClick={() => { this.props.showSNPsforGoTerm(go_term, id, "nonsup") }} variant='light'
-          style={{ margin: 5, fontSize: "12px", width: "90%" }}> show non. sup. SNPs
+          onClick={() => { this.props.showSNPsforGoTerm(go_term, id, "nonsup", nonSupSnps) }} variant='light'
+          style={{ margin: 5, fontSize: "12px", width: "90%" }}> show non. sup. SNPs ({nonSupSnps.size})
         </Button>}
         hidebuttonNonSup={<Button
-          onClick={() => { this.props.hideSNPsforGoTerm(go_term, id, "nonsup") }} variant='light'
-          style={{ margin: 5, fontSize: "12px", width: "90%" }}> hide non. sup. SNPs
+          onClick={() => { this.props.hideSNPsforGoTerm(go_term, id, "nonsup", nonSupSnps) }} variant='light'
+          style={{ margin: 5, fontSize: "12px", width: "90%" }}> hide non. sup. SNPs  ({nonSupSnps.size})
         </Button>}
       />;
 

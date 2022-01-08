@@ -93,10 +93,11 @@ class GOResultModal extends Component {
   }
 
   //visualize snps associated with given go term in tree viusalization
-  showSNPsforGoTerm(go_term, id, type) {
-    var snps = new Set(this.props.go_to_snps[go_term]);
-    let filter_set = type === "sup" ? this.state.supportingSNPs : this.state.nonSupportingSNPs
-    snps = [...snps].filter(i => filter_set.has(i))
+  showSNPsforGoTerm(go_term, id, type, snps) {
+    // var snps = new Set(this.props.go_to_snps[go_term]);
+    // let filter_set = type === "sup" ? this.state.supportingSNPs : this.state.nonSupportingSNPs
+    // snps = [...snps].filter(i => filter_set.has(i))
+    snps = [...snps]
     if (snps !== undefined) {
       this.props.handleMultipleSNPadditon(snps);
     }
@@ -250,7 +251,7 @@ class GOResultModal extends Component {
           <Modal.Body className="body">
 
             {this.state.goTermsShow && (
-              <Table hideSNPsforGoTerm={this.hideSNPsforGoTerm} handleMultipleSNPadditon={this.props.handleMultipleSNPadditon}
+              <Table supportingSNPs={this.state.supportingSNPs} nonSupportingSNPs={this.state.nonSupportingSNPs} go_to_snps={this.props.go_to_snps} hideSNPsforGoTerm={this.hideSNPsforGoTerm} handleMultipleSNPadditon={this.props.handleMultipleSNPadditon}
                 showSNPsforGoTerm={this.showSNPsforGoTerm} snpsShow={this.state.snpsShow} input={this.state.tableInput} />
             )}
           </Modal.Body>

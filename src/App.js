@@ -1070,6 +1070,7 @@ verticalDrag=(ev)=>{
                                 handleShow={this.showTreeResultModal}
                                 tree_size={this.state.tree_size}
                                 tree_snps={this.state.tree_snps}
+                                snpdata={this.state.snpdata}
                                 in_gene_tree={this.state.in_gene_tree}
                                 go_to_snps={this.state.go_to_snp_pos}
                                 handleMultipleSNPadditon={this.handleMultipleSNPaddition}
