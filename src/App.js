@@ -255,8 +255,8 @@ verticalDrag=(ev)=>{
       if (!("children" in sub_node)){
       chosen = chosen.concat(this.state.node_to_snps[sub_node.tempid]);
     }});
-    this.setState({ subtree_size: subtree.length + 1 });
-    this.setState({ subtree_snps: chosen.length });
+    this.setState({ subtree_size: subtree.length + 1, 
+        subtree_snps: chosen.length  });
     return chosen;
   };
 
@@ -329,18 +329,27 @@ verticalDrag=(ev)=>{
      */
     handleStatisticSubmit = async (formData) => {
         //var start = performance.now();
-        this.setState({computeStatistics: true});
+        var computeStas = true
+        var statFilesUploaded = false
+        var goFilesUploaded = false
+       
         this.handleLoadingToggle(true);
         //get uploaded files
         //check if at least one file has been uploaded and if so, enable compute-statistics
         if (formData.get("gff") != null || formData.get("goterm") != null) {
-            this.setState({statisticFilesUploaded: true});
+            statFilesUploaded = true
+            // this.setState({statisticFilesUploaded: true});
             //console.log(formData.get("gff"),formData.get("snp_info"), formData.get("goterm"))
             //check if data for go-enrichment has been uploaded and if so enable go enrichment
             if (formData.get("goterm").length !== 0 && formData.get("gff").length !== 0) {
-                this.setState({goFilesUploaded: true});
+                 goFilesUploaded = true
+                // this.setState({goFilesUploaded: true});
             }
         }
+        this.setState({
+            computeStatistics: computeStas,
+            statisticFilesUploaded:statFilesUploaded,
+            goFilesUploaded:goFilesUploaded});
         //add all SNPs available in tree to form data
         var availableSNPs = this.state.availableSNPs.toString();
         formData.set("availabel_snps", availableSNPs);
@@ -1044,6 +1053,7 @@ verticalDrag=(ev)=>{
                                 subtree_snps={this.state.subtree_snps}
                                 in_gene_clade={this.state.in_gene_clade}
                                 go_to_snps={this.state.go_to_snp_pos}
+                                snpdata={this.state.snpdata}
                                 handleMultipleSNPadditon={this.handleMultipleSNPaddition}
                                 visualizedSNPs={this.state.visualizedSNPs}
                                 handleHideSNPs={this.handleHideSNPs}
