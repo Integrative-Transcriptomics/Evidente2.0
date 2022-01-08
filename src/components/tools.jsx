@@ -405,16 +405,6 @@ class Tools extends Component {
                     >
                       Export
                     </Button>
-                    <Button
-                      variant='primary'
-                      onClick={() => {
-                        this.props.handleLoadingToggle(true);
-                        this.onExport("SVG");
-                        this.props.handleLoadingToggle(false);
-                      }}
-                    >
-                      Export SVG
-                    </Button>
                   </Form.Group>
                 </Form>
                 {/* <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
