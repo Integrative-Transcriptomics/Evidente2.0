@@ -1,9 +1,9 @@
-import React, { createRef, useCallback, useEffect, useState } from "react";
+import React, {createRef, useCallback, useEffect, useState} from "react";
 import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
-import { Alert } from "react-bootstrap";
+import {Alert} from "react-bootstrap";
 
 function HeatmapView(props) {
     const [height, setheight] = useState(400)
@@ -50,8 +50,7 @@ function HeatmapView(props) {
                     [actualPos]: { allele: actualAllele, notsupport: notSupport },
                 }));
         });
-        let flattenSNPs = _.flatten(mappedSNPs);
-        return flattenSNPs;
+        return _.flatten(mappedSNPs);
     }, [props.tree]);
 
     /**
@@ -69,18 +68,18 @@ function HeatmapView(props) {
         let modifiedSNPData = modifySNPs(reducedSupportSNPs, props.ids.labToNum);
         modifiedSNPData = modifiedSNPData.concat(modifySNPs(reducedNotSupportSNPs, props.ids.labToNum, true));
         // Unify to one entry per ndoe
-        let mergedSNPs = modifiedSNPData.reduce((acc, cur) => {
+        return modifiedSNPData.reduce((acc, cur) => {
             let obj = acc.find((d) => d.Information === cur.Information) || {};
             let filteredOutput = acc.filter((d) => d.Information !== cur.Information);
-            return [...filteredOutput, { ...obj, ...cur }];
+            return [...filteredOutput, {...obj, ...cur}];
         }, []);
-        return mergedSNPs;
     }, [modifySNPs, props.ids.labToNum, props.snpdata.notsupport, props.snpdata.support, props.visSNPs])
 
     /**
      *
      * @param {*} v Value -- Data for the group to aggregate
      * @param {*} k Key -- The metadata the group belongs to
+     * @param mdinfo
      * @param {*} actualClade Object for the actual clade
      */
     const clusterSNPs = (v, k, mdinfo, actualClade) =>
@@ -207,7 +206,6 @@ function HeatmapView(props) {
             snpPerColumn={props.snpPerColumn}
             ids={props.ids}
             SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
-            snpdata={props.snpdata}
             isSNP={true}
             appendLines={props.visualizedMD.length > 0}
         /> : null}
@@ -228,7 +226,6 @@ function HeatmapView(props) {
             collapsedClades={props.collapsedClades}
             selectedNodes={props.selectedNodes}
             ids={props.ids}
-            taxadata={props.taxamd}
             isSNP={false}
             createdFilters={props.createdFilters}
             appendLines={false}

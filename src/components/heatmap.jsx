@@ -16,40 +16,29 @@ class Heatmap extends Component {
 
     shouldComponentUpdate(nextProp, nextState) {
         let actualProp = this.props;
-        let actualState = this.state;
         let actualHiddenNodes = actualProp.hiddenNodes;
         let newHiddenNodes = nextProp.hiddenNodes;
         let actualCollapsedClades = actualProp.collapsedClades;
         let newCollapsedClades = nextProp.collapsedClades;
         let actualSelectedNodes = actualProp.selectedNodes;
         let newSelectedNodes = nextProp.selectedNodes;
-        let actualNodes = actualProp.nodes || [];
-        let newNodes = nextProp.nodes || [];
-        let newVisualized = nextProp.visMd || [];
-        let actualVisualized = actualProp.visMd || [];
-        let newVisualizedSNPs = nextProp.visSNPs || [];
-        let actualVisualizedSNPs = actualProp.visSNPs || [];
+        let actualNodes = actualProp.y_elements || [];
+        let newNodes = nextProp.y_elements || [];
+        let newVisualized = nextProp.x_elements || [];
+        let actualVisualized = actualProp.x_elements || [];
         if (!_.isEqual(actualSelectedNodes, newSelectedNodes)) {
             this.highlight_leaves(newSelectedNodes);
             return false;
-        } else if (
-            !_.isEqual(newVisualized, actualVisualized) ||
-            !_.isEqual(actualVisualizedSNPs, newVisualizedSNPs) ||
+        } else return !_.isEqual(newVisualized, actualVisualized) ||
             !_.isEqual(actualNodes, newNodes) ||
             !_.isEqual(actualHiddenNodes, newHiddenNodes) ||
             !_.isEqual(actualCollapsedClades, newCollapsedClades) ||
-
-
-            (!_.isEqual(actualState.mdinfo, nextProp.mdinfo) && newNodes.length > 0)
-        ) {
-            return true;
-
-        } else {
-            return false;
-        }
+            !_.isEqual(this.props.mdinfo, nextProp.mdinfo) ||
+            this.state.expectedWidth!==nextState.expectedWidth ||
+            this.state.actualWidth !== nextState.actualWidth ||
+            this.props.maxWidth !== nextProp.maxWidth;
     }
     updateComponent(init) {
-
         let props = this.props;
         this.SNPcolorScale = this.props.SNPcolorScale;
         let cellWidthMin =
@@ -122,7 +111,7 @@ class Heatmap extends Component {
                 .style("text-anchor", "start")
                 .attr("dx", ".8em")
                 .attr("dy", ".5em")
-                .attr("transform", (d) => "rotate(-25)")
+                .attr("transform", () => "rotate(-25)")
                 .call((g) => {
                     if (cellWidth < 15) {
                         g.remove();
@@ -182,7 +171,9 @@ class Heatmap extends Component {
     }
 
     componentDidUpdate(prevProp, prevState) {
-        this.updateComponent(prevProp.nodes !== this.props.nodes)
+        if(prevState.expectedWidth===this.state.expectedWidth && prevState.actualWidth === this.state.actualWidth){
+            this.updateComponent(prevProp.nodes !== this.props.nodes)
+        }
     }
 
 
@@ -193,7 +184,7 @@ class Heatmap extends Component {
      * @param {Object} cellDimensions
      * @param {String} type
      * @param {Boolean} isSNP
-     * @param {*Boolean} isNumerical
+     * @param {Boolean} isNumerical
      */
     updateCells(
         data,
@@ -377,7 +368,7 @@ class Heatmap extends Component {
             .attr("width", barWidth)
             .attr("height", (d) => cellHeight * 0.95 - yScaleBar(d[1]))
             .on("mouseover", onMouseOverBars)
-            .on("mouseout", function (d) {
+            .on("mouseout", function () {
                 div.transition().duration(500).style("opacity", 0);
             });
 
@@ -398,7 +389,7 @@ class Heatmap extends Component {
                 .attr("x", (d) => xScaleBar(d[0][0]))
                 .attr("fill", "url(#diagonalHatch)")
                 .on("mouseover", onMouseOverBars)
-                .on("mouseout", function (d) {
+                .on("mouseout", function () {
                     div.transition().duration(500).style("opacity", 0);
                 });
 
