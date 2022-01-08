@@ -41,18 +41,7 @@ const outMouse = () => {
   div.transition().duration(500).style("opacity", 0).style("max-width", "");
 };
 
-/**
- * Helper function for the filter tooltip
- * @param {Object} props
- */
-const helpTooltip = (props) => {
-  return (
-    <Tooltip id='help-filter-tooltip' {...props}>
-      A filter group defines all the characteristics a certain node should contain in order to be
-      shown. Within filter groups, the nodes need to belong to at least one group to be shown.
-    </Tooltip>
-  );
-};
+
 const { ValueContainer, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
@@ -77,8 +66,7 @@ const selectStates = {
   valueContainer: (provided, state) => ({
     ...provided,
     overflow: "visible",
-    height: "auto",
-    // maxHeight: "5px",
+    height: "auto"
   }),
   menuList: (provided, state) => ({
     ...provided,
@@ -286,9 +274,14 @@ class Tools extends Component {
             <Accordion.Collapse eventKey='3'>
               <Card.Body>
                 <Form.Group key='metadatafilter'>
-                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger placement='top' overlay={helpTooltip}>
-                    <HelpIcon style={{ display: "flex" }} />
-                  </OverlayTrigger></Form.Label>
+                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      A filter group defines all the characteristics a certain node should contain in order to be
+                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger>
+                  </Form.Label>
                   <Select
                     id='select-filter'
                     options={this.getMetadata(this.props.availableMDs)}
@@ -353,7 +346,12 @@ class Tools extends Component {
             <Accordion.Collapse eventKey='4'>
               <Card.Body>
                 <Form id='tree-enrichment'>
-                  <Form.Label size={"sm"}>Tree Analysis</Form.Label>
+                  <Form.Label size={"sm"}>Tree Analysis <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      For each clade with at least one supporting SNP, an enrichment analysis is computed.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger></Form.Label>
                   <Form.Group id='group'>
                     <Form.Label size={"sm"}>
                       Significance Level

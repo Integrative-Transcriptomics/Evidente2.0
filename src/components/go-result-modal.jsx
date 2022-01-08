@@ -8,8 +8,11 @@ import { Component } from "react";
 import Modal from 'react-bootstrap/Modal';
 import ModalDialog from 'react-bootstrap/ModalDialog';
 import Draggable from "react-draggable";
+import HelpIcon from "@material-ui/icons/Help";
 
 import Button from "react-bootstrap/Button";
+import Tooltip from "react-bootstrap/Tooltip";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Table from './go-table';
 import TableHeader from './go-table-header';
 import MyButton from './my-button';
@@ -207,7 +210,13 @@ class GOResultModal extends Component {
           dialogClassName='custom-dialog'
         >
           <Modal.Header closeButton>
-            <Modal.Title>GO enrichment result</Modal.Title>
+            <Modal.Title>GO enrichment result <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+              <Tooltip id={`tooltip-go-explanation`}>
+                For each GO-analysis, the SNPs that were allocated to descendants of the current GO-term are also taken into account.
+              </Tooltip>
+            }>
+              <HelpIcon />
+            </OverlayTrigger></Modal.Title>
           </Modal.Header>
           <div style={{ margin: 15 }} >
             Found {this.props.numOfSigGoTerms} significant GO term(s)
@@ -231,7 +240,18 @@ class GOResultModal extends Component {
             )}
           </Modal.Body>
           <Modal.Footer>
+            <div id='container-title' style={{ float: 'left', marginTop: 0, marginBottom: 10, padding: 0 }}>
+              <div style={{ float: 'left', marginRight: 5 }}><span > Enrichment statistics  <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                <Tooltip id={`tooltip-go-results`}>
+                  Differently as in other aspects of EVIDENTE, where the number of SNPs refer to the differen positions, the total number of SNPs here refers to the frequency of a mutation.
+                </Tooltip>
+              }>
+                <HelpIcon />
+              </OverlayTrigger></span>
+              </div>
+            </div>
             <div id='container' style={{ marginTop: 0, marginBottom: 10, padding: 0 }}>
+
               <div id='subtree' style={{ float: 'left', marginRight: 5 }}>
                 {!(this.state.subtreeMarked) && (
                   <Button id="export" variant='light' onClick={this.markSelectedClade} style={{ marginLeft: 20, float: 'right' }} >
@@ -252,19 +272,20 @@ class GOResultModal extends Component {
                 </div>
               </div >
               <div id='tree' style={{ width: 480, marginRight: 0, padding: 0 }}>
-                <Button id="export" variant='light' onClick={this.exportGoResult} style={{ marginLeft: 20, float: 'right' }} >
-                  Export Results
-                </Button>
+
                 <div style={{ float: "right", marginRight: 1 }}>
                   Leaves in Tree: {numberOfLeaves}<br />
                   SNPs: {this.props.tree_snps}<br />
                   in Genes: {this.props.in_gene_tree}
                 </div>
+                <Button id="export" variant='light' onClick={this.exportGoResult} style={{ marginLeft: 20, float: 'right' }} >
+                  Export Results
+                </Button>
               </div>
             </div>
           </Modal.Footer>
         </Modal>
-      </div>
+      </div >
 
 
     );

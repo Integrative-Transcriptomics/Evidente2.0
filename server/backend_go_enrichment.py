@@ -62,13 +62,6 @@ class GOEnrichment:
                     go_terms = self.__gene_to_go_terms[gene]
                     for go_term in go_terms:
                         associated.setdefault(go_term,[]).append(snp)
-                        # if go_term in associated.keys():
-                        #     associated[go_term].append(snp)
-                        # else:
-                        #     associated[go_term] = [snp]
-                    # associated.extend(go_terms)
-                # else:
-                #     associated.extend(["No associated GO ID"])
         return associated, in_gene
 
     def __fill_contingency_table(self, go_term, go_terms_tree, go_terms_clade, in_gene_tree, in_gene_clade):
