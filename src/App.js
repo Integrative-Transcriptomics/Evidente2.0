@@ -191,6 +191,7 @@ verticalDrag=(ev)=>{
             alert("Error by processing files. Please revise the files uploaded. Details in console.");
         } else {
             let {metadataInfo = {}} = json;
+            metadataInfo["Size"].extent = ["Small", "Medium", "Large", "Huge"]
             let ordinalValues = _.toPairs(metadataInfo).filter(
                 (d) => d[1].type.toLowerCase() === "ordinal"
             );
@@ -202,6 +203,8 @@ verticalDrag=(ev)=>{
             metadataInfo = this.createColorScales(metadataInfo);
 
             this.setState({
+                
+                orderChanged: true,
                 isLoaded: true,
                 newick: json.newick,
                 snpPerColumn: json.snpPerColumn,
