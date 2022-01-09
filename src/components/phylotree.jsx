@@ -41,7 +41,7 @@ class Phylotree extends Component {
                 container.selectAll("polygon").remove()
                 const numberLeavesShown = (this.props.shownNodes).length
                 const sizeTriangle = 12
-                const heightTriangle = Math.min(this.container.offsetHeight / numberLeavesShown, sizeTriangle)
+                const heightTriangle = Math.min(this.container.offsetHeight * 0.95 / numberLeavesShown, sizeTriangle)
                 container.insert("polygon", ":first-child").attr({ points: `${sizeTriangle},-${heightTriangle} 1,0 ${sizeTriangle},${heightTriangle}` }).style({ fill: "url(#gradient-collapse)" })
                 node["changed-form"] = true
             }
