@@ -94,11 +94,8 @@ class GOResultModal extends Component {
 
   //visualize snps associated with given go term in tree viusalization
   showSNPsforGoTerm(go_term, id, type, snps) {
-    // var snps = new Set(this.props.go_to_snps[go_term]);
-    // let filter_set = type === "sup" ? this.state.supportingSNPs : this.state.nonSupportingSNPs
-    // snps = [...snps].filter(i => filter_set.has(i))
-    snps = [...snps]
     if (snps !== undefined) {
+      snps = [...snps]
       this.props.handleMultipleSNPadditon(snps);
     }
     var curr_state = this.state.snpsShow;
@@ -110,11 +107,13 @@ class GOResultModal extends Component {
   }
 
   //hide snps associated with given go-term in tree visulization
-  hideSNPsforGoTerm(go_term, id, type) {
-    var snps = this.props.go_to_snps[go_term];
-    let filter_set = type === "sup" ? this.state.supportingSNPs : this.state.nonSupportingSNPs
-    snps = [...snps].filter(i => filter_set.has(i))
+  hideSNPsforGoTerm(go_term, id, type, snps) {
+    // var snps = this.props.go_to_snps[go_term];
+    // let filter_set = type === "sup" ? this.state.supportingSNPs : this.state.nonSupportingSNPs
+    // snps = [...snps].filter(i => filter_set.has(i))
+
     if (snps !== undefined) {
+      snps = [...snps]
       this.props.handleHideSNPs(snps)
     }
     var curr_state = this.state.snpsShow;
