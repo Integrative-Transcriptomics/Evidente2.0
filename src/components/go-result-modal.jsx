@@ -258,7 +258,7 @@ class GOResultModal extends Component {
             <div id='container-title' style={{ float: 'left', marginTop: 0, marginBottom: 10, padding: 0 }}>
               <div style={{ float: 'left', marginRight: 5 }}><span > Enrichment statistics  <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
                 <Tooltip id={`tooltip-go-results`}>
-                  Differently as in other aspects of EVIDENTE, where the number of SNPs refer to the differen positions, the total number of SNPs here refers to the frequency of a mutation.
+                  Differently as in other aspects of EVIDENTE, where the number of SNPs refers to the different positions, the total number of SNPs here considers each mutation independently.
                 </Tooltip>
               }>
                 <HelpIcon />

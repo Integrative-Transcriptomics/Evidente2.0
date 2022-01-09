@@ -268,6 +268,7 @@ class TreeResultModal extends Component {
             subtree_size={this.state.curr_subtree_size}
             subtree_snps={this.state.curr_subtree_snps}
             in_gene_clade={this.state.curr_in_gene_clade}
+            snpdata={this.props.snpdata}
             go_to_snps={this.props.go_to_snps}
             handleMultipleSNPadditon={this.props.handleMultipleSNPadditon}
             visualizedSNPs={this.props.visualizedSNPs}
