@@ -33,25 +33,26 @@ class GOEnrichment:
         results = []
         tree_go_terms, in_gene_tree = self.__associated_go_terms(self.__tree_snps)
         clade_go_terms, in_gene_clade = self.__associated_go_terms(self.__clade_snps)
-        for go_term in set(clade_go_terms):
+        for go_term in set(clade_go_terms.keys()):
             if go_term == "No associated GO ID":
                 continue
-            fishers_exact = self.__fishers_exact_test(go_term, tree_go_terms, clade_go_terms)
+            fishers_exact = self.__fishers_exact_test(go_term, tree_go_terms, clade_go_terms, in_gene_tree, in_gene_clade)
             if fishers_exact:
                 description = self.__go_to_description(go_term)
                 results.append((go_term, fishers_exact, description))
         #print(results.__len__())
         results_sorted = sorted(results, key=lambda k:k[1])
         #print("in gene", in_gene_tree, in_gene_clade)
-        return results_sorted, set(clade_go_terms).__len__(),in_gene_clade, in_gene_tree
+        return results_sorted, set(clade_go_terms.keys()).__len__(),in_gene_clade, in_gene_tree
 
     def __go_to_description(self, go_term):
         if go_term in self.__go_hierarchy.keys():
             return self.__go_hierarchy[go_term]
         return ''
 
+
     def __associated_go_terms(self, snps):
-        associated = []
+        associated = {}
         in_gene = 0
         for snp in snps:
             if snp in self.__snps_to_gene:
@@ -59,21 +60,20 @@ class GOEnrichment:
                 gene = self.__snps_to_gene[snp]
                 if gene in self.__gene_to_go_terms:
                     go_terms = self.__gene_to_go_terms[gene]
-                    associated.extend(go_terms)
-                else:
-                    associated.extend(["No associated GO ID"])
+                    for go_term in go_terms:
+                        associated.setdefault(go_term,[]).append(snp)
         return associated, in_gene
 
-    def __fill_contingency_table(self, go_term, go_terms_tree, go_terms_clade):
-            a = go_terms_clade.count(go_term)
-            b = go_terms_tree.count(go_term) - a
-            c = go_terms_clade.__len__() - a
-            d = go_terms_tree.__len__() - a - b - c
-            table = np.array([[a, b], [c, d]])
-            return table
+    def __fill_contingency_table(self, go_term, go_terms_tree, go_terms_clade, in_gene_tree, in_gene_clade):
+        a = go_terms_clade[go_term].__len__()
+        b = go_terms_tree[go_term].__len__() - a
+        c = in_gene_clade - a
+        d = in_gene_tree - a - b - c
+        table = np.array([[a, b], [c, d]])
+        return table
 
-    def __fishers_exact_test(self, go_term, go_terms_tree, go_terms_clade):
-        table = self.__fill_contingency_table(go_term,go_terms_tree,go_terms_clade)
+    def __fishers_exact_test(self, go_term, go_terms_tree, go_terms_clade,in_gene_tree, in_gene_clade):
+        table = self.__fill_contingency_table(go_term,go_terms_tree,go_terms_clade,in_gene_tree, in_gene_clade)
         oddsratio, p_value = fisher_exact(table, alternative='greater')
         if p_value < self.__bonferroni_correction(go_terms_clade):
             return p_value

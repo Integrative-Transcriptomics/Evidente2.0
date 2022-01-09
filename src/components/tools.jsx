@@ -41,18 +41,7 @@ const outMouse = () => {
   div.transition().duration(500).style("opacity", 0).style("max-width", "");
 };
 
-/**
- * Helper function for the filter tooltip
- * @param {Object} props
- */
-const helpTooltip = (props) => {
-  return (
-    <Tooltip id='help-filter-tooltip' {...props}>
-      A filter group defines all the characteristics a certain node should contain in order to be
-      shown. Within filter groups, the nodes need to belong to at least one group to be shown.
-    </Tooltip>
-  );
-};
+
 const { ValueContainer, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
@@ -77,8 +66,7 @@ const selectStates = {
   valueContainer: (provided, state) => ({
     ...provided,
     overflow: "visible",
-    height: "auto",
-    // maxHeight: "5px",
+    height: "auto"
   }),
   menuList: (provided, state) => ({
     ...provided,
@@ -107,11 +95,10 @@ class Tools extends Component {
    * Exports the main SVG to image in pdf document
    *
    */
-  async onExport() {
+  async onExport(type) {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
-    // let allData = document.createElement("div");
-    // let mainVisualization = document.getElementById("parent-svg");
-    // allData.appendChild(mainVisualization.cloneNode(true));
+    let allData = document.getElementById("div-export");
+    let mainVisualization = document.getElementById("parent-svg").cloneNode(true);
     let divLegend = document.createElement("div");
     divLegend.style.display = "flex";
     divLegend.style.flexWrap = "wrap";
@@ -137,24 +124,44 @@ class Tools extends Component {
       divLegend.appendChild(blockLegendLabel);
     });
 
-    var allData = document.getElementById("parent-svg");
-    allData.appendChild(divLegend);
+    // var allData = document.getElementById("parent-svg");
+    mainVisualization.appendChild(divLegend);
+    allData.appendChild(mainVisualization);
+
 
     // labeling of the tree
     var figureName = "Evidente_" + Date.now();
+    if (type === "JPEG") {
+      domtoimage
+        .toJpeg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+        .then(function (dataUrl) {
+          var link = document.createElement("a");
+          link.download = figureName;
+          link.href = dataUrl;
+          link.click();
+          link.remove();
+          // allData.removeChild(divLegend);
+          allData.removeChild(mainVisualization);
 
-    domtoimage
-      .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
-      .then(function (dataUrl) {
-        var link = document.createElement("a");
-        link.download = figureName;
-        link.href = dataUrl;
-        link.click();
-        link.remove();
-        allData.removeChild(divLegend);
+          // allData.style.border = borderStyle;
+        });
+    }
+    else if (type === "SVG") {
+      domtoimage
+        .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+        .then(function (dataUrl) {
+          var link = document.createElement("a");
+          link.download = figureName;
+          link.href = dataUrl;
+          link.click();
+          link.remove();
+          // allData.removeChild(divLegend);
+          allData.removeChild(mainVisualization);
 
-        // allData.style.border = borderStyle;
-      });
+          // allData.style.border = borderStyle;
+        });
+    }
+
     // this.props.handleLoadingToggle(false);
 
     // element.style.height = "80vh";
@@ -267,9 +274,14 @@ class Tools extends Component {
             <Accordion.Collapse eventKey='3'>
               <Card.Body>
                 <Form.Group key='metadatafilter'>
-                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger placement='top' overlay={helpTooltip}>
-                    <HelpIcon style={{ display: "flex" }} />
-                  </OverlayTrigger></Form.Label>
+                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      A filter group defines all the characteristics a certain node should contain in order to be
+                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger>
+                  </Form.Label>
                   <Select
                     id='select-filter'
                     options={this.getMetadata(this.props.availableMDs)}
@@ -334,7 +346,12 @@ class Tools extends Component {
             <Accordion.Collapse eventKey='4'>
               <Card.Body>
                 <Form id='tree-enrichment'>
-                  <Form.Label size={"sm"}>Tree Analysis</Form.Label>
+                  <Form.Label size={"sm"}>Tree Analysis <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      For each clade with at least one supporting SNP, an enrichment analysis is computed.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger></Form.Label>
                   <Form.Group id='group'>
                     <Form.Label size={"sm"}>
                       Significance Level
@@ -382,7 +399,7 @@ class Tools extends Component {
                       variant='primary'
                       onClick={() => {
                         this.props.handleLoadingToggle(true);
-                        this.onExport();
+                        this.onExport("JPEG");
                         this.props.handleLoadingToggle(false);
                       }}
                     >
