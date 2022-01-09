@@ -1,11 +1,11 @@
-import React, {createRef, useCallback, useEffect, useState} from "react";
+import React, {createRef, memo, useCallback, useEffect, useMemo, useState} from "react";
 import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
 import {Alert} from "react-bootstrap";
 
-function HeatmapView(props) {
+const HeatmapView = memo((props) => {
     const [height, setheight] = useState(400)
     const [width, setwidth] = useState(400);
     const [marginTop, setMarginTop] = useState(100);
@@ -24,7 +24,7 @@ function HeatmapView(props) {
             handleResize();
         }
         container.current && container.current.addEventListener('resize', handleResize)
-    })
+    }, [])
 
     /**
      * Helper function for the extraction of the SNPs from the nodes
@@ -38,16 +38,16 @@ function HeatmapView(props) {
             let actualID = labelToID[SNP.node];
             let actualPos = SNP.pos;
             let actualAllele = SNP.allele;
-            let node = nodes.find(({ tempid }) => {
+            let node = nodes.find(({tempid}) => {
                 return String(tempid) === actualID;
             });
 
             return props.tree
                 .descendants(node)
                 .filter(props.tree.is_leafnode)
-                .map(({ name }) => ({
+                .map(({name}) => ({
                     Information: name,
-                    [actualPos]: { allele: actualAllele, notsupport: notSupport },
+                    [actualPos]: {allele: actualAllele, notsupport: notSupport},
                 }));
         });
         return _.flatten(mappedSNPs);
@@ -60,10 +60,10 @@ function HeatmapView(props) {
      * @param {Array} visualizedSNPs List of the SNPs to visualize
      * @param {Object} IDs Contains the id to label dictinoary
      */
-    const preprocessSNPs = useCallback(() => {
+    const preprossesedSNPs = useMemo(() => {
         // Include only those that are visualized
-        let reducedSupportSNPs = props.snpdata.support.filter(({ pos }) => props.visSNPs.includes(pos));
-        let reducedNotSupportSNPs = props.snpdata.notsupport.filter(({ pos }) => props.visSNPs.includes(pos));
+        let reducedSupportSNPs = props.snpdata.support.filter(({pos}) => props.visSNPs.includes(pos));
+        let reducedNotSupportSNPs = props.snpdata.notsupport.filter(({pos}) => props.visSNPs.includes(pos));
         // Get the correct labelling
         let modifiedSNPData = modifySNPs(reducedSupportSNPs, props.ids.labToNum);
         modifiedSNPData = modifiedSNPData.concat(modifySNPs(reducedNotSupportSNPs, props.ids.labToNum, true));
@@ -97,8 +97,8 @@ function HeatmapView(props) {
         mdinfo[k].type.toLowerCase() === "numerical"
             ? boxplot.boxplotStats(v)
             : ["categorical", "ordinal"].includes(mdinfo[k].type.toLowerCase())
-                ? _.countBy(v)
-                : actualClade.showname;
+            ? _.countBy(v)
+            : actualClade.showname;
     /**
      *
      * Helper function to aggregate the inforamtion of a clade
@@ -117,12 +117,12 @@ function HeatmapView(props) {
             (a, b) => b.cladeLeaves.length - a.cladeLeaves.length
         );
         actualClades.forEach((actualClade) => {
-            let leavesNames = actualClade.cladeLeaves.map(({ name }) => name);
+            let leavesNames = actualClade.cladeLeaves.map(({name}) => name);
             if (leavesNames.every((n) => hiddenLeaves.includes(n))) {
                 return; // this cluster is already included in another one
             }
             hiddenLeaves = hiddenLeaves.concat(leavesNames);
-            let metadataToAggregate = data.filter(({ Information }) => leavesNames.includes(Information));
+            let metadataToAggregate = data.filter(({Information}) => leavesNames.includes(Information));
             let jointMetadataInformation = _.mergeWith({}, ...metadataToAggregate, (a = [], b) =>
                 a.concat(b)
             );
@@ -141,32 +141,40 @@ function HeatmapView(props) {
      *
      * @param {Object} node
      */
-    const isVisibleEndNode = useCallback((node) => {
-        return (
-            (props.tree.is_leafnode(node) || node["own-collapse"]) &&
-            d3.layout.phylotree.is_node_visible(node)
-        );
+    let calcShownNodes = useCallback(() => {
+        const isVisibleEndNode = (node) => {
+            return ((props.tree.is_leafnode(node) || node["own-collapse"]) &&
+                d3.layout.phylotree.is_node_visible(node))
+        }
+        return (props.tree
+            .get_nodes()
+            .filter((node) => isVisibleEndNode(node))
+            .map((n) => (n["own-collapse"] ? n["show-name"] : n.name)))
     }, [props.tree]);
-    let shownNodes = props.tree
-        .get_nodes()
-        .filter((node) => isVisibleEndNode(node))
-        .map((n) => (n["own-collapse"] ? n["show-name"] : n.name));
-    let snpData = preprocessSNPs()
-    let taxaData = props.taxadata;
-
-    if (props.collapsedClades.length !== 0) {
-        snpData = clusterData(
-            snpData,
-            clusterSNPs
-        );
-        taxaData = clusterData(
-            taxaData,
-            clusterMetadata,
-            props.mdinfo
-        );
-    }
-    const filteredSNPData = snpData.filter(({ Information }) => shownNodes.includes(Information));
-    const filteredTaxaData = taxaData.filter(({ Information }) => shownNodes.includes(Information));
+    const shownNodes=calcShownNodes();
+    const  filteredSNPData = useMemo(() => {
+        let snpData = preprossesedSNPs;
+        if (props.collapsedClades.length !== 0) {
+            snpData = clusterData(
+                snpData,
+                clusterSNPs
+            );
+        }
+        snpData = snpData.filter(({Information}) => shownNodes.includes(Information))
+        return snpData;
+    }, [clusterData, preprossesedSNPs, props.collapsedClades.length, shownNodes]);
+    const filteredTaxaData = useMemo(() => {
+        let taxaData = props.taxadata;
+        if (props.collapsedClades.length !== 0) {
+            taxaData = clusterData(
+                taxaData,
+                clusterMetadata,
+                props.mdinfo
+            );
+        }
+        taxaData = taxaData.filter(({Information}) => shownNodes.includes(Information))
+        return taxaData;
+    }, [clusterData, props.collapsedClades.length, props.mdinfo, props.taxadata, shownNodes]);
     const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, height]);
     let snpWidth = 0
     let mdWidth = 0;
@@ -186,7 +194,7 @@ function HeatmapView(props) {
             showAlert = true;
         }
     }
-    return <div ref={container} style={{ height: "100%", display: "flex" }}>
+    return <div ref={container} style={{height: "100%", display: "flex"}}>
         {props.visSNPs.length > 0 ? <Heatmap
             dragActive={props.dragActive}
             height={height}
@@ -198,7 +206,7 @@ function HeatmapView(props) {
             mdinfo={props.mdinfo}
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
-            margin={{ top: marginTop, right: linesWidth, bottom: 0, left: 0 }}
+            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -220,7 +228,7 @@ function HeatmapView(props) {
             mdinfo={props.mdinfo}
             divID={"md_viz"}
             containerID={"md-container"}
-            margin={{ top: marginTop, right: linesWidth, bottom: 0, left: 0 }}
+            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -245,6 +253,6 @@ function HeatmapView(props) {
             </div>
         </Alert> : null}
     </div>
-}
+});
 
 export default HeatmapView;
