@@ -15,13 +15,14 @@ class Phylotree extends Component {
      * @param {Object} node
      */
     nodeStyler = (container, node) => {
+        let is_leaf = d3.layout.phylotree.is_leafnode(node)
+        let is_collapsed = node["own-collapse"]
         let div = d3.select("#tooltip");
-        let lookFor = node.collapsed ? node["show-name"] : node.name; // Either clade or leaf
-
-        if (d3.layout.phylotree.is_leafnode(node) || node.collapsed) {
+        let lookFor = is_collapsed ? node["show-name"] : node.name; // Either clade or leaf
+        if (is_leaf || is_collapsed) {
             container
                 .selectAll("circle")
-                .style("fill", "black")
+                .style({ "fill": "black" }) // Style is covered by index.css
                 .attr({ r: 2 })
                 .on("mouseover", () => {
                     d3.selectAll(`.node-${lookFor}.guides`).classed("highlighted-guide", true);
@@ -35,11 +36,26 @@ class Phylotree extends Component {
                     d3.selectAll(`.node-${lookFor}.guides`).classed("highlighted-guide", false);
                     div.transition().duration(500).style("opacity", 0);
                 });
+
+            if (is_collapsed) {
+                container.selectAll("polygon").remove()
+                const numberLeavesShown = (this.props.shownNodes).length
+                const sizeTriangle = 12
+                const heightTriangle = Math.min(this.container.offsetHeight * 0.95 / numberLeavesShown, sizeTriangle)
+                container.insert("polygon", ":first-child").attr({ points: `${sizeTriangle},-${heightTriangle} 1,0 ${sizeTriangle},${heightTriangle}` }).style({ fill: "url(#gradient-collapse)" })
+                node["changed-form"] = true
+            }
         } else if (node) {
+            if (node["changed-form"]) {
+                container
+                    .selectAll("polygon").remove()
+                node["changed-form"] = false
+            }
+
             container
                 .selectAll("circle")
                 .style("fill", "lightgray")
-                .attr({ r: 3 })
+                .attr({ r: node.has_hidden_nodes ? 4 : 3 })
                 .on("mouseout", null)
                 .on("mouseover", null);
         }
@@ -219,6 +235,14 @@ class Phylotree extends Component {
         );
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
+        let gradient = d3.select("#tree-display")
+            .append("defs")
+            .append("linearGradient")
+            .attr("id", "gradient-collapse")
+        gradient.append("stop")
+            .attr({ offset: "0%", "stop-color": "black" })
+        gradient.append("stop")
+            .attr({ offset: "100%", "stop-color": "white" })
     }
     // Implements horizontal zoom only for the tree component
     horizontalZoom = (ev) => {
@@ -332,6 +356,7 @@ class Phylotree extends Component {
                 () => this.renameClade(tnode),
                 (node) => node["own-collapse"] || false
             );
+            d3.select("#tree-display").selectAll("polygon").remove()
         });
 
         this.runSelection();

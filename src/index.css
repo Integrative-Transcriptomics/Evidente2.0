@@ -285,7 +285,7 @@ div.tooltip {
 .node-collapsed circle,
 .node-collapsed ellipse,
 .node-collapsed rect {
-  fill: black !important;
+  fill: black;
 }
 
 .node-tagged {
