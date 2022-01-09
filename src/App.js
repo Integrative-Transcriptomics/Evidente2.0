@@ -936,6 +936,7 @@ verticalDrag=(ev)=>{
                                     snpdata={this.state.snpdata}
                                     ids={this.state.ids}
                                     dialog={this.dialog}
+                                    shownNodes={shownNodes}
                                 />
 
                                 <Labels
