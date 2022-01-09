@@ -188,6 +188,7 @@ class TreeResultModal extends Component {
 
 
   render() {
+    let numberOfLeaves = this.props.tree.get_nodes().filter(this.props.tree.is_leafnode).length
     return (
       <div className="container">
         {this.state.allCladesShow && (
@@ -245,7 +246,7 @@ class TreeResultModal extends Component {
                     Export Results
                   </Button>
                   <div style={{ float: 'right', marginLeft: 20 }}>
-                    tree-size: {this.props.tree_size}<br />
+                    Leaves in Tree: {numberOfLeaves}<br />
                     SNPs: {this.props.tree_snps}<br />
                     in Genes: {this.props.in_gene_tree}
                   </div>
