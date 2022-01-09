@@ -49,7 +49,10 @@ class GOResultModal extends Component {
     goTermsShow: false,
     subtreeMarked: false,
     pValuesShow: Array.from({ length: this.props.go_result.length + 1 }).map(x => false),
-    snpsShow: Array.from({ length: this.props.go_result.length + 1 }).map(x => false),
+    snpsShow: Array.from({ length: this.props.go_result.length + 1 }).map(x => [false, false]),
+    supportingSNPs: new Set(this.props.snpdata.support.map(x => x.pos)),
+    nonSupportingSNPs: new Set(this.props.snpdata.notsupport.map(x => x.pos))
+
   };
 
   //fills input for go-term table
@@ -90,24 +93,34 @@ class GOResultModal extends Component {
   }
 
   //visualize snps associated with given go term in tree viusalization
-  showSNPsforGoTerm(go_term, id) {
-    var snps = this.props.go_to_snps[go_term];
+  showSNPsforGoTerm(go_term, id, type, snps) {
     if (snps !== undefined) {
+      snps = [...snps]
       this.props.handleMultipleSNPadditon(snps);
     }
     var curr_state = this.state.snpsShow;
-    curr_state[id] = true;
+    let current_id_value = curr_state[id]
+    let index_change = type === "sup" ? 0 : 1
+    current_id_value[index_change] = true
+    curr_state[id] = current_id_value
     this.setState({ snpsShow: curr_state })
   }
 
   //hide snps associated with given go-term in tree visulization
-  hideSNPsforGoTerm(go_term, id) {
-    var snps = this.props.go_to_snps[go_term];
+  hideSNPsforGoTerm(go_term, id, type, snps) {
+    // var snps = this.props.go_to_snps[go_term];
+    // let filter_set = type === "sup" ? this.state.supportingSNPs : this.state.nonSupportingSNPs
+    // snps = [...snps].filter(i => filter_set.has(i))
+
     if (snps !== undefined) {
+      snps = [...snps]
       this.props.handleHideSNPs(snps)
     }
     var curr_state = this.state.snpsShow;
-    curr_state[id] = false;
+    let current_id_value = curr_state[id]
+    let index_change = type === "sup" ? 0 : 1
+    current_id_value[index_change] = false
+    curr_state[id] = current_id_value
     this.setState({ snpsShow: curr_state })
   }
 
@@ -195,6 +208,7 @@ class GOResultModal extends Component {
 
   render() {
     let numberOfLeaves = this.props.tree.get_nodes().filter(this.props.tree.is_leafnode).length
+
     return (
       <div className="container">
         <Modal
@@ -229,13 +243,14 @@ class GOResultModal extends Component {
               </Button>
             )}
           </div>
+
           {this.state.goTermsShow && (
             <TableHeader hideSNPs={this.hideSNPs} />
           )}
-
           <Modal.Body className="body">
+
             {this.state.goTermsShow && (
-              <Table hideSNPsforGoTerm={this.hideSNPsforGoTerm} handleMultipleSNPadditon={this.props.handleMultipleSNPadditon}
+              <Table supportingSNPs={this.state.supportingSNPs} nonSupportingSNPs={this.state.nonSupportingSNPs} go_to_snps={this.props.go_to_snps} hideSNPsforGoTerm={this.hideSNPsforGoTerm} handleMultipleSNPadditon={this.props.handleMultipleSNPadditon}
                 showSNPsforGoTerm={this.showSNPsforGoTerm} snpsShow={this.state.snpsShow} input={this.state.tableInput} />
             )}
           </Modal.Body>
