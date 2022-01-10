@@ -809,7 +809,7 @@ verticalDrag=(ev)=>{
         if (!save) {
             this.setState({colorScaleModalShow: false});
         } else {
-            let metadataInfo = this.state.mdinfo;
+            let metadataInfo = _.cloneDeep(this.state.mdinfo);
             let selectedMetadata = _.get(metadataInfo, `${this.chosenMD}`, null);
             if (selectedMetadata) {
                 let actualType = selectedMetadata.type;

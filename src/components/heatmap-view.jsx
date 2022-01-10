@@ -182,8 +182,8 @@ const HeatmapView = memo((props) => {
     let showAlert = false;
         if (props.visualizedMD.length > 0) {
             if (props.visSNPs.length > 0) {
-                snpWidth = width*(2/3) + linesWidth;
-                mdWidth = width/3 - linesWidth;
+                snpWidth = (width+linesWidth)*(2/3);
+                mdWidth = (width-linesWidth)/3;
             } else {
                 mdWidth = width;
             }
