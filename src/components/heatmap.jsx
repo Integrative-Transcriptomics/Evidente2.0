@@ -323,7 +323,7 @@ class Heatmap extends Component {
     createHistogram(
         data,
         {xScale, yScale, colorScale},
-        {cellHeight, cellWidth},
+        {cellHeight, cellWidth, cellMargin},
         dataDomain,
         type,
         isSNP
@@ -366,18 +366,22 @@ class Heatmap extends Component {
         let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([cellWidth * 0.05, cellWidth * 0.95]);
         let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight * 0.95, cellHeight * 0.05]);
 
-        let barWidth = cellWidth * 0.9 / dataDomain.length;
+        let barWidth = cellWidth * 0.9 / dataDomain.length - cellMargin;
+        let barCellHeight=cellHeight*0.95 - cellMargin;
         bars
             .attr("x", (d) => xScaleBar(isSNP ? d[0][0] : d[0]))
             .attr("y", (d) => yScaleBar(d[1]))
             .attr("width", barWidth)
-            .attr("height", (d) => cellHeight * 0.95 - yScaleBar(d[1]))
+            .attr("height", (d) => barCellHeight- yScaleBar(d[1]))
             .on("mouseover", onMouseOverBars)
             .on("mouseout", function () {
                 div.transition().duration(500).style("opacity", 0);
             });
 
         if (isSNP) {
+            const borderWidth=0.25*barWidth<0.25*barCellHeight?0.25*barWidth:0.25*barCellHeight;
+            const innerCellWidth=barWidth-borderWidth*2;
+            const innerCellHeight=barCellHeight-borderWidth*2;
             heatmapCell
                 .selectAll(`.pattern-bars.md-${this.transformNameToClass(type)}`)
                 .data((d) =>
@@ -388,11 +392,11 @@ class Heatmap extends Component {
                 .enter()
                 .append("svg:rect")
                 .attr("class", `pattern-bars md-${this.transformNameToClass(type)}`)
-                .attr("width", barWidth)
-                .attr("height", (d) => cellHeight * 0.95 - yScaleBar(d[1]))
-                .attr("y", (d) => yScaleBar(d[1]))
-                .attr("x", (d) => xScaleBar(d[0][0]))
-                .attr("fill", "url(#diagonalHatch)")
+                .attr("width", innerCellWidth)
+                .attr("height", (d) =>  innerCellHeight - yScaleBar(d[1]))
+                .attr("y", (d) => yScaleBar(d[1])+borderWidth)
+                .attr("x", (d) => xScaleBar(d[0][0])+borderWidth)
+                .attr("fill", "white")
                 .on("mouseover", onMouseOverBars)
                 .on("mouseout", function () {
                     div.transition().duration(500).style("opacity", 0);
