@@ -12,8 +12,11 @@ body,
 ._loading_overlay_wrapper {
   height: 100%;
 }
-body{
+.overflow-allowed{
   overflow: auto !important;
+}
+.overflow-blocked{
+  overflow: hidden !important;
 }
 header {
   text-align: center;
