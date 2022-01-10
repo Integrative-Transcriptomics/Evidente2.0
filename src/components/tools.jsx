@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip , ButtonGroup} from "react-bootstrap";
+import { Accordion, Button, Card, Form, OverlayTrigger, Tooltip, ButtonGroup } from "react-bootstrap";
 import Select, { components } from "react-select";
 import { filter, keys } from "lodash";
 import * as $ from "jquery";
@@ -8,7 +8,7 @@ import * as d3 from "d3";
 // import { jsPDF } from "jspdf";
 // import html2canvas from "html2canvas";
 import domtoimage from "dom-to-image";
-import { Divider, Grid, Typography } from "@material-ui/core";
+import { Divider } from "@material-ui/core";
 
 import HelpIcon from "@material-ui/icons/Help";
 
@@ -41,18 +41,7 @@ const outMouse = () => {
   div.transition().duration(500).style("opacity", 0).style("max-width", "");
 };
 
-/**
- * Helper function for the filter tooltip
- * @param {Object} props
- */
-const helpTooltip = (props) => {
-  return (
-    <Tooltip id='help-filter-tooltip' {...props}>
-      A filter group defines all the characteristics a certain node should contain in order to be
-      shown. Within filter groups, the nodes need to belong to at least one group to be shown.
-    </Tooltip>
-  );
-};
+
 const { ValueContainer, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
@@ -77,8 +66,7 @@ const selectStates = {
   valueContainer: (provided, state) => ({
     ...provided,
     overflow: "visible",
-    height: "auto",
-    // maxHeight: "5px",
+    height: "auto"
   }),
   menuList: (provided, state) => ({
     ...provided,
@@ -107,11 +95,10 @@ class Tools extends Component {
    * Exports the main SVG to image in pdf document
    *
    */
-  async onExport() {
+  async onExport(type) {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
-    // let allData = document.createElement("div");
-    // let mainVisualization = document.getElementById("parent-svg");
-    // allData.appendChild(mainVisualization.cloneNode(true));
+    let allData = document.getElementById("div-export");
+    let mainVisualization = document.getElementById("parent-svg").cloneNode(true);
     let divLegend = document.createElement("div");
     divLegend.style.display = "flex";
     divLegend.style.flexWrap = "wrap";
@@ -137,26 +124,44 @@ class Tools extends Component {
       divLegend.appendChild(blockLegendLabel);
     });
 
-    var allData = document.getElementById("parent-svg");
-    allData.appendChild(divLegend);
+    // var allData = document.getElementById("parent-svg");
+    mainVisualization.appendChild(divLegend);
+    allData.appendChild(mainVisualization);
 
-    // var borderStyle = allData.style.border;
-    // allDAta.style.border = "none";
+
     // labeling of the tree
     var figureName = "Evidente_" + Date.now();
+    if (type === "JPEG") {
+      domtoimage
+        .toJpeg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+        .then(function (dataUrl) {
+          var link = document.createElement("a");
+          link.download = figureName;
+          link.href = dataUrl;
+          link.click();
+          link.remove();
+          // allData.removeChild(divLegend);
+          allData.removeChild(mainVisualization);
 
-    domtoimage
-      .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
-      .then(function (dataUrl) {
-        var link = document.createElement("a");
-        link.download = figureName;
-        link.href = dataUrl;
-        link.click();
-        link.remove();
-        allData.removeChild(divLegend);
+          // allData.style.border = borderStyle;
+        });
+    }
+    else if (type === "SVG") {
+      domtoimage
+        .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
+        .then(function (dataUrl) {
+          var link = document.createElement("a");
+          link.download = figureName;
+          link.href = dataUrl;
+          link.click();
+          link.remove();
+          // allData.removeChild(divLegend);
+          allData.removeChild(mainVisualization);
 
-        // allData.style.border = borderStyle;
-      });
+          // allData.style.border = borderStyle;
+        });
+    }
+
     // this.props.handleLoadingToggle(false);
 
     // element.style.height = "80vh";
@@ -230,7 +235,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
-               <FileUploadForm loadFiles={this.props.loadFiles}/>
+                <FileUploadForm loadFiles={this.props.loadFiles} />
               </Card.Body>
             </Accordion.Collapse>
           </Card>
@@ -268,18 +273,15 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='3'>
               <Card.Body>
-                <Grid container spacing={2} direction='row' alignItems='center'>
-                  <Grid item>
-                    <Typography variant='h6'>Create a filter group with metadata</Typography>
-                  </Grid>
-                  <Grid item>
-                    <OverlayTrigger placement='top' overlay={helpTooltip}>
-                      <HelpIcon style={{ display: "flex" }} />
-                    </OverlayTrigger>
-                  </Grid>
-                </Grid>
-
                 <Form.Group key='metadatafilter'>
+                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      A filter group defines all the characteristics a certain node should contain in order to be
+                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger>
+                  </Form.Label>
                   <Select
                     id='select-filter'
                     options={this.getMetadata(this.props.availableMDs)}
@@ -293,7 +295,7 @@ class Tools extends Component {
                     menuPortalTarget={document.getElementById("tools")}
                     menuPosition={"fixed"}
                     styles={selectStates}
-                  ></Select>
+                  />
                 </Form.Group>
                 <Button
                   variant='primary'
@@ -308,13 +310,13 @@ class Tools extends Component {
                 {this.props.createdFilters.length > 0 && (
                   <React.Fragment>
                     <Divider variant='middle' style={{ marginTop: "5px", marginBottom: "5px" }} />
-                    <Typography variant='h6'>Created filter groups</Typography>
-                    <Typography variant='h6' style={{ fontWeight: "normal" }}>
+                    <h6>Created filter groups</h6>
+                    <h6 style={{ fontWeight: "normal" }}>
                       Applying following filter would result in {this.props.remainingNodes}{" "}
                       {this.props.remainingNodes > 1 || this.props.remainingNodes === 0
                         ? "nodes"
                         : "node"}
-                    </Typography>
+                    </h6>
 
                     <FilterList
                       remainingNodes={this.props.remainingNodes}
@@ -343,11 +345,16 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='4'>
               <Card.Body>
-                <Typography variant={"h6"}>Tree Analysis</Typography>
                 <Form id='tree-enrichment'>
+                  <Form.Label size={"sm"}>Tree Analysis <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      For each clade with at least one supporting SNP, an enrichment analysis is computed.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger></Form.Label>
                   <Form.Group id='group'>
                     <Form.Label size={"sm"}>
-                        <Typography variant={"h6"}>Significance Level</Typography>
+                      Significance Level
                     </Form.Label>
                     <Form.Control size={"sm"} id='sig-level-tree' type='text' defaultValue='0.05' />
                   </Form.Group>
@@ -355,17 +362,18 @@ class Tools extends Component {
                 <Button variant='primary' onClick={this.props.onStatisticsTreeRequest}>
                   Find enriched Clades
                 </Button>
-                                <Typography variant='h6' gutterBottom={true}>
+                <h6>
                   Previous Results
-                </Typography>
+                </h6>
                 <ButtonGroup aria-label="Basic example">
                   {["Clade", "Tree"].map((typeOfResult) => (
-                      <Button
-                        variant='primary'
-                        onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
-                      >
-                        {typeOfResult} analysis
-                      </Button>
+                    <Button
+                      key={typeOfResult}
+                      variant='primary'
+                      onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
+                    >
+                      {typeOfResult} analysis
+                    </Button>
                   ))}
                 </ButtonGroup>
               </Card.Body>
@@ -382,19 +390,23 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='6'>
               <Card.Body>
-                <Typography variant='h6' gutterBottom={true}>
-                  Export visualizations
-                </Typography>
-                <Button
-                  variant='primary'
-                  onClick={() => {
-                    this.props.handleLoadingToggle(true);
-                    this.onExport();
-                    this.props.handleLoadingToggle(false);
-                  }}
-                >
-                  Export
-                </Button>
+                <Form>
+                  <Form.Label size={"sm"}>
+                    Export visualizations
+                  </Form.Label>
+                  <Form.Group>
+                    <Button
+                      variant='primary'
+                      onClick={() => {
+                        this.props.handleLoadingToggle(true);
+                        this.onExport("JPEG");
+                        this.props.handleLoadingToggle(false);
+                      }}
+                    >
+                      Export
+                    </Button>
+                  </Form.Group>
+                </Form>
                 {/* <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
         {["PDF", "PNG", "JPEG"].map((typeOfExport) => (
           <Grid key={typeOfExport} item>

@@ -28,6 +28,7 @@ import LoadingOverlay from "react-loading-overlay";
 // Important libraries
 import React, {Component} from "react";
 import * as d3 from "d3";
+import * as d3v5 from "d3v5";
 import * as $ from "jquery";
 import * as _ from "lodash";
 
@@ -35,9 +36,72 @@ import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
 
 class App extends Component {
-    state = {};
-    lr = d3.behavior.drag().on("drag", this.handleLR);
-    chosenMD = "";
+  state = {};
+  chosenMD = "";
+// Create vertical zoom for all components
+verticalZoom=(e)=>{
+    if (!e.ctrlKey){
+    for (let id of [
+    "#heatmap-container",
+    "#md-container",
+    "#zoom-phylotree",
+    "#container-labels",
+    "#guidelines-container"
+    ]) {
+        if (d3v5.select(id).node()) {
+            let selection = d3v5.select(id)
+            let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+            transform = d3.transform(transform)
+            let horizontalZoom = {"x": transform.translate[0], "k":transform.scale[0]}
+            let transformY =  {"y": transform.translate[1], "k":transform.scale[1]}
+            let scale=transformY.k+e.deltaY*(-0.001);
+            scale = Math.min(Math.max(0.8, scale), 10);
+            //TODO if scale is smaller than one, allow movement
+            let scaleDifference = Math.min(0, this.svgContainer.offsetHeight - (this.svgContainer.offsetHeight * transformY.k))
+            let translateY = Math.max(transformY.y, scaleDifference);
+            let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
+            selection.attr(
+                "transform",
+                `${transformString}`
+            );
+    }
+    }
+    }
+    
+
+}
+verticalDrag=(ev)=>{
+    if(this.state.dragActive) {
+            for (let id of [
+                "#heatmap-container",
+                "#md-container",
+                "#zoom-phylotree",
+                "#container-labels",
+                "#guidelines-container"
+            ]) {
+                if (d3v5.select(id).node()) {
+                    let selection = d3v5.select(id)
+                    let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+                    transform = d3.transform(transform)
+                    let horizontalZoom = {"x": transform.translate[0], "k":transform.scale[0]}
+                    let transformY =  {"y": transform.translate[1], "k":transform.scale[1]}
+
+                    let translateY = transformY.y +ev.movementY
+                    let scaleDifference = Math.min(0, this.svgContainer.offsetHeight - (this.svgContainer.offsetHeight * transformY.k))
+                    translateY = Math.max(Math.min(0, translateY), scaleDifference);
+                    let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${transformY.k})`;
+                    selection.attr(
+                        "transform",
+                        `${transformString}`
+                    );
+                }
+
+            }
+        }
+
+    }
+
+
 
     tree = d3.layout
         .phylotree()
@@ -59,16 +123,8 @@ class App extends Component {
         .branch_name(function () {
             return "";
         });
-    zoom = d3.behavior
-        .zoom()
-        .translate([0, 0])
-        .scale(1)
-        .scaleExtent([1, 15])
-        .on("zoom", this.handleZoom);
     initialState = {
         isLoaded: false,
-        zoom: this.zoom,
-        // tree: this.tree,
         hiddenNodes: [],
         cladeNumber: 0,
         mdinfo: [],
@@ -120,6 +176,8 @@ class App extends Component {
         super();
         this.state = this.initialState;
         this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleSubmitAllFiles=this.handleSubmitAllFiles.bind(this);
+        this.handleStatisticSubmit=this.handleStatisticSubmit.bind(this);
     }
 
     handleInitTool = async () => {
@@ -197,8 +255,8 @@ class App extends Component {
       if (!("children" in sub_node)){
       chosen = chosen.concat(this.state.node_to_snps[sub_node.tempid]);
     }});
-    this.setState({ subtree_size: subtree.length + 1 });
-    this.setState({ subtree_snps: chosen.length });
+    this.setState({ subtree_size: subtree.length + 1, 
+        subtree_snps: chosen.length  });
     return chosen;
   };
 
@@ -271,18 +329,27 @@ class App extends Component {
      */
     handleStatisticSubmit = async (formData) => {
         //var start = performance.now();
-        this.setState({computeStatistics: true});
+        var computeStas = true
+        var statFilesUploaded = false
+        var goFilesUploaded = false
+       
         this.handleLoadingToggle(true);
         //get uploaded files
         //check if at least one file has been uploaded and if so, enable compute-statistics
         if (formData.get("gff") != null || formData.get("goterm") != null) {
-            this.setState({statisticFilesUploaded: true});
+            statFilesUploaded = true
+            // this.setState({statisticFilesUploaded: true});
             //console.log(formData.get("gff"),formData.get("snp_info"), formData.get("goterm"))
             //check if data for go-enrichment has been uploaded and if so enable go enrichment
             if (formData.get("goterm").length !== 0 && formData.get("gff").length !== 0) {
-                this.setState({goFilesUploaded: true});
+                 goFilesUploaded = true
+                // this.setState({goFilesUploaded: true});
             }
         }
+        this.setState({
+            computeStatistics: computeStas,
+            statisticFilesUploaded:statFilesUploaded,
+            goFilesUploaded:goFilesUploaded});
         //add all SNPs available in tree to form data
         var availableSNPs = this.state.availableSNPs.toString();
         formData.set("availabel_snps", availableSNPs);
@@ -455,13 +522,6 @@ class App extends Component {
         } else {
             this.setState(this.initialState);
             // Set file to starting state
-            Array.from(document.getElementsByClassName("custom-file-input")).forEach(
-                (el) => (el.value = "")
-            );
-            Array.from(document.getElementsByClassName("custom-file-label")).forEach(
-                (el) => (el.innerText = el.innerText.split(":")[0])
-            );
-
             let {metadataInfo = {}} = json;
             let ordinalValues = _.toPairs(metadataInfo).filter(
                 (d) => d[1].type.toLowerCase() === "ordinal"
@@ -568,7 +628,6 @@ class App extends Component {
         });
     };
     handleMultipleSNPaddition = (listOfSnps) => {
-        // console.log(listOfSnps);
         document.body.style.cursor = "wait !important";
         setTimeout(() => {
             this.setState({
@@ -688,8 +747,6 @@ class App extends Component {
         }
         this.handleHide(nodeList);
         this.tree.update_has_hidden_nodes().update();
-
-        d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
         this.handleSelection(this.tree.get_selection());
     }
 
@@ -750,7 +807,6 @@ class App extends Component {
                 collapsedClades: jointNodes,
                 renameModalShow: false,
             });
-            d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom);
         }
     };
     handleColorChange = (metadataName) => {
@@ -819,7 +875,6 @@ class App extends Component {
         this.tree.modify_selection(nodes, "notshown", true, true, "false");
         this.tree.update_has_hidden_nodes().update();
         this.handleShowOnHeatmap(this.tree.descendants(node));
-        d3.select("#tree-display").call(this.state.zoom).call(this.state.zoom.event);
         this.handleSelection(this.tree.get_selection());
     };
     handleShowOnHeatmap = (showNodes) => {
@@ -848,45 +903,7 @@ class App extends Component {
             .style("display", "none");
 
         this.handleInitTool();
-    }
 
-    handleZoom() {
-        for (let id of [
-            "#heatmap-container",
-            "#md-container",
-            "#zoom-phylotree",
-            "#container-labels",
-        ]) {
-            const selection = d3.select(id);
-            if (!selection.empty()) {
-                const temp = d3.transform(selection.attr("transform"));
-                $(id).attr(
-                    "transform",
-                    `translate(${temp.translate[0]}, ${d3.event.translate[1]} )scale(${d3.event.scale})`
-                );
-            }
-        }
-    }
-
-    handleLR() {
-        let translate = {
-            "tree-display": "#zoom-phylotree",
-            display_heatmap_viz: "#heatmap-container",
-            display_md_viz: "#md-container",
-            display_labels_viz: "#container-labels",
-        };
-        let container = $(translate[this.id]);
-        let t = d3.transform(container.attr("transform"));
-        container.attr(
-            "transform",
-            `translate( ${Math.max(
-                Math.min(
-                    t.translate[0] + d3.event.dx,
-                    t.scale[0] * this.getBoundingClientRect().width * 0.95
-                ),
-                -t.scale[0] * this.getBoundingClientRect().width * 0.95
-            )}, ${t.translate[1]})scale(${t.scale})`
-        );
     }
 
     render() {
@@ -897,12 +914,15 @@ class App extends Component {
         return (
             <React.Fragment>
                 <LoadingOverlay active={this.state.loadAnimationShow} spinner text='Loading...'>
-                    <div id='outer'>
+                    <div id='outer' onMouseDown={()=>this.setState({dragActive:true})}
+                                 onMouseUp={()=>this.setState({dragActive:false})}>
                         <header id='inner_fixed'>Evidente</header>
 
                         <div id='div-container-all' className='parent-div'>
-                            <div id='parent-svg' className='parent-svgs'>
-                                <Phylotree
+                            <div id='parent-svg' className='parent-svgs' ref={(el) => (this.svgContainer = el)}  onWheel={this.verticalZoom}
+                                 onMouseMove={this.verticalDrag} >
+                                    <Phylotree
+                                    dragActive={this.state.dragActive}
                                     sendStatisticsRequest={this.sendStatisticsRequest}
                                     handleLoadingToggle={this.handleLoadingToggle}
                                     showRenameModal={this.state.renameModalShow}
@@ -915,8 +935,6 @@ class App extends Component {
                                     updateSNPTable={this.updateSNPTable}
                                     tree={this.tree}
                                     onShowMyNodes={this.handleShowNodes}
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
                                     onCollapse={this.handleCollapse}
                                     onDecollapse={this.handleDecollapse}
                                     onUploadTree={this.handleUploadTree}
@@ -927,19 +945,18 @@ class App extends Component {
                                     snpdata={this.state.snpdata}
                                     ids={this.state.ids}
                                     dialog={this.dialog}
+                                    shownNodes={shownNodes}
                                 />
 
                                 <Labels
                                     divID={"labels_viz"}
                                     shownNodes={shownNodes}
-                                    onZoom={this.state.zoom}
-                                    onDrag={this.lr}
                                 />
                                 <div className="mchild">
                                     {this.state.isLoaded ?
                                         <HeatmapView
-                                            onZoom={this.state.zoom}
-                                            onDrag={this.lr}
+                                        dragActive={this.state.dragActive}
+
                                             divID={"md_viz"}
                                             containerID={"md-container"}
                                             nodes={this.state.nodes}
@@ -1037,6 +1054,7 @@ class App extends Component {
                                 subtree_snps={this.state.subtree_snps}
                                 in_gene_clade={this.state.in_gene_clade}
                                 go_to_snps={this.state.go_to_snp_pos}
+                                snpdata={this.state.snpdata}
                                 handleMultipleSNPadditon={this.handleMultipleSNPaddition}
                                 visualizedSNPs={this.state.visualizedSNPs}
                                 handleHideSNPs={this.handleHideSNPs}
@@ -1053,6 +1071,7 @@ class App extends Component {
                                 handleShow={this.showTreeResultModal}
                                 tree_size={this.state.tree_size}
                                 tree_snps={this.state.tree_snps}
+                                snpdata={this.state.snpdata}
                                 in_gene_tree={this.state.in_gene_tree}
                                 go_to_snps={this.state.go_to_snp_pos}
                                 handleMultipleSNPadditon={this.handleMultipleSNPaddition}
@@ -1106,6 +1125,7 @@ class App extends Component {
                         <WelcomeModal id='welcome-modal'/>
                     </div>
                 </LoadingOverlay>
+                <div id='div-export' className='parent-div'/>
             </React.Fragment>
         );
     }

@@ -1,6 +1,6 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import * as d3 from "d3";
-import {isEqual} from "lodash";
+import { isEqual } from "lodash";
 
 class Labels extends Component {
     state = {};
@@ -10,14 +10,13 @@ class Labels extends Component {
     shouldComponentUpdate(nextProp, nextState) {
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
-        return !isEqual(newNodes, oldNodes);
+        return !isEqual(newNodes, oldNodes)
     }
 
     componentDidUpdate(prevProps, prevState) {
         let margin_top = this.globalHeight * 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
-
         let div = d3.select("#tooltip");
         let height = this.globalHeight;
         let props = this.props;
@@ -85,22 +84,6 @@ class Labels extends Component {
             .attr("y1", 0)
             .attr("y2", 0)
             .style(guideStyle);
-        let container = d3.select(`#container-labels`);
-
-        const dragLabels = d3.behavior.drag().on("drag", () => {
-            let t = d3.transform(container.attr("transform"));
-            let intendedDrag = t.translate[0] + d3.event.dx;
-            let diffWidths = Math.max(...textWidth) + textMargin - this.globalWidth;
-            container.attr(
-                "transform",
-                `translate( ${Math.max(
-                    Math.min(intendedDrag, t.scale[0] * Math.max(diffWidths, 0)),
-                    t.scale[0] *
-                    Math.min(diffWidths, (-t.scale[0] * this.globalWidth) / 2 + this.globalWidth / 2)
-                )}, ${t.translate[1]})scale(${t.scale})`
-            );
-        });
-        d3.select(`#display_${this.props.divID}`).call(this.props.onZoom).call(dragLabels);
     }
 
     componentDidMount() {
@@ -110,10 +93,11 @@ class Labels extends Component {
             .attr("width", this.container.offsetWidth)
             .attr("height", this.container.offsetHeight)
             .attr("id", `display_${this.props.divID}`)
+            .attr("transform", `translate(0,0)scale(1)`)
             .append("g")
             .attr("id", "adds-margin")
             .append("g")
-            .attr("id", "container-labels");
+            .attr("id", "container-labels")
 
         svg
             .append("g")
@@ -123,8 +107,12 @@ class Labels extends Component {
         this.globalHeight = this.container.offsetHeight;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
-
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
+        this.container.addEventListener("wheel", function (ev) {
+            if (ev.ctrlKey) {
+                ev.preventDefault()
+            }
+        })
     }
 
     render() {

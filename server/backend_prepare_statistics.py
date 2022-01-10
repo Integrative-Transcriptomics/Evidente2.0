@@ -10,7 +10,7 @@ from typing import Tuple
 from flask import request, jsonify
 from server.backend_compute_statistics import load_go_basic
 
-def read_statistic_file_content() -> Tuple[str, str,str,str]:
+def read_statistic_file_content():
     """Reads contents of gff, go_term and snpinfo files.
 
     Raises value error if a file is missing .
@@ -44,11 +44,10 @@ def read_statistic_file_content() -> Tuple[str, str,str,str]:
         goterm = request.files['goterm']
         if goterm != '':
             go_data = goterm.read()
-        print(goterm.mimetype)
         if goterm.mimetype == "text/csv" or ".csv" in goterm.filename:
             go_sep = ','
         elif goterm.mimetype != "text/tab-separated-values" \
-                and ".tsv" in goterm.filename \
+                and not ".tsv" in goterm.filename \
                 and goterm.mimetype != "application/octet-stream"\
                 and goterm.mimetype != "text/x-go":
             raise ValueError("unexpected taxainfofile type ",
@@ -75,7 +74,7 @@ def read_statistic_file_content() -> Tuple[str, str,str,str]:
 
 
 
-def prepare_statistics(gff, gff_sep, go_terms, go_sep, available_snps) -> str:
+def prepare_statistics(gff, gff_sep, go_terms, go_sep, available_snps):
     """Prepares gff and go data for statistical computations
        Holds possibility to use snp_info data in addition to gff
 
@@ -156,10 +155,7 @@ def get_gene_for_snp(available_snps, gene_range_with_locus_tag):
         if gene:
             gene = gene.strip()
             snp_to_locus_tag[snp] = gene
-            if locus_tag_to_snp.__contains__(gene):
-                locus_tag_to_snp[gene].append(snp)
-            else:
-                locus_tag_to_snp[gene] = [snp]
+            locus_tag_to_snp.setdefault(gene,[]).append(snp)
     sum = 0
     for item in locus_tag_to_snp.items():
         sum += item[1].__len__()
@@ -173,14 +169,10 @@ def search_gene_binary(gene_range_with_locus_tag,snp_pos):
     :param snp_pos: position of snp as:type int
     :return: corresponding locus-tag as :type str if snp inside gene, False otherwise
     """
-    #print("binary search", gene_range_with_locus_tag, snp_pos)
     if len(gene_range_with_locus_tag) == 0:
-        #snp not inside a known gene:
         return False
     else:
-        #print(len(gene_range_with_locus_tag))
         middle = len(gene_range_with_locus_tag)//2  #floor division
-        #print("middle", middle)
         mid_gene = gene_range_with_locus_tag[middle]
         start = int(mid_gene[0])
         end = int(mid_gene[1])
@@ -213,14 +205,11 @@ def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
                 else:
                     id_to_go[locus_tag] = line_go_terms
                 #
-                if (locus_tag_to_snps.__contains__(locus_tag)):
-                    snps = locus_tag_to_snps[locus_tag]
-                    for go in line_go_terms:
-                        if go_to_snps.__contains__(go):
-                            go_to_snps[go].extend(snps)
-                        else:
-                            go_to_snps[go] = snps
-    #print("go-snp?", go_to_snps)
+    for locus,go_terms in id_to_go.items():
+        for go_term in go_terms:
+            if locus_tag_to_snps.__contains__(locus):
+                go_to_snps.setdefault(go_term,[]).extend(locus_tag_to_snps[locus])
+
     return id_to_go, go_to_snps
 
 def add_all_propagated_terms_to_snps (go_hierarchy, go_to_snp):
@@ -233,21 +222,13 @@ def add_all_propagated_terms_to_snps (go_hierarchy, go_to_snp):
     :return: go_to_snp2: go-term to snp mapping containing all associated
     go-terms as :type dict
     """
-    go_terms = list(go_to_snp.keys()).copy()
+    go_terms = go_to_snp
     go_to_snp2 = dict()
-    for go in go_terms:
-        if go in go_to_snp2:
-            go_to_snp2[go].extend(go_to_snp[go])
-        else:
-            go_to_snp2[go] = go_to_snp[go]
-        parents = collect_parents(go, go_hierarchy)
+    for go_term,snps in go_terms.items():
+        go_to_snp2.setdefault(go_term,[]).extend(snps)
+        parents = collect_parents(go_term, go_hierarchy)
         for parent in parents:
-            if go_to_snp2.__contains__(parent):
-                go_to_snp2[parent].extend(go_to_snp[go])
-                snps = list(set(go_to_snp2[parent]))
-                go_to_snp2[parent] = snps
-            else:
-                go_to_snp2[parent] = go_to_snp[go]
+            go_to_snp2.setdefault(parent,[]).extend(snps)
     return go_to_snp2
 
 

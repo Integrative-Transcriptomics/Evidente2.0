@@ -49,7 +49,11 @@ def go_enrichment(all_snps, positions, snps_to_gene,gene_to_go, sig_level):
     :return: go enrichment result as :type JSON-obj
     """
     #start_load_go = perf_counter()
-    go_hierarchy = from_go_to_dict(load_go_basic())
+
+    temp_go_hierarchy = load_go_basic()
+    go_hierarchy = from_go_to_dict(temp_go_hierarchy)
+    # print(load_go_basic())
+
     #end_load_go = perf_counter()
     #time_load_go = end_load_go - start_load_go
     #print(f"Needed {time_load_go:0.4f} seconds for loading go hierarchy")
@@ -85,17 +89,10 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
                    with significant results in the enrichment analysis stored
                    as tree-go-result in a :type json-object
     """
-    #start timer for total runtime
-    # overall_start = perf_counter()
-    #get go hierarchy, used to access go-term descriptions
-    # start_load_go = perf_counter()
     
     #Adapt go_class as a dictionary for multiprocessing
-    go_hierarchy = from_go_to_dict(load_go_basic())
-    
-    #end_load_go = perf_counter()
-    #time_load_go = end_load_go - start_load_go
-    #print(f"Needed {time_load_go:0.4f} seconds for loading go hierarchy")
+    temp_go_hierarchy = load_go_basic()
+    go_hierarchy = from_go_to_dict(temp_go_hierarchy)
     
     #traverse tree and find all clades with supporting snps:
     #start_find_clades = perf_counter()
@@ -105,9 +102,6 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
     tree.traverse_tree(find_clades)
     clades = find_clades.get_clades()
     leaves_tree = tree.get_leaves()
-    #end_find_clades = perf_counter()
-    #time_find_clades = end_find_clades-start_find_clades
-    #print(f"Needed {time_find_clades:0.4f} seconds for finding clades")
     all_results = dict()
     in_gene_tree = ""
     with ThreadPool(int(mp.cpu_count()/2)) as pool:
