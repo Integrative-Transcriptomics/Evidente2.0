@@ -45,11 +45,12 @@ class Heatmap extends Component {
         let props = this.props;
         this.SNPcolorScale = this.props.SNPcolorScale;
         const cellMargin=1;
+        let cellWidthMax = props.collapsedClades.length > 0 ? this.minCollapsedCellWidth:this.maxCellWidth;
         const calcCellWidth=props.maxWidth/props.x_elements.length;
         const cellWidthMin=props.collapsedClades.length > 0
                 ? Math.max(this.minCollapsedCellWidth,calcCellWidth)
                 : Math.max(this.minNormalCellWidth,calcCellWidth);
-        const cellWidth=props.x_elements.length*this.maxCellWidth<props.maxWidth?this.maxCellWidth:cellWidthMin
+        const cellWidth=props.x_elements.length*cellWidthMax<props.maxWidth?cellWidthMax:cellWidthMin
 
         let container = d3.select(`#${this.props.containerID}`);
         let expectedVizWidth = cellWidth * props.x_elements.length;
