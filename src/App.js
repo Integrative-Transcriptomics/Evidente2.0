@@ -897,6 +897,7 @@ verticalDrag=(ev)=>{
 
     componentDidMount() {
         d3.select("body")
+            .classed("overflow-allowed", true)
             .append("div")
             .attr("class", "tooltip")
             .attr("id", "tooltip")
