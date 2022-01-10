@@ -24,7 +24,7 @@ const HeatmapView = memo((props) => {
             handleResize();
         }
         container.current && container.current.addEventListener('resize', handleResize)
-    }, [])
+    }, [container, handleResize])
 
     /**
      * Helper function for the extraction of the SNPs from the nodes
