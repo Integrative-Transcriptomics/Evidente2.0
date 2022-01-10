@@ -296,9 +296,7 @@ def compute_column_ranges(types, columns):
         if col_type.lower() == "numerical":
             min_val = min(columns[col])
             max_val = max(columns[col])
-            columns[col].clear()
-            columns[col].add(min_val)
-            columns[col].add(max_val)
+            columns[col] = [min_val, max_val]
         col += 1
 
 
