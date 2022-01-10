@@ -152,20 +152,20 @@ class Toolbox extends Component {
 
                 let groupAllele = svg.selectAll("rect").data(extent).enter();
 
-                const addRectangle = (posY, fill) => {
+                const addRectangle = (posY, fill, isMargin) => {
                     groupAllele
                         .append("svg:rect")
-                        .attr("width", legendCubeWidth)
-                        .attr("height", legendCubeHeight)
+                        .attr("width", legendCubeWidth-4)
+                        .attr("height", legendCubeHeight-4)
                         .attr("y", posY)
                         .attr("x", (d) => xScale(d))
-                        .attr("fill", fill)
-                        .attr("stroke","white");
+                        .attr("fill", !isMargin?fill:"white")
+                        .attr("stroke",fill)
+                        .attr("stroke-width",2);
                 };
 
-                addRectangle(yScale(posSpecificity), (d) => colorScale(d)); // adds Positive SNPs
-                addRectangle(yScale(negSpecificity), (d) => colorScale(d)); // adds Negative SNPs
-                addRectangle(yScale(negSpecificity), "url(#diagonalHatch)"); // adds Pattern over Negative SNPs
+                addRectangle(yScale(posSpecificity), (d) => colorScale(d),false); // adds Positive SNPs
+                addRectangle(yScale(negSpecificity), (d) => colorScale(d),true); // adds Negative SNPs
 
                 svg.attr("transform", `translate(${marginLeft}, 12)`);
                 break;

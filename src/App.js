@@ -125,6 +125,7 @@ verticalDrag=(ev)=>{
         });
     initialState = {
         isLoaded: false,
+        dragActive: false,
         hiddenNodes: [],
         cladeNumber: 0,
         mdinfo: [],
@@ -817,7 +818,7 @@ verticalDrag=(ev)=>{
         if (!save) {
             this.setState({colorScaleModalShow: false});
         } else {
-            let metadataInfo = this.state.mdinfo;
+            let metadataInfo = _.cloneDeep(this.state.mdinfo);
             let selectedMetadata = _.get(metadataInfo, `${this.chosenMD}`, null);
             if (selectedMetadata) {
                 let actualType = selectedMetadata.type;
@@ -915,13 +916,14 @@ verticalDrag=(ev)=>{
         return (
             <React.Fragment>
                 <LoadingOverlay active={this.state.loadAnimationShow} spinner text='Loading...'>
-                    <div id='outer' onMouseDown={()=>this.setState({dragActive:true})}
-                                 onMouseUp={()=>this.setState({dragActive:false})}>
+                    <div id='outer'>
                         <header id='inner_fixed'>Evidente</header>
 
                         <div id='div-container-all' className='parent-div'>
                             <div id='parent-svg' className='parent-svgs' ref={(el) => (this.svgContainer = el)}  onWheel={this.verticalZoom}
-                                 onMouseMove={this.verticalDrag} >
+                                 onMouseDown={()=>this.setState({dragActive:true})}
+                                 onMouseMove={this.verticalDrag}
+                            onMouseUp={()=>this.setState({dragActive:false})}>
                                     <Phylotree
                                     dragActive={this.state.dragActive}
                                     sendStatisticsRequest={this.sendStatisticsRequest}
@@ -956,10 +958,7 @@ verticalDrag=(ev)=>{
                                 <div className="mchild">
                                     {this.state.isLoaded ?
                                         <HeatmapView
-                                        dragActive={this.state.dragActive}
-
-                                            divID={"md_viz"}
-                                            containerID={"md-container"}
+                                            dragActive={this.state.dragActive}
                                             nodes={this.state.nodes}
                                             hiddenNodes={this.state.hiddenNodes}
                                             selectedNodes={this.state.selectedNodes}
@@ -975,7 +974,6 @@ verticalDrag=(ev)=>{
                                             mdinfo={this.state.mdinfo}
                                             margin={{top: 0, right: 20, bottom: 0, left: 0}}
                                             SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
-
                                         /> : null}
                                 </div>
                             </div>
