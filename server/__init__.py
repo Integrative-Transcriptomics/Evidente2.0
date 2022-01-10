@@ -121,7 +121,7 @@ def compute_statistics():
         # go_enrichment(all_snps, positions,snps_to_gene,gene_to_go, float(sig_level))
         return result
     except:
-        print("Unexpected error:", sys.exc_info()[0])
+        print("Unexpected error:", sys.exc_info())
         return jsonify({'error': 'internal server error'}), 500
 
 

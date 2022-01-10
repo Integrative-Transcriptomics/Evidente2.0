@@ -256,8 +256,8 @@ verticalDrag=(ev)=>{
       if (!("children" in sub_node)){
       chosen = chosen.concat(this.state.node_to_snps[sub_node.tempid]);
     }});
-    this.setState({ subtree_size: subtree.length + 1 });
-    this.setState({ subtree_snps: chosen.length });
+    this.setState({ subtree_size: subtree.length + 1, 
+        subtree_snps: chosen.length  });
     return chosen;
   };
 
@@ -330,18 +330,27 @@ verticalDrag=(ev)=>{
      */
     handleStatisticSubmit = async (formData) => {
         //var start = performance.now();
-        this.setState({computeStatistics: true});
+        var computeStas = true
+        var statFilesUploaded = false
+        var goFilesUploaded = false
+       
         this.handleLoadingToggle(true);
         //get uploaded files
         //check if at least one file has been uploaded and if so, enable compute-statistics
         if (formData.get("gff") != null || formData.get("goterm") != null) {
-            this.setState({statisticFilesUploaded: true});
+            statFilesUploaded = true
+            // this.setState({statisticFilesUploaded: true});
             //console.log(formData.get("gff"),formData.get("snp_info"), formData.get("goterm"))
             //check if data for go-enrichment has been uploaded and if so enable go enrichment
             if (formData.get("goterm").length !== 0 && formData.get("gff").length !== 0) {
-                this.setState({goFilesUploaded: true});
+                 goFilesUploaded = true
+                // this.setState({goFilesUploaded: true});
             }
         }
+        this.setState({
+            computeStatistics: computeStas,
+            statisticFilesUploaded:statFilesUploaded,
+            goFilesUploaded:goFilesUploaded});
         //add all SNPs available in tree to form data
         var availableSNPs = this.state.availableSNPs.toString();
         formData.set("availabel_snps", availableSNPs);
@@ -586,7 +595,7 @@ verticalDrag=(ev)=>{
                     colorScale = d3.scale
                         .ordinal()
                         .domain(["A", "C", "T", "G", "N"])
-                        .range(["red", "#E6D700", "blue", "green", "purple"]);
+                        .range(["red", "#E6D700", "blue", "green", "gray"]);
                     break;
             }
             metadata[k].colorScale = colorScale;
@@ -889,6 +898,7 @@ verticalDrag=(ev)=>{
 
     componentDidMount() {
         d3.select("body")
+            .classed("overflow-allowed", true)
             .append("div")
             .attr("class", "tooltip")
             .attr("id", "tooltip")
@@ -938,6 +948,7 @@ verticalDrag=(ev)=>{
                                     snpdata={this.state.snpdata}
                                     ids={this.state.ids}
                                     dialog={this.dialog}
+                                    shownNodes={shownNodes}
                                 />
 
                                 <Labels
@@ -1042,6 +1053,7 @@ verticalDrag=(ev)=>{
                                 subtree_snps={this.state.subtree_snps}
                                 in_gene_clade={this.state.in_gene_clade}
                                 go_to_snps={this.state.go_to_snp_pos}
+                                snpdata={this.state.snpdata}
                                 handleMultipleSNPadditon={this.handleMultipleSNPaddition}
                                 visualizedSNPs={this.state.visualizedSNPs}
                                 handleHideSNPs={this.handleHideSNPs}
@@ -1058,6 +1070,7 @@ verticalDrag=(ev)=>{
                                 handleShow={this.showTreeResultModal}
                                 tree_size={this.state.tree_size}
                                 tree_snps={this.state.tree_snps}
+                                snpdata={this.state.snpdata}
                                 in_gene_tree={this.state.in_gene_tree}
                                 go_to_snps={this.state.go_to_snp_pos}
                                 handleMultipleSNPadditon={this.handleMultipleSNPaddition}
@@ -1111,6 +1124,7 @@ verticalDrag=(ev)=>{
                         <WelcomeModal id='welcome-modal'/>
                     </div>
                 </LoadingOverlay>
+                <div id='div-export' className='parent-div'/>
             </React.Fragment>
         );
     }

@@ -5,9 +5,9 @@ import { filter, keys } from "lodash";
 import * as $ from "jquery";
 //import { select } from "d3";
 import * as d3 from "d3";
-// import { jsPDF } from "jspdf";
-// import html2canvas from "html2canvas";
-import domtoimage from "dom-to-image";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+// import domtoimage from "dom-to-image";
 import { Divider } from "@material-ui/core";
 
 import HelpIcon from "@material-ui/icons/Help";
@@ -41,18 +41,7 @@ const outMouse = () => {
   div.transition().duration(500).style("opacity", 0).style("max-width", "");
 };
 
-/**
- * Helper function for the filter tooltip
- * @param {Object} props
- */
-const helpTooltip = (props) => {
-  return (
-    <Tooltip id='help-filter-tooltip' {...props}>
-      A filter group defines all the characteristics a certain node should contain in order to be
-      shown. Within filter groups, the nodes need to belong to at least one group to be shown.
-    </Tooltip>
-  );
-};
+
 const { ValueContainer, Placeholder } = components;
 
 const CustomValueContainer = ({ children, ...props }) => {
@@ -77,8 +66,7 @@ const selectStates = {
   valueContainer: (provided, state) => ({
     ...provided,
     overflow: "visible",
-    height: "auto",
-    // maxHeight: "5px",
+    height: "auto"
   }),
   menuList: (provided, state) => ({
     ...provided,
@@ -107,16 +95,18 @@ class Tools extends Component {
    * Exports the main SVG to image in pdf document
    *
    */
-  async onExport() {
+  async onExport(type) {
+    d3.selectAll(".overflow-allowed").classed("overflow-allowed", false).classed("overflow-blocked", true)
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
-    // let allData = document.createElement("div");
-    // let mainVisualization = document.getElementById("parent-svg");
-    // allData.appendChild(mainVisualization.cloneNode(true));
+    let allData = document.getElementById("div-export");
+    let mainVisualization = document.getElementById("parent-svg").cloneNode(true);
     let divLegend = document.createElement("div");
     divLegend.style.display = "flex";
     divLegend.style.flexWrap = "wrap";
     divLegend.style.padding = "5px";
     divLegend.id = "legend-blox";
+    var figureName = "Evidente_" + Date.now();
+
     filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
       return accountForLegend.includes(v.name);
     }).forEach((data) => {
@@ -129,35 +119,45 @@ class Tools extends Component {
       let legend = d3
         .select("#root")
         .append("svg")
-        .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 350 });
+        .attr({ id: `testing-output-${data.name.replace(/[^a-zA-Z0-9_-]/g, "_")}`, width: 250 });
       this.props.addLegend(legend, 250, data, true);
       svgLegend.appendChild(legend.node());
       blockLegendLabel.appendChild(labelLegend);
       blockLegendLabel.appendChild(svgLegend);
       divLegend.appendChild(blockLegendLabel);
     });
+    // var allData = document.getElementById("parent-svg");
+    mainVisualization.appendChild(divLegend);
+    allData.appendChild(mainVisualization);
+    const vis = allData
+    html2canvas(vis, {
+      scale: 6,
+      width: vis.getBoundingClientRect().width,
+      height: vis.getBoundingClientRect().height
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      let asPNG = "PNG" === type
+      if (!asPNG) {
+        // Multiplying by 1.33 because canvas.toDataURL increases the size of the image by 33%
+        const pdf = new jsPDF('l', 'px', [canvas.width * 1.33, canvas.height * 1.33]);
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save(`${figureName}.pdf`);
+        allData.removeChild(mainVisualization);
 
-    var allData = document.getElementById("parent-svg");
-    allData.appendChild(divLegend);
+      } else {
+        const aDownloadLink = document.createElement('a');
+        aDownloadLink.download = `${figureName}.png`;
+        aDownloadLink.href = imgData;
+        aDownloadLink.click();
+        allData.removeChild(mainVisualization);
 
-    // labeling of the tree
-    var figureName = "Evidente_" + Date.now();
+      }
+      d3.selectAll(".overflow-blocked").classed("overflow-allowed", true).classed("overflow-blocked", false)
 
-    domtoimage
-      .toSvg(allData, { quality: 1, bgcolor: "white", style: { overflow: "visible" } })
-      .then(function (dataUrl) {
-        var link = document.createElement("a");
-        link.download = figureName;
-        link.href = dataUrl;
-        link.click();
-        link.remove();
-        allData.removeChild(divLegend);
+    });
 
-        // allData.style.border = borderStyle;
-      });
-    // this.props.handleLoadingToggle(false);
 
-    // element.style.height = "80vh";
+
   }
 
   /**
@@ -267,9 +267,14 @@ class Tools extends Component {
             <Accordion.Collapse eventKey='3'>
               <Card.Body>
                 <Form.Group key='metadatafilter'>
-                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger placement='top' overlay={helpTooltip}>
-                    <HelpIcon style={{ display: "flex" }} />
-                  </OverlayTrigger></Form.Label>
+                  <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      A filter group defines all the characteristics a certain node should contain in order to be
+                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger>
+                  </Form.Label>
                   <Select
                     id='select-filter'
                     options={this.getMetadata(this.props.availableMDs)}
@@ -334,7 +339,12 @@ class Tools extends Component {
             <Accordion.Collapse eventKey='4'>
               <Card.Body>
                 <Form id='tree-enrichment'>
-                  <Form.Label size={"sm"}>Tree Analysis</Form.Label>
+                  <Form.Label size={"sm"}>Tree Analysis <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
+                    <Tooltip id={`tooltip-tree-analysis`}>
+                      For each clade with at least one supporting SNP, an enrichment analysis is computed.</Tooltip>
+                  }>
+                    <HelpIcon />
+                  </OverlayTrigger></Form.Label>
                   <Form.Group id='group'>
                     <Form.Label size={"sm"}>
                       Significance Level
@@ -382,11 +392,21 @@ class Tools extends Component {
                       variant='primary'
                       onClick={() => {
                         this.props.handleLoadingToggle(true);
-                        this.onExport();
+                        this.onExport("PNG");
                         this.props.handleLoadingToggle(false);
                       }}
                     >
-                      Export
+                      As PNG
+                    </Button>
+                    <Button
+                      variant='primary'
+                      onClick={() => {
+                        this.props.handleLoadingToggle(true);
+                        this.onExport("PDF");
+                        this.props.handleLoadingToggle(false);
+                      }}
+                    >
+                      As PDF
                     </Button>
                   </Form.Group>
                 </Form>

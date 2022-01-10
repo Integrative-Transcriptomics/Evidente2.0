@@ -459,8 +459,8 @@ class Heatmap extends Component {
             transform = d3.transform(transform)
             let scale = transform.scale[0]
             scale = scale + ev.deltaY * -0.001;
-            scale = Math.min(Math.max(0.8, scale), 10);
-            let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
+            scale = Math.min(Math.max(0.5, scale), 10);
+            let scaleDifference = Math.min(0, this.state.actualWidth - (this.state.expectedWidth * transform.scale[0]))
             let translateX = Math.max(transform.translate[0], scaleDifference);
 
             let transformString = `translate(${translateX},${transform.translate[1]})scale(${scale},${transform.scale[1]})`;

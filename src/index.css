@@ -1,8 +1,7 @@
 html,
 body,
 #root {
-  overflow: hidden;
-  margin: 0;
+    margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -12,6 +11,12 @@ body,
 }
 ._loading_overlay_wrapper {
   height: 100%;
+}
+.overflow-allowed{
+  overflow: auto !important;
+}
+.overflow-blocked{
+  overflow: hidden !important;
 }
 header {
   text-align: center;
@@ -283,7 +288,7 @@ div.tooltip {
 .node-collapsed circle,
 .node-collapsed ellipse,
 .node-collapsed rect {
-  fill: black !important;
+  fill: black;
 }
 
 .node-tagged {
