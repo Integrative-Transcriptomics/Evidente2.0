@@ -372,6 +372,4 @@ def propagate_snps_to_leaves(support, not_support, ids, nwk):
     snp = Snps(support, not_support, ids)
     tree.parse_nwk_string(nwk)
     tree.traverse_tree(snp)
-    #print(snp.get_number_of_nodes(), "nodes")
-    # print(snp.get_node_to_snps())
     return snp.get_node_to_snps(), snp.get_number_of_nodes(), snp.get_num_snps(), snp.get_all_snps()

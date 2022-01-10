@@ -594,7 +594,7 @@ verticalDrag=(ev)=>{
                     colorScale = d3.scale
                         .ordinal()
                         .domain(["A", "C", "T", "G", "N"])
-                        .range(["red", "#E6D700", "blue", "green", "purple"]);
+                        .range(["red", "#E6D700", "blue", "green", "gray"]);
                     break;
             }
             metadata[k].colorScale = colorScale;
