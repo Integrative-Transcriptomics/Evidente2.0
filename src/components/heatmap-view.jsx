@@ -151,8 +151,8 @@ const HeatmapView = memo((props) => {
             .filter((node) => isVisibleEndNode(node))
             .map((n) => (n["own-collapse"] ? n["show-name"] : n.name)))
     }, [props.tree]);
-    const shownNodes=calcShownNodes();
-    const  filteredSNPData = useMemo(() => {
+    const shownNodes = calcShownNodes();
+    const filteredSNPData = useMemo(() => {
         let snpData = preprossesedSNPs;
         if (props.collapsedClades.length !== 0) {
             snpData = clusterData(
@@ -180,20 +180,20 @@ const HeatmapView = memo((props) => {
     let mdWidth = 0;
     let linesWidth = 50;
     let showAlert = false;
-    if (props.visualizedMD.length > 0) {
-        if (props.visSNPs.length > 0) {
-            snpWidth = (width - linesWidth) / 2;
-            mdWidth = (width - linesWidth) / 2;
+        if (props.visualizedMD.length > 0) {
+            if (props.visSNPs.length > 0) {
+                snpWidth = width*(2/3) + linesWidth;
+                mdWidth = width/3 - linesWidth;
+            } else {
+                mdWidth = width;
+            }
         } else {
-            mdWidth = width;
+            if (props.visSNPs.length > 0) {
+                snpWidth = width;
+            } else {
+                showAlert = true;
+            }
         }
-    } else {
-        if (props.visSNPs.length > 0) {
-            snpWidth = width;
-        } else {
-            showAlert = true;
-        }
-    }
     return <div ref={container} style={{height: "100%", display: "flex"}}>
         {props.visSNPs.length > 0 ? <Heatmap
             dragActive={props.dragActive}

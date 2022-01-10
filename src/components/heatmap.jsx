@@ -104,27 +104,6 @@ class Heatmap extends Component {
                 .selectAll("text, .domain")
                 .remove();
 
-            if (this.props.isSNP) {
-                const defs = container
-                    .append("defs");
-                this.props.SNPcolorScale.domain().forEach((base) => {
-                    defs.append("pattern")
-                        .attr("id", `diagonalHatch${base}`)
-                        .attr({
-                            width: cellWidth/2,
-                            height: cellHeight/4,
-                            patternUnits: "userSpaceOnUse",
-                            patternTransform: "rotate(60)",
-                        })
-                        .append("rect")
-                        .attr({
-                            width: cellWidth/4,
-                            height: cellHeight/4,
-                            transform: "translate(0,0)",
-                            fill: this.props.SNPcolorScale(base)
-                        });
-                })
-            }
             let renderedXAxis = container.selectAll("g.x.axis").call(xAxis);
             renderedXAxis.selectAll(".domain").remove();
 
@@ -466,23 +445,9 @@ class Heatmap extends Component {
         container.attr("transform", `translate(0,${transform.translate[1]}), scale(1,${transform.scale[1]}) `)
         container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`);
         container.append("g").attr("class", "x axis");
-        const defs = container
-            .append("defs");
-        defs.append("pattern")
-            .attr("id", "diagonalHatch")
-            .attr({
-                width: "8",
-                height: "8",
-                patternUnits: "userSpaceOnUse",
-                patternTransform: "rotate(60)",
-            })
-            .append("rect")
-            .attr({width: "4", height: "8", transform: "translate(0,0)", fill: "white"});
-
     }
 
     componentDidMount() {
-
         this.updateComponent(true)
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
@@ -536,7 +501,6 @@ class Heatmap extends Component {
                  height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
                 <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}>
-
                     <g id={this.props.containerID}>
                         {this.state.verticalGuideX ?
                             <line x1={this.state.verticalGuideX} x2={this.state.verticalGuideX}
@@ -549,7 +513,7 @@ class Heatmap extends Component {
                 {this.props.appendLines ?
                     <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
                         <GuideLines yScale={this.props.yScale} width={this.props.margin.right}
-                                    height={this.props.height}/>
+                                    height={this.props.height} setIsCustomWidth={this.props.setIsCustomWidth}/>
                     </g>
                     : null}
             </svg>
