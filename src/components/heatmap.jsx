@@ -322,24 +322,24 @@ class Heatmap extends Component {
             .append("g")
         lineGroup
             .append("line")
-            .attr("x1", cellMargin+1)
-            .attr("x2", cellWidth - cellMargin+1)
+            .attr("x1", cellMargin + 1)
+            .attr("x2", cellWidth - cellMargin + 1)
             .attr("y1", innerCellHeight)
             .attr("y2", innerCellHeight)
             .attr("stroke", "black")
         lineGroup
             .append("line")
-            .attr("x1", cellMargin+1)
-            .attr("x2", cellMargin+1)
+            .attr("x1", cellMargin + 1)
+            .attr("x2", cellMargin + 1)
             .attr("y1", innerCellHeight)
-            .attr("y2", innerCellHeight+2)
+            .attr("y2", innerCellHeight + 2)
             .attr("stroke", "black")
         lineGroup
             .append("line")
-            .attr("x1", cellWidth - cellMargin+1)
-            .attr("x2", cellWidth - cellMargin+1)
+            .attr("x1", cellWidth - cellMargin + 1)
+            .attr("x2", cellWidth - cellMargin + 1)
             .attr("y1", innerCellHeight)
-            .attr("y2", innerCellHeight+2)
+            .attr("y2", innerCellHeight + 2)
             .attr("stroke", "black")
     }
 
@@ -436,6 +436,13 @@ class Heatmap extends Component {
                 .on("mouseout", function () {
                     div.transition().duration(500).style("opacity", 0);
                 });
+            heatmapCell
+                .append("line")
+                .attr("x1", cellMargin + 1)
+                .attr("x2", cellWidth - cellMargin - 1)
+                .attr("y1", innerCellHeight)
+                .attr("y2", innerCellHeight)
+                .attr("stroke", "black")
 
         }
         heatmapCell
