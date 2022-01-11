@@ -395,25 +395,28 @@ class Heatmap extends Component {
             .attr("class", `.bars.md-${this.transformNameToClass(type)}`)
             .attr("fill", (d) => colorScale(isSNP ? d[0][0] : d[0]));
 
-        let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([cellWidth * 0.05, cellWidth * 0.95]);
-        let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight * 0.95, cellHeight * 0.05]);
+        const borderWidth = (0.05 * cellWidth < 0.05 * cellHeight ? 0.05 * cellWidth : 0.05 * cellHeight) + cellMargin;
+        const innerCellHeight = cellHeight - borderWidth * 2;
+        // const innerCellWidth = cellWidth - borderWidth * 2
+        let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([borderWidth, cellWidth - borderWidth]);
+        let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight - borderWidth, borderWidth]);
 
         let barWidth = cellWidth * 0.9 / dataDomain.length - cellMargin;
-        let barCellHeight = cellHeight * 0.95 - cellMargin;
+        // let barCellHeight = cellHeight * 0.95 - cellMargin;
         bars
             .attr("x", (d) => xScaleBar(isSNP ? d[0][0] : d[0]))
             .attr("y", (d) => yScaleBar(d[1]))
             .attr("width", barWidth)
-            .attr("height", (d) => barCellHeight - yScaleBar(d[1]))
+            .attr("height", (d) => innerCellHeight - yScaleBar(d[1]))
             .on("mouseover", onMouseOverBars)
             .on("mouseout", function () {
                 div.transition().duration(500).style("opacity", 0);
             });
 
         if (isSNP) {
-            const borderWidth = 0.25 * barWidth < 0.25 * barCellHeight ? 0.25 * barWidth : 0.25 * barCellHeight;
-            const innerCellWidth = barWidth - borderWidth * 2;
-            const innerCellHeight = barCellHeight - borderWidth;
+            const borderWidth = 0.25 * barWidth < 0.25 * innerCellHeight ? 0.25 * barWidth : 0.25 * innerCellHeight;
+            const innerWidth = barWidth - borderWidth * 2;
+            const innerHeight = innerCellHeight - borderWidth;
             heatmapCell
                 .selectAll(`.pattern-bars.md-${this.transformNameToClass(type)}`)
                 .data((d) =>
@@ -424,8 +427,8 @@ class Heatmap extends Component {
                 .enter()
                 .append("svg:rect")
                 .attr("class", `pattern-bars md-${this.transformNameToClass(type)}`)
-                .attr("width", innerCellWidth)
-                .attr("height", (d) => innerCellHeight - yScaleBar(d[1]))
+                .attr("width", innerWidth)
+                .attr("height", (d) => innerHeight - yScaleBar(d[1]))
                 .attr("y", (d) => yScaleBar(d[1]) + borderWidth)
                 .attr("x", (d) => xScaleBar(d[0][0]) + borderWidth)
                 .attr("fill", "white")
@@ -433,6 +436,13 @@ class Heatmap extends Component {
                 .on("mouseout", function () {
                     div.transition().duration(500).style("opacity", 0);
                 });
+            heatmapCell
+                .append("line")
+                .attr("x1", cellMargin + 1)
+                .attr("x2", cellWidth - cellMargin - 1)
+                .attr("y1", innerCellHeight)
+                .attr("y2", innerCellHeight)
+                .attr("stroke", "black")
 
             heatmapCell
                 .append("line")
