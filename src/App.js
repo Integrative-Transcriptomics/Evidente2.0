@@ -192,6 +192,7 @@ verticalDrag=(ev)=>{
             alert("Error by processing files. Please revise the files uploaded. Details in console.");
         } else {
             let {metadataInfo = {}} = json;
+            metadataInfo["Size"].extent = ["Small", "Medium", "Large", "Huge"]
             let ordinalValues = _.toPairs(metadataInfo).filter(
                 (d) => d[1].type.toLowerCase() === "ordinal"
             );
@@ -201,8 +202,29 @@ verticalDrag=(ev)=>{
                 });
             }
             metadataInfo = this.createColorScales(metadataInfo);
+            var availableSNPs = json.availableSNPs.toString();
+            const formDataStat = new FormData();
 
+            formDataStat.set("available_snps", availableSNPs);
+            //send request at server to preprocess statistic-files
+            let responseStat = await fetch(`/api/init-stats`, {
+                method: "post",
+                body: formDataStat,
+            });
+            let jsonStat = await responseStat.json();
+            if (responseStat.status === 400 || responseStat.status === 500) {
+                //catch server error from prepocessing statistic-files
+                console.error(jsonStat.message);
+                alert("Error by processing files. Please revise the files uploaded. Details in console.");
+            } else {
             this.setState({
+                computeStatistics: true,
+                statisticFilesUploaded: true,
+                goFilesUploaded: true,
+                snpsToGene: jsonStat.snps_to_gene,
+                gene_to_go: jsonStat.id_to_go,
+                go_to_snp_pos: jsonStat.go_to_snp_pos,
+                orderChanged: true,
                 isLoaded: true,
                 newick: json.newick,
                 snpPerColumn: json.snpPerColumn,
@@ -217,7 +239,7 @@ verticalDrag=(ev)=>{
                 tree_snps: json.num_snps,
                 all_snps: json.all_snps,
             });
-
+        }
             $("#welcome-modal-button").text("Run App");
         }
     };
