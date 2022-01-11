@@ -73,6 +73,25 @@ def load_init_example():
         print("error", e.args)
         return jsonify({'error': 'internal server error'}), 500
 
+@app.route('/api/init-stats', methods=['POST'])
+def load_init_stats():
+    """ Loads statistical files evidente-start example from directory, parses data 
+     and sends result to client.
+    :return: preprocessed statistical data as :type Json-object
+    """
+    try:
+        gff_data = bytes(
+            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_gff.csv"), "r").read(), 'utf-8')
+        # print(nwk_data)
+        go_data = bytes(
+            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_go_terms.csv"), "r").read(), 'utf-8')
+        available_snps = request.form['available_snps'].split(',')
+        response = prepare_statistics(gff_data.decode(
+            'utf8'),",", go_data.decode('utf-8'), ",", available_snps)
+        return response
+    except ValueError as e:
+        print("error", e.args)
+        return jsonify({'error': 'internal server error'}), 500
 
 @app.route('/api/statistic-upload', methods=['POST'])
 def prepare_statistics_data():
