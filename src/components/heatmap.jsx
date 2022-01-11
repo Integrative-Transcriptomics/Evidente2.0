@@ -13,7 +13,7 @@ class Heatmap extends Component {
     SNPprefix = "Pos";
     minCollapsedCellWidth = 40;
     minNormalCellWidth = 5;
-    maxCellWidth=30;
+    maxCellWidth = 30;
 
     shouldComponentUpdate(nextProp, nextState) {
         let actualProp = this.props;
@@ -44,13 +44,13 @@ class Heatmap extends Component {
     updateComponent(init) {
         let props = this.props;
         this.SNPcolorScale = this.props.SNPcolorScale;
-        const cellMargin=1;
-        let cellWidthMax = props.collapsedClades.length > 0 ? this.minCollapsedCellWidth:this.maxCellWidth;
-        const calcCellWidth=props.maxWidth/props.x_elements.length;
-        const cellWidthMin=props.collapsedClades.length > 0
-                ? Math.max(this.minCollapsedCellWidth,calcCellWidth)
-                : Math.max(this.minNormalCellWidth,calcCellWidth);
-        const cellWidth=props.x_elements.length*cellWidthMax<props.maxWidth?cellWidthMax:cellWidthMin
+        const cellMargin = 1;
+        let cellWidthMax = props.collapsedClades.length > 0 ? this.minCollapsedCellWidth : this.maxCellWidth;
+        const calcCellWidth = props.maxWidth / props.x_elements.length;
+        const cellWidthMin = props.collapsedClades.length > 0
+            ? Math.max(this.minCollapsedCellWidth, calcCellWidth)
+            : Math.max(this.minNormalCellWidth, calcCellWidth);
+        const cellWidth = props.x_elements.length * cellWidthMax < props.maxWidth ? cellWidthMax : cellWidthMin
 
         let container = d3.select(`#${this.props.containerID}`);
         let expectedVizWidth = cellWidth * props.x_elements.length;
@@ -74,7 +74,6 @@ class Heatmap extends Component {
             this.initHeatmap(container);
         }
         if (props.y_elements.length !== this.props.nodes.length) {
-            let cellSize = cellWidth - 2*cellMargin;
 
             let xScale = d3.scale
                 .ordinal()
@@ -95,7 +94,7 @@ class Heatmap extends Component {
                 .tickFormat((d) => d)
                 .orient("left");
 
-            let cellHeight = (this.props.height / props.y_elements.length - 1) -2*cellMargin;
+            let cellHeight = (this.props.height / props.y_elements.length - 1) - 2 * cellMargin;
             container
                 .selectAll(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
                 .call(yAxis)
@@ -130,7 +129,7 @@ class Heatmap extends Component {
                     let singleData = props.data.filter((d) => !_.get(d, "clade", false));
                     let actualColorScale = _.get(props.mdinfo, `${x_elem}.colorScale`, this.SNPcolorScale);
                     let scales = {xScale: xScale, yScale: yScale, colorScale: actualColorScale};
-                    let cellDimensions = {cellHeight: cellHeight, cellWidth: cellSize, cellMargin:cellMargin};
+                    let cellDimensions = {cellHeight: cellHeight, cellWidth: cellWidth, cellMargin: cellMargin};
                     this.updateCells(
                         singleData,
                         scales,
@@ -225,26 +224,26 @@ class Heatmap extends Component {
             .enter()
             .append("svg:rect")
             .attr("class", ({Information}) => `cell node-${Information} md-${type}`)
-            .attr("width", cellWidth)
+            .attr("width", cellWidth - 2 * cellMargin)
             .attr("height", cellHeight)
-            .attr("y", ({Information}) => yScale(Information)+cellMargin)
-            .attr("x", () => xScale(type)+cellMargin)
+            .attr("y", ({Information}) => yScale(Information) + cellMargin)
+            .attr("x", () => xScale(type) + cellMargin)
             .attr("fill", (d) => colorScale(_.get(d, isSNP ? `${subtype}.allele` : type)));
 
-        const borderWidth=0.25*cellWidth<0.25*cellHeight?0.25*cellWidth:0.25*cellHeight;
-        const innerCellWidth=cellWidth-borderWidth*2;
-        const innerCellHeight=cellHeight-borderWidth*2;
+        const borderWidth = (0.25 * (cellWidth - 2 * cellMargin) < 0.25 * cellHeight ? 0.25 * (cellWidth - 2 * cellMargin) : 0.25 * cellHeight) + cellMargin;
+        const innerCellWidth = cellWidth - borderWidth * 2;
+        const innerCellHeight = (cellHeight + 2 * cellMargin) - borderWidth * 2;
         if (isSNP) {
             d3.select(`#${this.props.containerID}`)
                 .selectAll(`.pattern.md-${this.transformNameToClass(type)}`)
                 .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
                 .enter()
                 .append("svg:rect")
-                .attr("class", ({ Information }) => `pattern node-${Information} md-${type}`)
+                .attr("class", ({Information}) => `pattern node-${Information} md-${type}`)
                 .attr("width", innerCellWidth)
                 .attr("height", innerCellHeight)
-                .attr("y", ({ Information }) => yScale(Information)+borderWidth+cellMargin)
-                .attr("x", () => xScale(type)+borderWidth+cellMargin)
+                .attr("y", ({Information}) => yScale(Information) + borderWidth)
+                .attr("x", () => xScale(type) + borderWidth)
                 .attr("fill", "white")
                 .on("mouseover", onMouseOverCell)
                 .on("mouseout", function (d) {
@@ -252,7 +251,7 @@ class Heatmap extends Component {
                     div.transition().duration(500).style("opacity", 0);
                 });
         }
-        cells.on("mouseover", onMouseOverCell).on("mouseout", function ({ Information }) {
+        cells.on("mouseover", onMouseOverCell).on("mouseout", function ({Information}) {
             d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
             div.transition().duration(500).style("opacity", 0);
         });
@@ -267,27 +266,38 @@ class Heatmap extends Component {
      * @param {Array} data_extent
      * @param {String} type
      */
-    createBoxplots(data, {xScale, yScale}, {cellHeight, cellWidth}, center, data_extent, type) {
-        let boxplot_x = d3v5.scaleLinear().domain(data_extent).range([0, cellWidth]);
+    createBoxplots(data, {xScale, yScale}, {cellHeight, cellWidth, cellMargin}, center, data_extent, type) {
+
+        const borderWidth = (0.05 * cellWidth < 0.05 * cellHeight ? 0.05 * cellWidth : 0.05 * cellHeight) + cellMargin;
+        const innerCellHeight = cellHeight - borderWidth * 2;
+        const innerCellWidth = cellWidth - borderWidth * 2
+        let boxplot_x = d3v5.scaleLinear().domain(data_extent).range([0, innerCellWidth]);
         let div = d3.select("#tooltip");
 
-        d3v5
-            .select(`#${this.props.containerID}`)
-            .selectAll(`.boxplot.md-${this.transformNameToClass(type)}`)
-            .data(data)
-            .enter()
+        const boxPlotCells =
+            d3v5
+                .select(`#${this.props.containerID}`)
+                .selectAll(`.boxplot.md-${this.transformNameToClass(type)}`)
+                .data(data)
+                .enter()
+                .append("g")
+                .attr("class", ({Information}) => `boxplot node-${Information} md-${type}`)
+                .attr(
+                    "transform",
+                    ({Information}) => `translate(${xScale(type)}, ${yScale(Information)})`
+                )
+        boxPlotCells
             .append("g")
-            .attr("class", ({Information}) => `boxplot node-${Information} md-${type}`)
             .attr(
                 "transform",
-                ({Information}) => `translate(${xScale(type)}, ${center + yScale(Information)})`
+                ({Information}) => `translate(${cellMargin}, ${center})`
             )
             .datum((d) => ({...d[type], nodeName: d["Information"]}))
             .call(
                 boxplot
                     .boxplot()
-                    .bandwidth(cellHeight / 2)
-                    .boxwidth(cellHeight / 2)
+                    .bandwidth(innerCellHeight / 2)
+                    .boxwidth(innerCellHeight / 2)
                     .scale(boxplot_x)
                     .showInnerDots(false)
                     .symbol(boxplot.boxplotSymbolTick)
@@ -308,6 +318,29 @@ class Heatmap extends Component {
 
                 div.transition().duration(500).style("opacity", 0);
             });
+        const lineGroup = boxPlotCells
+            .append("g")
+        lineGroup
+            .append("line")
+            .attr("x1", cellMargin+1)
+            .attr("x2", cellWidth - cellMargin+1)
+            .attr("y1", innerCellHeight)
+            .attr("y2", innerCellHeight)
+            .attr("stroke", "black")
+        lineGroup
+            .append("line")
+            .attr("x1", cellMargin+1)
+            .attr("x2", cellMargin+1)
+            .attr("y1", innerCellHeight)
+            .attr("y2", innerCellHeight+2)
+            .attr("stroke", "black")
+        lineGroup
+            .append("line")
+            .attr("x1", cellWidth - cellMargin+1)
+            .attr("x2", cellWidth - cellMargin+1)
+            .attr("y1", innerCellHeight)
+            .attr("y2", innerCellHeight+2)
+            .attr("stroke", "black")
     }
 
     /**
@@ -372,16 +405,16 @@ class Heatmap extends Component {
             .attr("x", (d) => xScaleBar(isSNP ? d[0][0] : d[0]))
             .attr("y", (d) => yScaleBar(d[1]))
             .attr("width", barWidth)
-            .attr("height", (d) => barCellHeight- yScaleBar(d[1]))
+            .attr("height", (d) => barCellHeight - yScaleBar(d[1]))
             .on("mouseover", onMouseOverBars)
             .on("mouseout", function () {
                 div.transition().duration(500).style("opacity", 0);
             });
 
         if (isSNP) {
-            const borderWidth=0.25*barWidth<0.25*barCellHeight?0.25*barWidth:0.25*barCellHeight;
-            const innerCellWidth=barWidth-borderWidth*2;
-            const innerCellHeight=barCellHeight-borderWidth*2;
+            const borderWidth = 0.25 * barWidth < 0.25 * barCellHeight ? 0.25 * barWidth : 0.25 * barCellHeight;
+            const innerCellWidth = barWidth - borderWidth * 2;
+            const innerCellHeight = barCellHeight - borderWidth;
             heatmapCell
                 .selectAll(`.pattern-bars.md-${this.transformNameToClass(type)}`)
                 .data((d) =>
@@ -393,9 +426,9 @@ class Heatmap extends Component {
                 .append("svg:rect")
                 .attr("class", `pattern-bars md-${this.transformNameToClass(type)}`)
                 .attr("width", innerCellWidth)
-                .attr("height", (d) =>  innerCellHeight - yScaleBar(d[1]))
-                .attr("y", (d) => yScaleBar(d[1])+borderWidth)
-                .attr("x", (d) => xScaleBar(d[0][0])+borderWidth)
+                .attr("height", (d) => innerCellHeight - yScaleBar(d[1]))
+                .attr("y", (d) => yScaleBar(d[1]) + borderWidth)
+                .attr("x", (d) => xScaleBar(d[0][0]) + borderWidth)
                 .attr("fill", "white")
                 .on("mouseover", onMouseOverBars)
                 .on("mouseout", function () {
@@ -403,6 +436,13 @@ class Heatmap extends Component {
                 });
 
         }
+                heatmapCell
+            .append("line")
+            .attr("x1", cellMargin+1)
+            .attr("x2", cellWidth - cellMargin-1)
+            .attr("y1", innerCellHeight)
+            .attr("y2", innerCellHeight)
+            .attr("stroke", "black")
     }
 
     /**
@@ -497,7 +537,7 @@ class Heatmap extends Component {
     render() {
         return <div id={this.props.divID} ref={(el) => (this.container = el)}
                     style={{width: this.state.actualWidth, overflow: "hidden"}}
-                    onMouseLeave={()=>this.setState({verticalGuideX: null})}>
+                    onMouseLeave={() => this.setState({verticalGuideX: null})}>
             <svg id={`display_${this.props.divID}`}
                  width={this.state.expectedWidth}
                  height={this.props.height + this.props.margin.top + this.props.margin.bottom}
