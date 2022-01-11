@@ -239,7 +239,6 @@ class Heatmap extends Component {
                 .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
                 .enter()
                 .append("svg:rect")
-                .attr("class", ({Information}) => `pattern node-${Information} md-${type}`)
                 .attr("width", innerCellWidth)
                 .attr("height", innerCellHeight)
                 .attr("y", ({Information}) => yScale(Information) + borderWidth)
