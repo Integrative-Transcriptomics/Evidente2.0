@@ -45,3 +45,6 @@ From Arora et al (2016, [Publication](https://www.nature.com/articles/nmicrobiol
 
 ## contents.txt 
 Contains a list of contents of the evidente2 repository including all files relevant during the extension of evidente2.0 together with a short description.
+
+## CLASSICO
+To get more information on the module CLASSICO visit its [repository](https://github.com/Integrative-Transcriptomics/Classico)
