@@ -13,15 +13,18 @@ class FileUploadForm extends Component {
         error: false
     };
 
-    loadFile = (file, type, id) => {
-        if (type === "statistics") {
-            let object = Object.assign({}, this.state.statisticsFiles);
-            object[id] = file;
-            this.setState({statisticsFiles: object})
-        } else {
-            let object = Object.assign({}, this.state.visFiles);
-            object[id] = file;
-            this.setState({visFiles: object})
+    loadFile = (files, type, id) => {
+        console.log(files.length);
+        if (files.length > 0) {
+            if (type === "statistics") {
+                let object = Object.assign({}, this.state.statisticsFiles);
+                object[id] = files[0];
+                this.setState({statisticsFiles: object})
+            } else {
+                let object = Object.assign({}, this.state.visFiles);
+                object[id] = files[0];
+                this.setState({visFiles: object})
+            }
         }
     }
     submitFiles = () => {
@@ -68,7 +71,7 @@ class FileUploadForm extends Component {
                             <Form.File
                                 label={currentLabel}
                                 custom
-                                onChange={(e) => this.loadFile(e.target.files[0], "vis", id)}
+                                onChange={(e) => this.loadFile(e.target.files, "vis", id)}
                             />
                         </Form.Group>
                     )
@@ -91,7 +94,7 @@ class FileUploadForm extends Component {
             </Form>
             {this.state.error ? <Alert
                 variant={this.state.error.level === "error" ? "danger" : "warning"}>{this.state.error.text}</Alert> : null}
-            <Button variant='primary' disabled={this.state.nwk === null} onClick={this.submitFiles}>
+            <Button variant='primary' disabled={this.state.visFiles.nwk === null && this.state.visFiles.snp === null} onClick={this.submitFiles}>
                 {this.state.error === false ? "Submit" : this.state.error.level === "hint" ? "Submit anyway" : "Submit"}
             </Button>
         </React.Fragment>)
