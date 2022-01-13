@@ -86,7 +86,7 @@ class FileUploadForm extends Component {
                         <Form.File
                             label={this.state.statisticsFiles[id] !== null ? label + ": " + this.state.statisticsFiles[id].name : label}
                             custom
-                            onChange={(e) => this.loadFile(e.target.files[0], "statistics", id)}
+                            onChange={(e) => this.loadFile(e.target.files, "statistics", id)}
                         />
                     </Form.Group>
                 ))}
