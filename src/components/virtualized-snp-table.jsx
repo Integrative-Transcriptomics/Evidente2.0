@@ -195,7 +195,7 @@ class ReactVirtualizedTable extends Component {
                     }}
                 >
                     <Typography variant='h6' align='center' gutterBottom={true}>
-                        SNPs within the actual {this.props.type}
+                        {this.props.title}
                     </Typography>
                     <div style={{height: maxHeight}}>
                         <VirtualizedTable
@@ -215,7 +215,7 @@ class ReactVirtualizedTable extends Component {
         } else {
             return (
                 <Typography align='center' gutterBottom={true} variant='h6' style={{margin: 5}}>
-                    No SNPs within the actual {this.props.type}
+                    {this.props.noSNPtitle}
                 </Typography>
             );
         }

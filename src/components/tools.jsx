@@ -361,8 +361,9 @@ class Tools extends Component {
                 <ButtonGroup aria-label="Basic example">
                   {["Clade", "Tree"].map((typeOfResult) => (
                     <Button
+                        size={"sm"}
                       key={typeOfResult}
-                      variant='primary'
+                      variant='secondary'
                       onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
                     >
                       {typeOfResult} analysis
