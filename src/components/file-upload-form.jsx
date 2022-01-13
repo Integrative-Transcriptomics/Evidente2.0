@@ -14,7 +14,6 @@ class FileUploadForm extends Component {
     };
 
     loadFile = (files, type, id) => {
-        console.log(files.length);
         if (files.length > 0) {
             if (type === "statistics") {
                 let object = Object.assign({}, this.state.statisticsFiles);
