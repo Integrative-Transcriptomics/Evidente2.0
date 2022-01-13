@@ -2,6 +2,13 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Requirements 
+The project is running with the following requirements. Lower versions might work, but are not tested
+- Node: v16.13.0
+- npm: 8.1.3
+- python: 3.7.4
+- java: Java(TM) SE Runtime Environment (build 14.0.1+7)
+
 ## Run Devolpment Version
 
 1. Go to project folder
