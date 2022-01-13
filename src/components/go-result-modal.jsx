@@ -130,7 +130,7 @@ class GOResultModal extends Component {
     if (snps !== undefined) {
       this.props.handleHideSNPs(snps);
     }
-    var snpsShow = Array.from({ length: this.props.go_result.length + 1 }).map(x => false);
+    var snpsShow = Array.from({ length: this.props.go_result.length + 1 }).map(x => [false, false]);
     this.setState({ snpsShow: snpsShow });
   }
 

@@ -1,9 +1,10 @@
 Position	Ref	CHAMELEON	PIGEON	CHICKEN	ZEBRAFINCH	BOVINE	DOLPHIN	ELEPHANT
 5	A	T	.	.	.	.	T	.
-15	G	A	.	.	C	.	.	.
-25	A	C	C	C	C	T	C	T
-35	T	.	A	.	.	.	A	.
-45	C	G	G	G	G	T	T	T
+10	G	A	.	.	C	.	.	.
+15	A	.	.	.	T	.	.	T
+20	T	.	A	.	.	.	A	.
+25	C	G	G	G	G	T	T	T
+30	C	.	A	A	A	.	.	.
 50	A	.	.	.	.	T	T	.
 150	G	.	.	.	.	A	A	.
 250	A	.	.	.	.	T	T	.
