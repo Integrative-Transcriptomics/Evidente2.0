@@ -311,7 +311,7 @@ class Phylotree extends Component {
         this.props.tree.get_nodes().forEach((tnode) => {
             d3.layout.phylotree.add_custom_menu(
                 tnode,
-                () => "Show SNPs from Node",
+                () => "Show SNPs in sidebar",
                 () => addTimeoutCursor(() => this.showSNPsfromNode(tnode), 50),
                 () => true
             );
@@ -319,7 +319,7 @@ class Phylotree extends Component {
             //added to compute clade enrichments
             d3.layout.phylotree.add_custom_menu(
                 tnode,
-                () => "Compute statistics for subtree",
+                () => "Compute statistics for clade",
                 () => addTimeoutCursor(() => this.isStatisticPossible(tnode), 1),
                 () => true
             );

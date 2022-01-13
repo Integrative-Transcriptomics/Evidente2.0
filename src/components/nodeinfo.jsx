@@ -23,7 +23,7 @@ class NodeInformation extends Component {
             <div>
                 <h4>{this.props.children}</h4>
                 {!this.state.showNonSupport && !this.state.showNonSupport ?
-                    <Alert variant={"secondary"}>Select a node in the tree to show the SNPs among a clade</Alert> :
+                    <Alert variant={"secondary"}>Select a node in the tree to show the SNPs below a clade</Alert> :
                     <div>
                         <Accordion>
                             <Card>
@@ -39,15 +39,15 @@ class NodeInformation extends Component {
                                     <Card.Body style={{maxHeight: 250, overflow: "auto"}}>
                                         <VirtualizedTable
                                             rows={get(this.props.SNPTable, `support.actualNode`, [])}
-                                            title={"SNPs among the actual node"}
-                                            type={"node"}
+                                            title={"SNPs in all leaves below the node"}
+                                            noSNPtitle={"No SNPs in all leaves below the node"}
                                             onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                                             onSNPaddition={this.props.onSNPaddition}
                                         />
                                         <VirtualizedTable
                                             rows={get(this.props.SNPTable, `support.descendants`, [])}
-                                            title={"SNPs among the actual subtree"}
-                                            type={"subtree"}
+                                            title={"SNPs in subset of leaves below the node"}
+                                            noSNPtitle={"No SNPs in any subset of leaves below the node"}
                                             onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                                             onSNPaddition={this.props.onSNPaddition}
                                         />
@@ -67,15 +67,15 @@ class NodeInformation extends Component {
                                     <Card.Body style={{maxHeight: 250, overflow: "auto"}}>
                                         <VirtualizedTable
                                             rows={get(this.props.SNPTable, `notsupport.actualNode`, [])}
-                                            title={"SNPs among the actual node"}
-                                            type={"node"}
+                                            title={"SNPs in all leaves below the node"}
+                                            noSNPtitle={"No SNPs in all leaves below the node"}
                                             onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                                             onSNPaddition={this.props.onSNPaddition}
                                         />
                                         <VirtualizedTable
                                             rows={get(this.props.SNPTable, `notsupport.descendants`, [])}
-                                            title={"SNPs among the actual subtree"}
-                                            type={"subtree"}
+                                            title={"SNPs in subset of leaves below the node"}
+                                            noSNPtitle={"No SNPs in any subset of leaves below the node"}
                                             onMultipleSNPaddition={this.props.onMultipleSNPaddition}
                                             onSNPaddition={this.props.onSNPaddition}
                                         />
