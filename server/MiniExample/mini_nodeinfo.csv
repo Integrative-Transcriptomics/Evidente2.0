@@ -1,4 +1,4 @@
-Information,Weight,Lifespan,Class,Size
+Information,Weight,Quantity,Class,Size
 Type,Numerical,Numerical,Categorical,Ordinal
 Toy_strain_1,0.17,5,Experimental,Small
 Toy_strain_2,0.9,6,Clinical,Medium
