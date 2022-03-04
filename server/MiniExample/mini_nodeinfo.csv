@@ -1,9 +1,9 @@
 Information,Weight,Lifespan,Class,Size
 Type,Numerical,Numerical,Categorical,Ordinal
-CHAMELEON,0.17,5,Reptilia,Small
-PIGEON,0.9,6,Aves,Medium
-CHICKEN,0.8,10,Aves,Medium
-ZEBRAFINCH,0.012,5,Aves,Small
-BOVINE,1100,22,Mammalia,Large
-DOLPHIN,200,55,Mammalia,Large
-ELEPHANT,6000,70,Mammalia,Huge
+Toy_strain_1,0.17,5,Experimental,Small
+Toy_strain_2,0.9,6,Clinical,Medium
+Toy_strain_3,0.8,10,Clinical,Medium
+Toy_strain_4,0.012,5,Clinical,Small
+Toy_strain_5,1100,22,Wild Type,Large
+Toy_strain_6,200,55,Wild Type,Large
+Toy_strain_7,6000,70,Wild Type,Huge
