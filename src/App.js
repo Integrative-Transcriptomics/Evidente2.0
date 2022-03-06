@@ -947,7 +947,8 @@ class App extends Component {
 
   handleCladogramm = () => {
     this.setState({ cladogram: !this.state.cladogram });
-    this.tree.placenodes().update();
+    this.tree.placenodes();
+    this.tree.update();
     // this.tree.update();
   };
 
