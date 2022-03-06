@@ -157,7 +157,6 @@ class Phylotree extends Component {
             .descendants(node)
             .filter((d) => d.tempid !== node.tempid)
         //.map((d) => this.props.ids.numToLabel[d.tempid]);
-        //console.log("phlyo-desc", descendants);
         this.props.rememberCladeSelection(node, descendants);
     }
 
@@ -308,7 +307,15 @@ class Phylotree extends Component {
             count = count + 1;
             return d;
         });
+
         this.props.tree.get_nodes().forEach((tnode) => {
+            d3.layout.phylotree.add_custom_menu(
+                tnode, // add to this node
+                () => !this.props.cladogramState ? "To cladogram" : "Show distances", // display this text for the menu
+                () => this.props.updateCladogramm()
+                ,
+                (node) => node.depth === 0  // condition on when to display the menu
+            );
             d3.layout.phylotree.add_custom_menu(
                 tnode,
                 () => "Show SNPs in sidebar",
@@ -344,6 +351,7 @@ class Phylotree extends Component {
                 () => addTimeoutCursor(() => this.hideNode(tnode, this.props.tree,)),
                 (node) => node.depth !== 0  // condition on when to display the menu
             );
+
             d3.layout.phylotree.add_custom_menu(
                 tnode, // add to this node
                 () => "Show the hidden nodes", // display this text for the menu
