@@ -137,10 +137,10 @@ class App extends Component {
       var bl = 0;
       if (!this.state.cladogram) bl = parseFloat(_node["attribute"]);
       else {
-        let current_node = this.get_clade_leaves(_node, this.tree);
+        let current_node = _node["own-collapse"] ? 1 : this.get_clade_leaves(_node, this.tree);
         let parent_node = this.get_clade_leaves(_node.parent, this.tree);
 
-        bl = toString(parent_node - current_node);
+        bl = parent_node - current_node;
       }
 
       if (!isNaN(bl)) {
