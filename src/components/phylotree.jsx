@@ -311,7 +311,7 @@ class Phylotree extends Component {
         this.props.tree.get_nodes().forEach((tnode) => {
             d3.layout.phylotree.add_custom_menu(
                 tnode, // add to this node
-                () => !this.props.cladogramState ? "To cladogram" : "Show distances", // display this text for the menu
+                () => !this.props.cladogramState ? "Show as cladogram" : "Show as dendrogram", // display this text for the menu
                 () => this.props.updateCladogramm()
                 ,
                 (node) => node.depth === 0  // condition on when to display the menu
