@@ -117,6 +117,41 @@ class App extends Component {
     .branch_name(function () {
       return "";
     });
+
+  get_clade_leaves(node, tree) {
+    if (!node) {
+      return 0;
+    }
+    if (tree.is_leafnode(node)) {
+      return 1;
+    } else {
+      const leaves = tree.select_all_descendants(node, true, false);
+      const names = leaves.map((leave) => String(leave.name));
+      return names.length;
+    }
+  }
+
+  tree_branch_def = this.tree.branch_length();
+  tree_branch_upgma = (_node) => {
+    if ("attribute" in _node && _node["attribute"] && _node["attribute"].length) {
+      var bl = 0;
+      if (!this.state.cladogram) bl = parseFloat(_node["attribute"]);
+      else {
+        let current_node = _node["own-collapse"] ? 1 : this.get_clade_leaves(_node, this.tree);
+        let parent_node = this.get_clade_leaves(_node.parent, this.tree);
+
+        bl = parent_node - current_node;
+      }
+
+      if (!isNaN(bl)) {
+        return Math.max(0, bl);
+      }
+    }
+    return undefined;
+  };
+  tree = this.tree.branch_length(this.tree_branch_upgma);
+
+
   initialState = {
     isLoaded: false,
     dragActive: false,
@@ -137,6 +172,8 @@ class App extends Component {
     activeFilters: [],
     orderChanged: false,
     loadAnimationShow: false,
+    cladogram: false,
+
     //-------------------------------------------------
     // added for holding preprocessed statistical data
     // and go-enrichment results:
@@ -254,7 +291,6 @@ class App extends Component {
     this.state.snpdata.notsupport.sort((r1, r2) =>
       r1.node > r2.node ? 1 : r1.node < r2.node ? -1 : 0
     );
-    //console.log(this.state.snpdata);
   }
 
   /**
@@ -409,7 +445,6 @@ class App extends Component {
     let significance_level = document.getElementById("sig-level").value;
     let node = this.state.cladeSelection[0];
     let subtree = this.state.cladeSelection[1];
-    //console.log(node,subtree)
     let snp_positions = this.getSnpOfSubtree(node, subtree);
     let data = JSON.stringify({
       all_snps: this.state.all_snps,
@@ -918,6 +953,13 @@ class App extends Component {
     this.setState({ selectedNodes: filteredSelection });
   };
 
+  handleCladogramm = () => {
+    this.setState({ cladogram: !this.state.cladogram });
+    this.tree.placenodes();
+    this.tree.update();
+    // this.tree.update();
+  };
+
   componentDidMount() {
     d3.select("body")
       .classed("overflow-allowed", true)
@@ -963,6 +1005,8 @@ class App extends Component {
                   selectedNodeID={this.state.selectedNodeID}
                   updateSNPTable={this.updateSNPTable}
                   tree={this.tree}
+                  updateCladogramm={this.handleCladogramm}
+
                   onShowMyNodes={this.handleShowNodes}
                   onCollapse={this.handleCollapse}
                   onDecollapse={this.handleDecollapse}
@@ -973,6 +1017,7 @@ class App extends Component {
                   newick={this.state.newick}
                   snpdata={this.state.snpdata}
                   ids={this.state.ids}
+                  cladogramState={this.state.cladogram}
                   dialog={this.dialog}
                   shownNodes={shownNodes}
                 />
