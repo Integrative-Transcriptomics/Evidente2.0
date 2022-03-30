@@ -1,14 +1,14 @@
-import React, {Component} from "react";
-import {Card, Form} from "react-bootstrap";
-import {isEqual} from "lodash";
+import React, { Component } from "react";
+import { Card, Form } from "react-bootstrap";
+import { isEqual } from "lodash";
 
-import Select, {components} from "react-select";
+import Select, { components } from "react-select";
 
-const {MenuItem} = components;
+const { MenuItem } = components;
 
 function Option(props) {
     // Fix slow rendering of menu item
-    const {onMouseMove, onMouseOver, ...newInnerProps} = props.innerProps;
+    const { onMouseMove, onMouseOver, ...newInnerProps } = props.innerProps;
 
     return (
         <MenuItem
@@ -25,9 +25,9 @@ function Option(props) {
     );
 }
 
-const {ValueContainer, Placeholder} = components;
+const { ValueContainer, Placeholder } = components;
 
-const CustomValueContainer = ({children, ...props}) => {
+const CustomValueContainer = ({ children, ...props }) => {
     return (
         <ValueContainer {...props}>
             <Placeholder {...props} isFocused={props.isFocused}>
@@ -85,38 +85,38 @@ class VisualizeDataCard extends Component {
 
     render() {
         return (
-            <Card.Body style={{maxHeight: 250, overflow: "auto"}}>
+            <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
                 <Form>
-                <Form.Label variant='h6'>Select to visualize</Form.Label>
-                <Select
-                    id='snpdatashow'
-                    options={this.props.availableSNPs.map((d) => ({value: d, label: d}))}
-                    value={this.props.visSNPs.map((d) => ({value: d, label: d}))}
-                    onChange={this.props.onSNPChange}
-                    placeholder={"Visualize SNPs"}
-                    isMulti
-                    components={{
-                        ValueContainer: CustomValueContainer,
-                        MenuItem: Option,
-                    }}
-                    menuPosition={"fixed"}
-                    menuPortalTarget={document.getElementById("tools")}
-                    styles={selectStates}
-                />
-                <Select
-                    id='metadatashow'
-                    options={this.props.getMetadata(this.props.availableMDs)}
-                    value={this.props.visMd.map((d) => ({value: d, label: d}))}
-                    onChange={this.props.onMDChange}
-                    isMulti
-                    placeholder={"Visualize metadata"}
-                    components={{
-                        ValueContainer: CustomValueContainer,
-                    }}
-                    menuPosition={"fixed"}
-                    menuPortalTarget={document.getElementById("tools")}
-                    styles={selectStates}
-                />
+                    <Form.Label variant='h6'>Select to visualize</Form.Label>
+                    <Select
+                        id='snpdatashow'
+                        options={this.props.availableSNPs.map((d) => ({ value: d, label: d }))}
+                        value={this.props.visSNPs.map((d) => ({ value: d, label: d }))}
+                        onChange={this.props.onSNPChange}
+                        placeholder={"Visualize SNP Positions"}
+                        isMulti
+                        components={{
+                            ValueContainer: CustomValueContainer,
+                            MenuItem: Option,
+                        }}
+                        menuPosition={"fixed"}
+                        menuPortalTarget={document.getElementById("tools")}
+                        styles={selectStates}
+                    />
+                    <Select
+                        id='metadatashow'
+                        options={this.props.getMetadata(this.props.availableMDs)}
+                        value={this.props.visMd.map((d) => ({ value: d, label: d }))}
+                        onChange={this.props.onMDChange}
+                        isMulti
+                        placeholder={"Visualize metadata"}
+                        components={{
+                            ValueContainer: CustomValueContainer,
+                        }}
+                        menuPosition={"fixed"}
+                        menuPortalTarget={document.getElementById("tools")}
+                        styles={selectStates}
+                    />
                 </Form>
             </Card.Body>
         );

@@ -242,7 +242,7 @@ class Tools extends Component {
             >
               Visualize data
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey='2'>
+            <Accordion.Collapse id='metadata-card-body-show' eventKey='2'>
               <VisualizeDataCard
                 availableMDs={this.props.availableMDs}
                 availableSNPs={this.props.availableSNPs}
@@ -361,7 +361,7 @@ class Tools extends Component {
                 <ButtonGroup aria-label="Basic example">
                   {["Clade", "Tree"].map((typeOfResult) => (
                     <Button
-                        size={"sm"}
+                      size={"sm"}
                       key={typeOfResult}
                       variant='secondary'
                       onClick={() => this.onLatestResult(typeOfResult.toLowerCase())}
