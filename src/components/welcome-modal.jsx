@@ -1,10 +1,10 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import ModalOwn from "./modal-own";
 
 class WelcomeModal extends Component {
-    state = {show: true};
+    state = { show: true };
     close = (value) => {
-        this.setState({show: false});
+        this.setState({ show: false });
     };
 
     render() {
@@ -18,7 +18,7 @@ class WelcomeModal extends Component {
                 title='Evidente'
             >
                 <p>
-                    Evidente is loaded with a default toy example with seven taxa, five SNPs and four
+                    Evidente is loaded with a default toy example with seven samples, 28 SNPs and four
                     different metadata, in order for you to get to know this tool. In order to upload your own
                     files, please direct yourself to the "Load files" menu.
                 </p>
