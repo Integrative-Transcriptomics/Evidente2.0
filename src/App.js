@@ -151,6 +151,7 @@ class App extends Component {
   };
   tree = this.tree.branch_length(this.tree_branch_upgma);
 
+
   initialState = {
     isLoaded: false,
     dragActive: false,
@@ -172,6 +173,7 @@ class App extends Component {
     orderChanged: false,
     loadAnimationShow: false,
     cladogram: false,
+
     //-------------------------------------------------
     // added for holding preprocessed statistical data
     // and go-enrichment results:
@@ -674,12 +676,18 @@ class App extends Component {
     });
   };
   handleSNPaddition = (snp) => {
+    if (!$("#metadata-card-body-show").hasClass("show")) {
+      $("#metadata-card").click();
+    }
     this.setState({
       visualizedSNPs: _.uniq(this.state.visualizedSNPs.concat([snp])),
     });
   };
   handleMultipleSNPaddition = (listOfSnps) => {
     document.body.style.cursor = "wait !important";
+    if (!$("#metadata-card-body-show").hasClass("show")) {
+      $("#metadata-card").click();
+    }
     setTimeout(() => {
       this.setState({
         visualizedSNPs: _.uniq(this.state.visualizedSNPs.concat(listOfSnps)),
@@ -998,6 +1006,7 @@ class App extends Component {
                   updateSNPTable={this.updateSNPTable}
                   tree={this.tree}
                   updateCladogramm={this.handleCladogramm}
+
                   onShowMyNodes={this.handleShowNodes}
                   onCollapse={this.handleCollapse}
                   onDecollapse={this.handleDecollapse}
