@@ -48,7 +48,8 @@ Extract of the Toy Example with seven taxa. This example is used to initialize E
 From Schuenemann et al (2018, [Publication](https://journals.plos.org/plospathogens/article?id=10.1371/journal.ppat.1006997)). The study analyzed over 169 taxa of different species around the globe and identified 3155 SNPs. It provides a metadata file with the location and date of extraction of the samples. 
 
 ### _Treponema pallidum_
-From Arora et al (2016, [Publication](https://www.nature.com/articles/nmicrobiol2016245)). The study analyzed around 120 samples of different strains of the _T. pallidum_ collected around the globe. It analyzed their antibiotic resistance and it was able to identified a correlation between the presence of SNP 235204 and a resistance to the antibiotic macrolide. 
+Fro m Arora et al (2016, [Publication](https://www.nature.com/articles/nmicrobiol2016245)). The study analyzed around 120 samples of different strains of the 
+_T. pallidum_ collected around the globe. It analyzed their antibiotic resistance and it was able to identified a correlation between the presence of SNP 235204 and a resistance to the antibiotic macrolide. 
 
 ## contents.txt 
 Contains a list of contents of the evidente2 repository including all files relevant during the extension of evidente2.0 together with a short description.
