@@ -151,7 +151,6 @@ class App extends Component {
   };
   tree = this.tree.branch_length(this.tree_branch_upgma);
 
-
   initialState = {
     isLoaded: false,
     dragActive: false,
@@ -271,8 +270,68 @@ class App extends Component {
           all_snps: json.all_snps,
         });
       }
-      $("#welcome-modal-button").text("Run App");
+      $("#welcome-modal-button").text("Close");
+      this.sortSnpData();
     }
+  };
+  /**
+   * Loads the given example data.
+   *
+   * @param {string} exampleName - Name of the example data to load.
+   */
+  handleExampleLoad = async (exampleName) => {
+    console.log(exampleName);
+    this.setState(this.initialState);
+
+    this.handleLoadingToggle(true);
+
+    let response = await fetch(`/api/load-example`, {
+      method: "post",
+      body: exampleName,
+    });
+
+    let json = await response.json();
+    if (response.status === 400 || response.status === 500) {
+      console.error(json.message);
+      alert("Error by processing files. Please revise the files uploaded. Details in console.");
+    } else {
+      this.handleLoadingToggle(false);
+      let { metadataInfo = {} } = json;
+      if (exampleName === "toy") metadataInfo["Size"].extent = ["Small", "Medium", "Large", "Huge"];
+      let ordinalValues = _.toPairs(metadataInfo).filter(
+        (d) => d[1].type.toLowerCase() === "ordinal"
+      );
+      if (ordinalValues.length !== 0) {
+        this.setState({
+          ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
+        });
+      }
+      metadataInfo = this.createColorScales(metadataInfo);
+      metadataInfo = this.modifyExampleColorScales(metadataInfo, exampleName);
+      this.setState({
+        orderChanged: true,
+        isLoaded: true,
+        computeStatistics: true,
+        statisticFilesUploaded: true,
+        goFilesUploaded: true,
+        snpsToGene: json.snps_to_gene,
+        gene_to_go: json.id_to_go,
+        go_to_snp_pos: json.go_to_snp_pos,
+        newick: json.newick,
+        snpPerColumn: json.snpPerColumn,
+        snpdata: { support: json.support, notsupport: json.notSupport },
+        availableSNPs: json.availableSNPs,
+        ids: json.ids,
+        taxamd: json.taxaInfo || [],
+        snpmd: json.snpInfo || [],
+        mdinfo: metadataInfo,
+        node_to_snps: json.node_to_snps,
+        tree_size: json.tree_size,
+        tree_snps: json.num_snps,
+        all_snps: json.all_snps,
+      });
+    }
+    this.sortSnpData();
   };
 
   //----------------------------------------------------------------------------------------
@@ -615,6 +674,24 @@ class App extends Component {
       (this.tree.is_leafnode(node) || node["own-collapse"]) &&
       d3.layout.phylotree.is_node_visible(node)
     );
+  };
+
+  modifyExampleColorScales = (metadata, exampleId) => {
+    if (exampleId === "syphilis") {
+      metadata["Macrolide resistance"].colorScale = d3.scale
+        .ordinal()
+        .domain(["resistant", "sensitive"])
+        .range(["#EA3325", "#3B75AF"]);
+    } else if (exampleId === "lepra") {
+      metadata["Continent Origin"].extent = ["EU", "OC", "NA", "SA", "AS", "AF"];
+      metadata["Continent Origin"].colorScale = d3.scale.category20();
+
+      metadata["Origin Date"].colorScale = d3.scale
+        .linear()
+        .domain(metadata["Origin Date"].extent)
+        .range(["red", "lightgray"]);
+    }
+    return metadata;
   };
 
   createColorScales = (metadata) => {
@@ -1006,7 +1083,6 @@ class App extends Component {
                   updateSNPTable={this.updateSNPTable}
                   tree={this.tree}
                   updateCladogramm={this.handleCladogramm}
-
                   onShowMyNodes={this.handleShowNodes}
                   onCollapse={this.handleCollapse}
                   onDecollapse={this.handleDecollapse}
@@ -1072,6 +1148,7 @@ class App extends Component {
                 onDeleteFilter={this.handleDeleteFilter}
                 onDeleteAllFilters={this.handleDeleteAllFilters}
                 handleLoadingToggle={this.handleLoadingToggle}
+                handleExampleLoad={this.handleExampleLoad}
               />
             </div>
             {this.state.statisticsModalShow && (

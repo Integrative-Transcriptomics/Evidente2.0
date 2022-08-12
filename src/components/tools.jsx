@@ -12,6 +12,7 @@ import { Divider } from "@material-ui/core";
 
 import HelpIcon from "@material-ui/icons/Help";
 
+import ExampleFilesCard from "./example-files-loading";
 import FilterList from "./filter-list";
 import VisualizeDataCard from "./visualize-card";
 import FileUploadForm from "./file-upload-form";
@@ -217,6 +218,21 @@ class Tools extends Component {
       <div>
         <h4>{this.props.children}</h4>
         <Accordion id='tools' defaultActiveKey='0'>
+          <Card>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='9'
+              id='files-card'
+              className='noselect header-accordion'
+            >
+              Example datasets
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='9'>
+              <Card.Body>
+                <ExampleFilesCard handleExampleLoad={this.props.handleExampleLoad} />
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
           <Card>
             <Accordion.Toggle
               as={Card.Header}
