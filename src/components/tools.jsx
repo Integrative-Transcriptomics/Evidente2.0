@@ -244,7 +244,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
-                <FileUploadForm loadFiles={this.props.loadFiles} />
+                <FileUploadForm resetView={this.props.resetView} loadFiles={this.props.loadFiles} />
               </Card.Body>
             </Accordion.Collapse>
           </Card>

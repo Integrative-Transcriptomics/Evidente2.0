@@ -152,6 +152,7 @@ class App extends Component {
   tree = this.tree.branch_length(this.tree_branch_upgma);
 
   initialState = {
+    // resetClick: 0,
     isLoaded: false,
     dragActive: false,
     hiddenNodes: [],
@@ -274,6 +275,53 @@ class App extends Component {
       this.sortSnpData();
     }
   };
+  /**
+   * Resets the view to the original state of the visualization.
+   */
+
+  resetView = () => {
+    // console.log(this.state.collapsedClades);
+    // let test_if_collapsed = this.state.collapsedClades.map((d) => {
+    //   d.showname;
+    // });
+    // this.tree.get_nodes().forEach((node) => {
+    //   if (node["show-name"] in test_if_collapsed) {
+    //     node["show-name"] = "";
+    //     node["own-collapse"] = false;
+    //     this.handleDecollapse(node);
+    //   }
+    // });
+    // // for (let clade of this.state.collapsedClades) {
+    // //   this.tree.this.tree.toggle_collapse(clade.cladeParent);
+    // // }
+    // this.handleShowNodes(this.tree.get_nodes()[0]);
+    // this.tree.update();
+    // this.handleSelection(this.tree.get_selection());
+    this.setState({
+      hiddenNodes: [],
+      cladeNumber: 0,
+      cladeSelection: [],
+      in_gene_tree: 0,
+      subtree_size: 0,
+      subtree_snps: 0,
+      in_gene_clade: 0,
+      numOfSigGoTerms: 0,
+      go_result: [],
+      tree_result: {},
+      createdFilters: [],
+      nameOfFilters: [],
+      activeFilters: [],
+      cladogram: false,
+      collapsedClades: [],
+      selectedNodes: [],
+      visualizedMD: [],
+      visualizedSNPs: [],
+      SNPTable: {},
+      selectedNodeId: null,
+      // resetClick: this.state.resetClick + 1,
+    });
+  };
+
   /**
    * Loads the given example data.
    *
@@ -1068,6 +1116,7 @@ class App extends Component {
                 onMouseUp={() => this.setState({ dragActive: false })}
               >
                 <Phylotree
+                  // reset_click={this.state.resetClick}
                   dragActive={this.state.dragActive}
                   sendStatisticsRequest={this.sendStatisticsRequest}
                   handleLoadingToggle={this.handleLoadingToggle}
@@ -1122,6 +1171,7 @@ class App extends Component {
               </div>
 
               <Toolbox
+                resetView={this.resetView}
                 loadFiles={this.handleSubmitAllFiles}
                 onChangeOrder={this.handleChangeOrder}
                 onApplyAllFilters={this.handleApplyAllFilter}
