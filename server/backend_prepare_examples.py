@@ -6,8 +6,7 @@
 
 import os
 from typing import Tuple
-from flask import request, jsonify
-import numpy as np
+
 # Use path of this script to detect related executables
 ScriptDir = os.path.dirname(os.path.realpath(__file__))
 

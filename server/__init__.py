@@ -33,7 +33,6 @@ def upload_data():
     """
 
     # noinspection PyPep8,PyBroadException
-    print(request.files)
     try:
         nwk_data, snp_data, taxainfo_data, taxainfo_sep = read_file_content()
         # you may use the following lines to store data in session
@@ -65,7 +64,6 @@ def load_init_example():
     try:
         nwk_data = bytes(
             open(os.path.join(app.config['EXAMPLE_DATA'], "mini_nwk.nwk"), "r").read(), 'utf-8')
-        # print(nwk_data)
         snp_data = bytes(
             open(os.path.join(app.config['EXAMPLE_DATA'], "mini_snp.tsv"), "r").read(), 'utf-8')
         taxainfo_data = bytes(
@@ -84,10 +82,8 @@ def load_chosen_example():
     """
     try:
         example_id = str(request.get_data().decode('UTF-8'))
-        print(example_id)
         nwk_data, snp_data, taxainfo_data, gff_data, go_data, metadata_sep, gff_sep, go_sep = return_info_examples(
             example_id)
-        # print(gff_data)
         main_data, available_snps = prepare_data(
             nwk_data, snp_data, taxainfo_data, metadata_sep, True, True)
         stats_data = prepare_statistics(gff_data.decode(
@@ -108,11 +104,9 @@ def load_init_stats():
     try:
         gff_data = bytes(
             open(os.path.join(app.config['EXAMPLE_DATA'], "mini_gff.csv"), "r").read(), 'utf-8')
-        # print(nwk_data)
         go_data = bytes(
             open(os.path.join(app.config['EXAMPLE_DATA'], "mini_go_terms.csv"), "r").read(), 'utf-8')
         available_snps = request.form['available_snps'].split(',')
-        print(available_snps)
         response = prepare_statistics(gff_data.decode(
             'utf8'), ",", go_data.decode('utf-8'), ",", available_snps)
         return response
@@ -181,7 +175,6 @@ def compute_tree_statitics():
       """
     try:
         data = request.get_json()
-        # print(request.get_json())
         nwk = data["nwk"]
         support = data["support"]
         num_to_lab = data["num_to_label"]

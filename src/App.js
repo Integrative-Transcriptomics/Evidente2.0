@@ -280,9 +280,7 @@ class App extends Component {
    * @param {string} exampleName - Name of the example data to load.
    */
   handleExampleLoad = async (exampleName) => {
-    console.log(exampleName);
     this.setState(this.initialState);
-
     this.handleLoadingToggle(true);
 
     let response = await fetch(`/api/load-example`, {

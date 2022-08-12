@@ -52,7 +52,6 @@ def read_file_content() -> Tuple[str, str, str, str]:
 
     taxainfo_data = ""
     taxainfo_sep = ','
-    # print(request.files["taxainfo"].mimetype)
     # check if the post request has the taxainfo part
     if 'taxainfo' in request.files:
         taxainfo = request.files['taxainfo']
@@ -112,7 +111,6 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
     # get available SNPS and SNP per column
     available_snps, snp_per_column = get_snps(support, not_support)
     # fill metaDataInfo and taxainfo_mod:
-    print(has_taxainfo)
     if has_taxainfo:
         get_meta_data(metadatainfo, taxainfo, taxainfo_sep, taxainfo_mod)
     # add {"type":"SNP","extent":["A","C","T","G","N"]} to metadatainfo if
