@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Card, Form } from "react-bootstrap";
+import { Card, Form, Button, Alert, ButtonGroup, } from "react-bootstrap";
 import { isEqual } from "lodash";
 
 import Select, { components } from "react-select";
@@ -68,14 +68,15 @@ const selectStates = {
 };
 
 class VisualizeDataCard extends Component {
-    state = {};
+    state = { error_reset: false };
 
     shouldComponentUpdate(nextProp, nextState) {
         if (
             !isEqual(nextProp.availableMDs, this.props.availableMDs) ||
             !isEqual(nextProp.availableSNPs, this.props.availableSNPs) ||
             !isEqual(nextProp.visMd, this.props.visMd) ||
-            !isEqual(nextProp.visSNPs, this.props.visSNPs)
+            !isEqual(nextProp.visSNPs, this.props.visSNPs) ||
+            !isEqual(nextState.error_reset, this.state.error_reset)
         ) {
             return true;
         } else {
@@ -83,9 +84,35 @@ class VisualizeDataCard extends Component {
         }
     }
 
+    resetView = () => {
+        if (!this.state.error_reset) {
+            this.setState({ error_reset: { level: "warning" } })
+        } else {
+            this.props.resetView();
+            this.setState({ error_reset: false });
+
+        }
+
+    }
+
     render() {
         return (
             <Card.Body style={{ maxHeight: 250, overflow: "auto" }}>
+                <Form.Label variant='h6'>Reset visualization</Form.Label>
+                {this.state.error_reset ? <Alert
+                    variant="warning">This would remove all data and load the primary state of the data.</Alert> : null
+                }
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                    <ButtonGroup >
+                        <Button variant="warning" className="float-left" onClick={this.props.resetZoom}>
+                            Reset Zoom
+                        </Button>
+                        <Button variant="danger" className="float-right" onClick={this.resetView}>
+                            {this.state.error_reset ? "Confirm Reset" : "Reset App"}
+                        </Button>
+                    </ButtonGroup>
+                </div>
+
                 <Form>
                     <Form.Label variant='h6'>Select to visualize</Form.Label>
                     <Select

@@ -275,28 +275,40 @@ class App extends Component {
       this.sortSnpData();
     }
   };
+
+  resetZoom = function () {
+    for (let id of [
+      "#heatmap-container",
+      "#md-container",
+      "#zoom-phylotree",
+      "#container-labels",
+      "#guidelines-container",
+    ]) {
+      if (d3v5.select(id).node()) {
+        let selection = d3v5.select(id);
+        let transformString = `translate(${0},${0})scale(${1},${1})`;
+        selection.attr("transform", `${transformString}`);
+      }
+    }
+  };
   /**
    * Resets the view to the original state of the visualization.
    */
 
   resetView = () => {
-    // console.log(this.state.collapsedClades);
-    // let test_if_collapsed = this.state.collapsedClades.map((d) => {
-    //   d.showname;
-    // });
-    // this.tree.get_nodes().forEach((node) => {
-    //   if (node["show-name"] in test_if_collapsed) {
-    //     node["show-name"] = "";
-    //     node["own-collapse"] = false;
-    //     this.handleDecollapse(node);
-    //   }
-    // });
-    // // for (let clade of this.state.collapsedClades) {
-    // //   this.tree.this.tree.toggle_collapse(clade.cladeParent);
-    // // }
-    // this.handleShowNodes(this.tree.get_nodes()[0]);
-    // this.tree.update();
-    // this.handleSelection(this.tree.get_selection());
+    this.resetZoom();
+    this.tree.get_nodes().forEach((node) => {
+      if (node["own-collapse"]) {
+        node["show-name"] = "";
+        node["own-collapse"] = false;
+        this.handleDecollapse(node, false);
+      }
+    });
+    //TODO: Remove also the state of the selected node for SNP viz.
+    this.handleShowNodes(this.tree.get_nodes()[0]);
+    this.handleSelection(this.tree.get_selection());
+    this.tree.update();
+
     this.setState({
       hiddenNodes: [],
       cladeNumber: 0,
@@ -1037,11 +1049,14 @@ class App extends Component {
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
     return clade.name;
   };
-  handleDecollapse = (cladeNode) => {
+  handleDecollapse = (cladeNode, should_update = true) => {
     let filteredClades = this.state.collapsedClades.filter((n) => {
       return !Object.is(n.cladeParent, cladeNode);
     });
-    this.tree.toggle_collapse(cladeNode).update();
+    this.tree.toggle_collapse(cladeNode);
+    if (should_update) {
+      this.tree.update();
+    }
     this.setState({ collapsedClades: filteredClades });
   };
 
@@ -1171,6 +1186,7 @@ class App extends Component {
               </div>
 
               <Toolbox
+                resetZoom={this.resetZoom}
                 resetView={this.resetView}
                 loadFiles={this.handleSubmitAllFiles}
                 onChangeOrder={this.handleChangeOrder}

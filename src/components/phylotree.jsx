@@ -214,7 +214,6 @@ class Phylotree extends Component {
     componentDidUpdate(prevProp) {
         // if (prevProp.newick !== this.props.newick || prevProp.reset_click !== this.props.reset_click) {
         if (prevProp.newick !== this.props.newick) {
-            console.log("newick updated");
             this.renderTree(this.props.newick);
         }
     }

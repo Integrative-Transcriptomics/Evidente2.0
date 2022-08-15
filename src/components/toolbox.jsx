@@ -283,6 +283,7 @@ class Toolbox extends Component {
                     Clade SNPs
                 </NodeInformation>
                 <Tools
+                    resetZoom={this.props.resetZoom}
                     resetView={this.props.resetView}
                     handleLoadingToggle={this.props.handleLoadingToggle}
                     availableMDs={this.props.availableMDs}
