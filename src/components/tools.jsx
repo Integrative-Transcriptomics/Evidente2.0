@@ -244,7 +244,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
-                <FileUploadForm resetView={this.props.resetView} loadFiles={this.props.loadFiles} />
+                <FileUploadForm />
               </Card.Body>
             </Accordion.Collapse>
           </Card>
@@ -260,8 +260,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse id='metadata-card-body-show' eventKey='2'>
               <VisualizeDataCard
-                resetZoom={this.props.resetZoom}
-                resetView={this.props.resetView}
+
                 availableMDs={this.props.availableMDs}
                 availableSNPs={this.props.availableSNPs}
                 visSNPs={this.props.visSNPs}

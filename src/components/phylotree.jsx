@@ -59,10 +59,7 @@ class Phylotree extends Component {
                 .on("mouseout", null)
                 .on("mouseover", null);
         }
-        if (
-            this.props.selectedNodeID &&
-            this.props.ids.numToLabel[node.tempid] === this.props.selectedNodeID
-        ) {
+        if (node["show-snp-table"]) {
             container.selectAll("circle").style({ fill: "lightblue" }).attr({ r: 7 });
         }
     };
@@ -96,6 +93,10 @@ class Phylotree extends Component {
      * @param {Object} node selected
      */
     showSNPsfromNode(node) {
+        this.props.tree.get_nodes().filter(
+            node => node["show-snp-table"]).forEach(
+                node => node["show-snp-table"] = false)
+        node["show-snp-table"] = true
         let node_name = this.props.ids.numToLabel[node.tempid];
         let descendants = this.props.tree
             .descendants(node)
@@ -212,7 +213,6 @@ class Phylotree extends Component {
     }
 
     componentDidUpdate(prevProp) {
-        // if (prevProp.newick !== this.props.newick || prevProp.reset_click !== this.props.reset_click) {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
         }

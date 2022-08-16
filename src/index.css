@@ -85,11 +85,6 @@ header {
   opacity: 0;
 }
 
-/* .button-with-icon span:after {
-  width:0;
-
-  transition: 0.5s;
-} */
 
 .button-with-icon:hover span {
   position: static;
@@ -98,15 +93,7 @@ header {
   padding-right: 0.5em
 }
 
-/* .button-with-icon:hover span:after {
-  width:auto;
-  opacity: 1;
-} */
 
-/* .button-with-icon{
-  width:auto;
-  transition: all 0.5s;
-} */
 
 .mchild {
   /* width: 25%; */

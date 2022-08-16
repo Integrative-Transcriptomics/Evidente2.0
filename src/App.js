@@ -295,20 +295,7 @@ class App extends Component {
    * Resets the view to the original state of the visualization.
    */
 
-  resetView = () => {
-    this.resetZoom();
-    this.tree.get_nodes().forEach((node) => {
-      if (node["own-collapse"]) {
-        node["show-name"] = "";
-        node["own-collapse"] = false;
-        this.handleDecollapse(node, false);
-      }
-    });
-    //TODO: Remove also the state of the selected node for SNP viz.
-    this.handleShowNodes(this.tree.get_nodes()[0]);
-    this.handleSelection(this.tree.get_selection());
-    this.tree.update();
-
+  resetApp = () => {
     this.setState({
       hiddenNodes: [],
       cladeNumber: 0,
@@ -330,8 +317,25 @@ class App extends Component {
       visualizedSNPs: [],
       SNPTable: {},
       selectedNodeId: null,
-      // resetClick: this.state.resetClick + 1,
     });
+    this.resetZoom();
+    const all_nodes = this.tree.get_nodes();
+    const root = [all_nodes[0]];
+    const descendants = root.concat(this.tree.select_all_descendants(root[0], true, true));
+    this.tree.modify_selection(descendants, undefined, undefined, undefined, "false");
+    all_nodes.forEach((node) => {
+      if (node["show-snp-table"]) {
+        node["show-snp-table"] = false;
+      }
+      if (node["own-collapse"]) {
+        node["show-name"] = "";
+        node["own-collapse"] = false;
+        this.handleDecollapse(node, false);
+      }
+    });
+    this.handleShowNodes(root[0]);
+    this.tree.update();
+    this.tree.trigger_refresh();
   };
 
   /**
@@ -733,7 +737,12 @@ class App extends Component {
       d3.layout.phylotree.is_node_visible(node)
     );
   };
-
+  /**
+   * Prepares the data for the preloaded example datasets
+   * @param {dict} metadata
+   * @param {str} exampleId
+   * @returns
+   */
   modifyExampleColorScales = (metadata, exampleId) => {
     if (exampleId === "syphilis") {
       metadata["Macrolide resistance"].colorScale = d3.scale
@@ -1131,7 +1140,7 @@ class App extends Component {
                 onMouseUp={() => this.setState({ dragActive: false })}
               >
                 <Phylotree
-                  // reset_click={this.state.resetClick}
+                  //
                   dragActive={this.state.dragActive}
                   sendStatisticsRequest={this.sendStatisticsRequest}
                   handleLoadingToggle={this.handleLoadingToggle}
@@ -1187,7 +1196,7 @@ class App extends Component {
 
               <Toolbox
                 resetZoom={this.resetZoom}
-                resetView={this.resetView}
+                resetApp={this.resetApp}
                 loadFiles={this.handleSubmitAllFiles}
                 onChangeOrder={this.handleChangeOrder}
                 onApplyAllFilters={this.handleApplyAllFilter}

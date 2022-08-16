@@ -69,15 +69,13 @@ const selectStates = {
 };
 
 class VisualizeDataCard extends Component {
-    state = { error_reset: false };
 
     shouldComponentUpdate(nextProp, nextState) {
         if (
             !isEqual(nextProp.availableMDs, this.props.availableMDs) ||
             !isEqual(nextProp.availableSNPs, this.props.availableSNPs) ||
             !isEqual(nextProp.visMd, this.props.visMd) ||
-            !isEqual(nextProp.visSNPs, this.props.visSNPs) ||
-            !isEqual(nextState.error_reset, this.state.error_reset)
+            !isEqual(nextProp.visSNPs, this.props.visSNPs)
         ) {
             return true;
         } else {
@@ -85,16 +83,6 @@ class VisualizeDataCard extends Component {
         }
     }
 
-    // resetView = () => {
-    //     if (!this.state.error_reset) {
-    //         this.setState({ error_reset: { level: "warning" } })
-    //     } else {
-    //         this.props.resetView();
-    //         this.setState({ error_reset: false });
-
-    //     }
-
-    // }
 
     render() {
         return (
