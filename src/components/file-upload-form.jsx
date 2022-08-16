@@ -3,7 +3,7 @@ import { Alert, Button, Form } from "react-bootstrap";
 
 
 class FileUploadForm extends Component {
-    shouldComponentUpdate(nextProps, nextState, nextContext) {
+    shouldComponentUpdate(nextProps) {
         return (this.props.loadFiles === nextProps.loadFiles)
     }
 
@@ -26,16 +26,6 @@ class FileUploadForm extends Component {
                 this.setState({ visFiles: object })
             }
         }
-    }
-    resetView = () => {
-        if (!this.state.error_reset) {
-            this.setState({ error_reset: { level: "warning" } })
-        } else {
-            this.props.resetView();
-            this.setState({ error_reset: false });
-
-        }
-
     }
     submitFiles = () => {
         if ((this.state.statisticsFiles.goterm === null) !== (this.state.statisticsFiles.gff === null)) {
@@ -104,17 +94,10 @@ class FileUploadForm extends Component {
             </Form>
             {this.state.error ? <Alert
                 variant={this.state.error.level === "error" ? "danger" : "warning"}>{this.state.error.text}</Alert> : null}
-            {
-                this.state.error_reset ? <Alert
-                    variant="warning">This would remove all data and load the primary visualization.</Alert> : null
-            }
 
 
             <Button variant='primary' disabled={this.state.visFiles.nwk === null && this.state.visFiles.snp === null} onClick={this.submitFiles}>
                 {this.state.error === false ? "Submit" : this.state.error.level === "hint" ? "Submit anyway" : "Submit"}
-            </Button>
-            <Button variant="danger" className="float-right" onClick={this.resetView}>
-                {this.state.error_reset ? "Confirm Reset" : "Reset View"}
             </Button>
         </React.Fragment >)
     }

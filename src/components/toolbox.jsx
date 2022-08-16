@@ -1,4 +1,8 @@
 import React, { Component } from "react";
+import { Button, Alert, ButtonGroup, } from "react-bootstrap";
+import RestoreIcon from '@material-ui/icons/Restore';
+import YoutubeSearchedForIcon from '@material-ui/icons/YoutubeSearchedFor';
+
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
 import Tools from "./tools";
@@ -21,6 +25,21 @@ class Toolbox extends Component {
             return ("#ffffff")
         }
     })
+
+    resetView = (changeState = true) => {
+        if (!this.state.error_reset) {
+            this.setState({ error_reset: { level: "warning" } })
+        } else {
+            if (changeState) {
+                this.props.resetView();
+            }
+            this.setState({ error_reset: false });
+
+        }
+
+    }
+
+
     /**
      * Creates the legend within the given container.
      * It is updated everytime the user changes the scale
@@ -266,6 +285,46 @@ class Toolbox extends Component {
         let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
         return (
             <div id='toolbox' className='rchild'>
+
+                <div style={{ padding: "1em 0 0 0 ", display: "flex", "flexDirection": "column", "justifyContent": "space-between", "alignItems": "center" }}>
+                    {this.state.error_reset ?
+                        // <React.Fragment>
+                        <Alert variant="warning">
+                            <div style={{ padding: "1em 0 0 0 ", display: "flex", "flexDirection": "column", "justifyContent": "space-between", "alignItems": "center" }}>
+                                This would remove all visualized elements and reset the dataset to its primary state. Are you sure you want to proceed?
+                                <ButtonGroup style={{ padding: "0.5em 0 0 0" }}>
+                                    <Button variant="danger" size="sm" onClick={this.resetView}> Ok</Button>
+                                    <Button variant="secondary" size="sm" onClick={() => this.resetView(false)}> Close</Button>
+
+                                </ButtonGroup>
+
+
+                            </div>
+                        </Alert>
+                        // </React.Fragment> 
+                        : null
+                    }
+                    <ButtonGroup>
+                        <Button className="button-with-icon" variant="primary" onClick={this.props.resetZoom}>
+                            <span>Reset Zoom</span><YoutubeSearchedForIcon style={{ display: "flex", justifyContent: "float-right", }} fontSize="large" />
+                        </Button>
+                        <Button className="button-with-icon" variant="danger" onClick={this.resetView}>
+                            <span>Reset App</span>
+                            <RestoreIcon fontSize="large" />
+
+                        </Button>
+                    </ButtonGroup>
+
+
+                    {/* <ButtonGroup >
+                        <Button variant="warning" className="float-left" >
+                            Reset Zoom
+                        </Button>
+                        <Button variant="danger" className="float-right" >
+                            {this.state.error_reset ? "Confirm Reset" : "Reset App"}
+                        </Button>
+                    </ButtonGroup> */}
+                </div >
                 <Legend
                     addLegend={this.addLegend}
                     orderChanged={this.props.orderChanged}
@@ -311,7 +370,7 @@ class Toolbox extends Component {
                 >
                     Tools
                 </Tools>
-            </div>
+            </div >
         );
     }
 }
