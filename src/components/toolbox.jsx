@@ -158,17 +158,31 @@ class Toolbox extends Component {
                     let isPositiveN = (snp) => !isMargin && snp === "N"
                     groupAllele
                         .append("svg:rect")
-                        .attr("width", (d) => !isPositiveN(d) ? legendCubeWidth - 4 : legendNoneWidth)
-                        .attr("height", (d) => !isPositiveN(d) ? legendCubeHeight - 4 : legendNoneHeight)
-                        .attr("y", (d) => posY + (isPositiveN(d) ? (legendCubeHeight / 2 - legendNoneHeight / 2 - 1) : 0))
-                        .attr("x", (d) => xScale(d) + (isPositiveN(d) ? (legendCubeWidth / 2 - legendNoneWidth / 2 - 2) : 0))
-                        .attr("fill", (d) => !isMargin ? d === "N" ? "black" : fill(d) : "white")
-                        .attr("stroke", (d) => isPositiveN(d) ? "black" : fill(d))
+                        .attr("width", legendCubeWidth - 4)
+                        .attr("height", legendCubeHeight - 4)
+                        .attr("y", posY)
+                        .attr("x", (d) => xScale(d))
+                        .attr("fill", (d) => !isMargin && d !== "N" ? fill(d) : "white")
+                        .attr("stroke", (d) => isPositiveN(d) ? "white" : fill(d))
+                        .attr("id", (d) => isPositiveN(d) ? "SNP-legend-N" : null)
                         .attr("stroke-width", 2);
                 };
-
                 addRectangle(yScale(posSpecificity), colorScale, false); // adds Positive SNPs
                 addRectangle(yScale(negSpecificity), colorScale, true); // adds Negative SNPs
+                if (svg.select("#SNP-legend-N").node()) {
+                    svg.insert("text", "#SNP-legend-N")
+                        .attr("x", svg.select("#SNP-legend-N").attr("x"))
+                        .attr("text-anchor", "start")
+                        .attr("dominant-baseline", "hanging")
+                        .attr("y", svg.select("#SNP-legend-N").attr("y"))
+                        .text("NA")
+                    svg.select("#SNP-legend-N").remove()
+
+                }
+                // console.log();
+                // .attr("x",)
+                // .attr("y", svg.select("#SNP-legend-N").attr("y")).attr("text", "N");
+
 
                 svg.attr("transform", `translate(${marginLeft}, 12)`);
                 break;
