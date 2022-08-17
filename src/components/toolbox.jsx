@@ -1,8 +1,8 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
 import Tools from "./tools";
-import {clamp, last, round, toPairs} from "lodash";
+import { clamp, last, round, toPairs } from "lodash";
 import * as d3 from "d3";
 
 /**
@@ -13,12 +13,12 @@ import * as d3 from "d3";
 class Toolbox extends Component {
     state = {};
 
-    calculateTextColor=(fill=>{
+    calculateTextColor = (fill => {
         const aRgbHex = fill.slice(1).match(/.{1,2}/g);
-        if (parseInt(aRgbHex[0], 16)*0.299 +  parseInt(aRgbHex[1], 16)*0.587 + parseInt(aRgbHex[2], 16)*0.114>186){
-            return("#000000")
-        } else{
-            return("#ffffff")
+        if (parseInt(aRgbHex[0], 16) * 0.299 + parseInt(aRgbHex[1], 16) * 0.587 + parseInt(aRgbHex[2], 16) * 0.114 > 186) {
+            return ("#000000")
+        } else {
+            return ("#ffffff")
         }
     })
     /**
@@ -30,7 +30,7 @@ class Toolbox extends Component {
      * @param {Object} rowOfData, defines the data
      * @param {Boolean} isStatic, defines if the output created is done for the tool or for the exporting object
      */
-    addLegend = (container, cellWidth, {name, colorScale, extent, type}, isStatic = false) => {
+    addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
         let svg = container.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
         let div = d3.select("#tooltip");
         let elementHeight = 15;
@@ -44,7 +44,7 @@ class Toolbox extends Component {
                     x: posX,
                     y: posY,
                 })
-                .attr("fill",this.calculateTextColor(background))
+                .attr("fill", this.calculateTextColor(background))
                 .classed("noselect", true)
                 .text(text);
         };
@@ -95,13 +95,13 @@ class Toolbox extends Component {
                     .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")})`);
 
                 let minExtent = parseFloat(extent[0].toFixed(2));
-                addTexts(group, marginText, yPosition, "start", minExtent,colorScale(extent[0]));
+                addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
                 let textLeft = addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
 
                 let maxExtent = parseFloat(extent[1].toFixed(2));
                 let posRight = cellWidth - marginText;
                 addTexts(group, posRight, yPosition, "end", maxExtent, colorScale(extent[1]));
-                let textRight = addTexts(group, posRight, yPosition, "end", maxExtent,colorScale(extent[1]));
+                let textRight = addTexts(group, posRight, yPosition, "end", maxExtent, colorScale(extent[1]));
 
                 if (!isStatic) {
                     addMouseOver(textLeft, minExtent);
@@ -112,14 +112,14 @@ class Toolbox extends Component {
 
             case "snp":
                 let cladeSpecificity = ["+", "—"];
-                let specificityLabels=["sup.", "non-sup."];
+                let specificityLabels = ["sup.", "non-sup."];
                 let [posSpecificity, negSpecificity] = cladeSpecificity;
-                let marginLeft=40;
+                let marginLeft = 40;
 
-                const createScale = (extent,maxRange)=>{
-                    return(d3.scale.ordinal().domain(extent).rangeBands([0, maxRange]));
+                const createScale = (extent, maxRange) => {
+                    return (d3.scale.ordinal().domain(extent).rangeBands([0, maxRange]));
                 }
-                const createAxis = (scale,orient) => {
+                const createAxis = (scale, orient) => {
                     let tempAxis = d3.svg
                         .axis()
                         .scale(scale)
@@ -128,10 +128,10 @@ class Toolbox extends Component {
                     return tempAxis;
                 };
 
-                let xScale=createScale(extent,cellWidth-marginLeft);
-                let yScale=createScale(cladeSpecificity,30);
-                let xAxis = createAxis(xScale,"top");
-                let yAxis = createAxis(createScale(specificityLabels,30), "left");
+                let xScale = createScale(extent, cellWidth - marginLeft);
+                let yScale = createScale(cladeSpecificity, 30);
+                let xAxis = createAxis(xScale, "top");
+                let yAxis = createAxis(createScale(specificityLabels, 30), "left");
 
                 const renderAxis = (classType, axis, transform = "") => {
                     return svg
@@ -144,28 +144,31 @@ class Toolbox extends Component {
                         .style("font-size", `${Math.min(cellWidth, 10)}px`)
                         .style("text-anchor", "start");
                 };
-                renderAxis("y-axis", yAxis,'translate('+(-marginLeft+10)+',0)')
+                renderAxis("y-axis", yAxis, 'translate(' + (-marginLeft + 10) + ',0)')
                 renderAxis("x-axis", xAxis, `translate(-5, 5)`);
 
                 let legendCubeWidth = (cellWidth - marginLeft) / extent.length;
                 let legendCubeHeight = elementHeight;
+                let legendNoneWidth = 4
+                let legendNoneHeight = 1;
 
                 let groupAllele = svg.selectAll("rect").data(extent).enter();
 
                 const addRectangle = (posY, fill, isMargin) => {
+                    let isPositiveN = (snp) => !isMargin && snp === "N"
                     groupAllele
                         .append("svg:rect")
-                        .attr("width", legendCubeWidth-4)
-                        .attr("height", legendCubeHeight-4)
-                        .attr("y", posY)
-                        .attr("x", (d) => xScale(d))
-                        .attr("fill", !isMargin?fill:"white")
-                        .attr("stroke",fill)
-                        .attr("stroke-width",2);
+                        .attr("width", (d) => !isPositiveN(d) ? legendCubeWidth - 4 : legendNoneWidth)
+                        .attr("height", (d) => !isPositiveN(d) ? legendCubeHeight - 4 : legendNoneHeight)
+                        .attr("y", (d) => posY + (isPositiveN(d) ? (legendCubeHeight / 2 - legendNoneHeight / 2 - 1) : 0))
+                        .attr("x", (d) => xScale(d) + (isPositiveN(d) ? (legendCubeWidth / 2 - legendNoneWidth / 2 - 2) : 0))
+                        .attr("fill", (d) => !isMargin ? d === "N" ? "black" : fill(d) : "white")
+                        .attr("stroke", (d) => isPositiveN(d) ? "black" : fill(d))
+                        .attr("stroke-width", 2);
                 };
 
-                addRectangle(yScale(posSpecificity), (d) => colorScale(d),false); // adds Positive SNPs
-                addRectangle(yScale(negSpecificity), (d) => colorScale(d),true); // adds Negative SNPs
+                addRectangle(yScale(posSpecificity), colorScale, false); // adds Positive SNPs
+                addRectangle(yScale(negSpecificity), colorScale, true); // adds Negative SNPs
 
                 svg.attr("transform", `translate(${marginLeft}, 12)`);
                 break;
@@ -176,7 +179,7 @@ class Toolbox extends Component {
                 let groupCategory = svg.selectAll("g").data(extent).enter().append("g");
 
 
-                let text = addTexts(groupCategory, 0, yPosition, "middle", (d) => d,"#ffffff").each(
+                let text = addTexts(groupCategory, 0, yPosition, "middle", (d) => d, "#ffffff").each(
                     function () {
                         let thisWidth = Math.max(cubeWidth, this.getComputedTextLength() + 10); // Text width + margin
                         textWidth.push(thisWidth);
@@ -207,11 +210,11 @@ class Toolbox extends Component {
                         ? {
                             x: (d, i) => positionX[i] + textWidth[i] * 0.5,
                             y: (d, i) => positionY[i] + 12,
-                            fill: (d)=>this.calculateTextColor(colorScale(d)),
+                            fill: (d) => this.calculateTextColor(colorScale(d)),
                         }
                         : {
                             x: (d, i) => positions[i] + textWidth[i] * 0.5,
-                            fill: (d)=>this.calculateTextColor(colorScale(d)),
+                            fill: (d) => this.calculateTextColor(colorScale(d)),
                         }
                 );
 
@@ -223,13 +226,13 @@ class Toolbox extends Component {
                     })
                     .attr(
                         isStatic
-                            ? {x: (d, i) => positionX[i], y: (d, i) => positionY[i], stroke: "black"}
+                            ? { x: (d, i) => positionX[i], y: (d, i) => positionY[i], stroke: "black" }
                             : {
                                 x: (d, i) => positions[i],
                             }
                     )
                     .style("fill", (value) => colorScale(value))
-                    .style("stroke","white");
+                    .style("stroke", "white");
 
                 if (round(last(positions)) > cellWidth && !isStatic) {
                     let drag = d3.behavior.drag().on("drag", dragmove);
