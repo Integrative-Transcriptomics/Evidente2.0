@@ -97,12 +97,13 @@ class Toolbox extends Component {
                 let minExtent = parseFloat(extent[0].toFixed(2));
                 addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
                 let textLeft = addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
+                textLeft.style("cursor", "default");
 
                 let maxExtent = parseFloat(extent[1].toFixed(2));
                 let posRight = cellWidth - marginText;
                 addTexts(group, posRight, yPosition, "end", maxExtent, colorScale(extent[1]));
                 let textRight = addTexts(group, posRight, yPosition, "end", maxExtent, colorScale(extent[1]));
-
+                textRight.style("cursor", "default");
                 if (!isStatic) {
                     addMouseOver(textLeft, minExtent);
                     addMouseOver(textRight, maxExtent);
@@ -149,8 +150,6 @@ class Toolbox extends Component {
 
                 let legendCubeWidth = (cellWidth - marginLeft) / extent.length;
                 let legendCubeHeight = elementHeight;
-                let legendNoneWidth = 4
-                let legendNoneHeight = 1;
 
                 let groupAllele = svg.selectAll("rect").data(extent).enter();
 
@@ -170,18 +169,21 @@ class Toolbox extends Component {
                 addRectangle(yScale(posSpecificity), colorScale, false); // adds Positive SNPs
                 addRectangle(yScale(negSpecificity), colorScale, true); // adds Negative SNPs
                 if (svg.select("#SNP-legend-N").node()) {
-                    svg.insert("text", "#SNP-legend-N")
-                        .attr("x", svg.select("#SNP-legend-N").attr("x"))
-                        .attr("text-anchor", "start")
-                        .attr("dominant-baseline", "hanging")
-                        .attr("y", svg.select("#SNP-legend-N").attr("y"))
-                        .text("NA")
+                    let textForSupportingN = svg.insert("text", "#SNP-legend-N")
+                        .attr("x", parseInt(svg.select("#SNP-legend-N").attr("x")) + (legendCubeWidth / 2 - 1))
+                        .attr("text-anchor", "middle")
+                        .attr("dominant-baseline", "middle")
+                        .attr("y", parseInt(svg.select("#SNP-legend-N").attr("y")) + (legendCubeHeight / 2 - 1))
+                        .style("font-size", `${Math.min(cellWidth, 10)}px`)
+                        .text("N/A")
+                        .style("cursor", "default");
+
                     svg.select("#SNP-legend-N").remove()
+                    if (!isStatic) {
+                        addMouseOver(textForSupportingN, "Not Available");
+                    }
 
                 }
-                // console.log();
-                // .attr("x",)
-                // .attr("y", svg.select("#SNP-legend-N").attr("y")).attr("text", "N");
 
 
                 svg.attr("transform", `translate(${marginLeft}, 12)`);
