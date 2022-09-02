@@ -1,8 +1,6 @@
 import React, { Component } from "react";
-import { Button, Alert, ButtonGroup, } from "react-bootstrap";
-import RestoreIcon from '@material-ui/icons/Restore';
-import YoutubeSearchedForIcon from '@material-ui/icons/YoutubeSearchedFor';
 
+import HeaderButtons from "./header-buttons";
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
 import Tools from "./tools";
@@ -26,18 +24,6 @@ class Toolbox extends Component {
         }
     })
 
-    resetAppInternal = (changeState = true) => {
-        if (!this.state.error_reset) {
-            this.setState({ error_reset: { level: "warning" } })
-        } else {
-            if (changeState) {
-                this.props.resetApp();
-            }
-            this.setState({ error_reset: false });
-
-        }
-
-    }
 
 
     /**
@@ -285,33 +271,9 @@ class Toolbox extends Component {
         let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
         return (
             <div id='toolbox' className='rchild'>
-                <div style={{ padding: "1em 0 0 0 ", display: "flex", "flexDirection": "column", "justifyContent": "space-between", "alignItems": "center" }}>
-
-                    {this.state.error_reset ?
-                        <Alert variant="warning">
-                            <div style={{ padding: "1em 0 0 0 ", display: "flex", "flexDirection": "column", "justifyContent": "space-between", "alignItems": "center" }}>
-                                This would remove all visualized elements and reset the loaded dataset to its first visualized version. Are you sure you want to proceed?
-                                <ButtonGroup style={{ padding: "0.5em 0 0 0" }}>
-                                    <Button variant="danger" size="sm" onClick={this.resetAppInternal}> Ok</Button>
-                                    <Button variant="secondary" size="sm" onClick={() => this.resetAppInternal(false)}> Close</Button>
-                                </ButtonGroup>
-                            </div>
-                        </Alert>
-                        : null
-                    }
-
-                    <ButtonGroup>
-                        <Button className="button-with-icon" variant="primary" onClick={this.props.resetZoom}>
-                            <span>Reset Zoom</span><YoutubeSearchedForIcon fontSize="large" />
-                        </Button>
-                        <Button className="button-with-icon" variant="danger" onClick={this.resetAppInternal}>
-                            <span>Reset App</span>
-                            <RestoreIcon fontSize="large" />
-
-                        </Button>
-                    </ButtonGroup>
-
-                </div >
+                <HeaderButtons
+                    resetApp={this.props.resetApp}
+                    resetZoom={this.props.resetZoom} />
                 <Legend
                     addLegend={this.addLegend}
                     orderChanged={this.props.orderChanged}
