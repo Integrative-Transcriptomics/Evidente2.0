@@ -112,7 +112,12 @@ class Toolbox extends Component {
                     addMouseOver(textLeft, minExtent);
                     addMouseOver(textRight, maxExtent);
                 }
+                if (isStatic) {
 
+                    d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
+                        height: elementHeight * 2,
+                    });
+                }
                 break;
 
             case "snp":
@@ -173,6 +178,12 @@ class Toolbox extends Component {
                 addRectangle(yScale(negSpecificity), (d) => colorScale(d), true); // adds Negative SNPs
 
                 svg.attr("transform", `translate(${marginLeft}, 12)`);
+                if (isStatic) {
+
+                    d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
+                        height: elementHeight * 3,
+                    });
+                }
                 break;
 
             default:
@@ -200,10 +211,14 @@ class Toolbox extends Component {
                 let positionX, positionY;
                 if (isStatic) {
                     let temp = textWidth.map(ceiledCumulativeSum);
+                    console.log(temp)
                     positionX = [0, ...temp.map((d) => d[0])];
                     positionY = [0, ...temp.map((d) => d[1] * elementHeight)];
+                    console.log(positionX, positionY);
+                    console.log(Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight))
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
                         height: Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight),
+                        //TODO: here adapt the height
                     });
                 }
 

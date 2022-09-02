@@ -85,6 +85,16 @@ const selectStates = {
   }),
 };
 
+const save = (htmlContent) => {
+  var bl = new Blob(htmlContent, { type: "text/html" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(bl);
+  a.download = "test.html";
+  a.hidden = true;
+  document.body.appendChild(a);
+  a.innerHTML = "something random - nobody will see this, it doesn't matter what you put here";
+  a.click();
+}
 /**
  * Contains all components of the tools menu
  *
@@ -100,18 +110,35 @@ class Tools extends Component {
     d3.selectAll(".overflow-allowed").classed("overflow-allowed", false).classed("overflow-blocked", true)
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     let allData = document.getElementById("div-export");
+    allData.style.width = "100%";
+    // allData.style.height = "100%";
+    allData.style.display = "flex";
+    allData.style.flexDirection = "column";
+    allData.style.justifyContent = "flex-start";
+
     let mainVisualization = document.getElementById("parent-svg").cloneNode(true);
+    mainVisualization.style.width = "100%";
+    mainVisualization.style.display = "flex";
+    mainVisualization.style.flexDirection = "row";
+    mainVisualization.style.justifyContent = "flex-start";
+
     let divLegend = document.createElement("div");
     divLegend.style.display = "flex";
+    divLegend.style.flexDirection = "row";
+
     divLegend.style.flexWrap = "wrap";
-    divLegend.style.padding = "5px";
+    divLegend.style.width = "100%";
+    // divLegend.style.padding = "5px";
     divLegend.id = "legend-blox";
     var figureName = "Evidente_" + Date.now();
 
     filter(this.props.metadataToRows(this.props.availableMDs), (v) => {
       return accountForLegend.includes(v.name);
     }).forEach((data) => {
+      // let rowTable = document.createElement("tr")
+
       let blockLegendLabel = document.createElement("div");
+      blockLegendLabel.style.padding = "5px";
       let labelLegend = document.createElement("p");
       labelLegend.textContent = data.name;
       let svgLegend = document.createElement("div");
@@ -125,16 +152,24 @@ class Tools extends Component {
       svgLegend.appendChild(legend.node());
       blockLegendLabel.appendChild(labelLegend);
       blockLegendLabel.appendChild(svgLegend);
+      // rowTable.appendChild(blockLegendLabel);
       divLegend.appendChild(blockLegendLabel);
     });
     // var allData = document.getElementById("parent-svg");
-    mainVisualization.appendChild(divLegend);
+    // mainVisualization.appendChild(divLegend);
+
     allData.appendChild(mainVisualization);
+    let lineBreaking = document.createElement("div");
+    lineBreaking.style.width = "100%";
+    mainVisualization.appendChild(lineBreaking);
+    allData.appendChild(divLegend);
     const vis = allData
+    console.log(allData)
+    save([vis.outerHTML]);
     html2canvas(vis, {
       scale: 6,
       width: vis.getBoundingClientRect().width,
-      height: vis.getBoundingClientRect().height
+      height: divLegend.offsetHeight + mainVisualization.offsetHeight,
     }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       let asPNG = "PNG" === type
@@ -143,17 +178,22 @@ class Tools extends Component {
         const pdf = new jsPDF('l', 'px', [canvas.width * 1.33, canvas.height * 1.33]);
         pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
         pdf.save(`${figureName}.pdf`);
-        allData.removeChild(mainVisualization);
 
       } else {
         const aDownloadLink = document.createElement('a');
         aDownloadLink.download = `${figureName}.png`;
         aDownloadLink.href = imgData;
         aDownloadLink.click();
-        allData.removeChild(mainVisualization);
 
       }
+      while (allData.firstChild) {
+        allData.removeChild(allData.lastChild);
+      }
+      // allData.removeChild(mainVisualization);
+
       d3.selectAll(".overflow-blocked").classed("overflow-allowed", true).classed("overflow-blocked", false)
+      allData.style = ""
+
 
     });
 
