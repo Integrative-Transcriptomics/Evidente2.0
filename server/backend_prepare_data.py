@@ -52,7 +52,6 @@ def read_file_content() -> Tuple[str, str, str, str]:
 
     taxainfo_data = ""
     taxainfo_sep = ','
-    #print(request.files["taxainfo"].mimetype)
     # check if the post request has the taxainfo part
     if 'taxainfo' in request.files:
         taxainfo = request.files['taxainfo']
@@ -74,7 +73,7 @@ def read_file_content() -> Tuple[str, str, str, str]:
 
 
 # noinspection SpellCheckingInspection,SpellCheckingInspection
-def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo) -> str:
+def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=False) -> str:
     """Prepares data and returns json result.
 
     Calls CLASSICO and uses output to create ids and snp parts of result buffer.
@@ -98,19 +97,20 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo) -> str:
         call_classico(tmpdir, nwk, snp)
         # create nmmber <-> label mappings
         # noinspection SpellCheckingInspection,SpellCheckingInspection
-        create_number_label_mapping(ids, os.path.join(tmpdir,"IDdistribution.txt"))
+        create_number_label_mapping(
+            ids, os.path.join(tmpdir, "IDdistribution.txt"))
         # fill support
         # noinspection SpellCheckingInspection
-        fill_support(support, os.path.join(tmpdir,"supportSplitKeys.txt"), ids)
+        fill_support(support, os.path.join(
+            tmpdir, "supportSplitKeys.txt"), ids)
         # fill 'notSupport'
         # noinspection SpellCheckingInspection
         fill_not_support(not_support,
-                         os.path.join(tmpdir,"notSupportSplitKeys.txt"), ids)
+                         os.path.join(tmpdir, "notSupportSplitKeys.txt"), ids)
 
     # get available SNPS and SNP per column
     available_snps, snp_per_column = get_snps(support, not_support)
     # fill metaDataInfo and taxainfo_mod:
-    print(has_taxainfo)
     if has_taxainfo:
         get_meta_data(metadatainfo, taxainfo, taxainfo_sep, taxainfo_mod)
     # add {"type":"SNP","extent":["A","C","T","G","N"]} to metadatainfo if
@@ -137,6 +137,9 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo) -> str:
     data["num_snps"] = num_snps
     data["all_snps"] = all_snps
 
+    if return_dict:
+        return data, available_snps
+
     # convert data to json and send back to frontend
     # print(data)
     return jsonify(data)
@@ -158,9 +161,9 @@ def call_classico(tmpdir, nwk, snp):
         fp_snp.write(snp)
         fp_nwk.flush()
         fp_snp.flush()
-        env=dict(os.environ)
+        env = dict(os.environ)
         subprocess.run(["java", "-jar", ScriptDir + "/classico.jar", fp_snp.name,
-                        fp_nwk.name, tmpdir],env=env)
+                        fp_nwk.name, tmpdir], env=env)
 
 
 def create_number_label_mapping(ids, filename):
@@ -352,11 +355,11 @@ def parse_meta_data(taxainfo_decode, taxainfo_sep, taxainfo_mod, columns,
                         curr_line[title] = re.sub("[^a-zA-Z0-9._-]", "_",
                                                   line[col])
 
-                        insert_in_columns(types, columns, col, curr_line[title])
+                        insert_in_columns(
+                            types, columns, col, curr_line[title])
                     col += 1
                 taxainfo_mod.append(curr_line)
             row += 1
-
 
 
 def propagate_snps_to_leaves(support, not_support, ids, nwk):

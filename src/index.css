@@ -12,6 +12,7 @@ body,
 ._loading_overlay_wrapper {
   height: 100%;
 }
+
 .overflow-allowed{
   overflow: auto !important;
 }
@@ -78,6 +79,22 @@ header {
   min-height: 100%;
   max-height: 100%;
 }
+
+.button-with-icon span { 
+  position:absolute;
+  opacity: 0;
+}
+
+
+.button-with-icon:hover span {
+  position: static;
+  opacity: 1;
+  transition: opacity 0.25s linear;
+  padding-right: 0.5em
+}
+
+
+
 .mchild {
   /* width: 25%; */
   -webkit-box-flex: 1;

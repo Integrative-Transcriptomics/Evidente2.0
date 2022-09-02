@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import HeaderButtons from "./header-buttons";
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
 import Tools from "./tools";
@@ -21,6 +22,9 @@ class Toolbox extends Component {
             return ("#ffffff")
         }
     })
+
+
+
     /**
      * Creates the legend within the given container.
      * It is updated everytime the user changes the scale
@@ -72,7 +76,7 @@ class Toolbox extends Component {
                 //Append a linearGradient element to the defs and give it a unique id
                 var linearGradient = defs
                     .append("linearGradient")
-                    .attr("id", `linear-gradient-${name.replace(/ /g, "-")}`);
+                    .attr("id", `linear-gradient-${name.replace(/ /g, "-")}${isStatic ? "-static" : ""}`);
                 //Horizontal gradient
                 linearGradient.attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
                 //Set the color for the start (0%)
@@ -92,7 +96,7 @@ class Toolbox extends Component {
                     .append("rect")
                     .attr("width", cellWidth)
                     .attr("height", elementHeight)
-                    .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")})`);
+                    .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")}${isStatic ? "-static" : ""})`);
 
                 let minExtent = parseFloat(extent[0].toFixed(2));
                 addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
@@ -108,7 +112,12 @@ class Toolbox extends Component {
                     addMouseOver(textLeft, minExtent);
                     addMouseOver(textRight, maxExtent);
                 }
+                if (isStatic) {
 
+                    d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
+                        height: elementHeight * 2,
+                    });
+                }
                 break;
 
             case "snp":
@@ -185,8 +194,13 @@ class Toolbox extends Component {
 
                 }
 
-
                 svg.attr("transform", `translate(${marginLeft}, 12)`);
+                if (isStatic) {
+
+                    d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
+                        height: elementHeight * 3,
+                    });
+                }
                 break;
 
             default:
@@ -214,10 +228,14 @@ class Toolbox extends Component {
                 let positionX, positionY;
                 if (isStatic) {
                     let temp = textWidth.map(ceiledCumulativeSum);
+                    console.log(temp)
                     positionX = [0, ...temp.map((d) => d[0])];
                     positionY = [0, ...temp.map((d) => d[1] * elementHeight)];
+                    console.log(positionX, positionY);
+                    console.log(Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight))
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
                         height: Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight),
+                        //TODO: here adapt the height
                     });
                 }
 
@@ -285,6 +303,9 @@ class Toolbox extends Component {
         let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
         return (
             <div id='toolbox' className='rchild'>
+                <HeaderButtons
+                    resetApp={this.props.resetApp}
+                    resetZoom={this.props.resetZoom} />
                 <Legend
                     addLegend={this.addLegend}
                     orderChanged={this.props.orderChanged}
@@ -324,10 +345,11 @@ class Toolbox extends Component {
                     onApplyAllFilters={this.props.onApplyAllFilters}
                     addLegend={this.addLegend}
                     metadataToRows={this.metadataToRows}
+                    handleExampleLoad={this.props.handleExampleLoad}
                 >
                     Tools
                 </Tools>
-            </div>
+            </div >
         );
     }
 }

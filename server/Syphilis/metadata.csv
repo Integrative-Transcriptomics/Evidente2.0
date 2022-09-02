@@ -1,0 +1,77 @@
+Information,Macrolide resistance,Treponemal subspecies,Country,Source,Year of isolation
+Type,Categorical,Categorical,Categorical,Categorical,Numerical
+A2_1,,TPA,China,rabbit inoculation,2014
+A2_2,,TPA,China,rabbit inoculation,2014
+AR2,sensitive,TPA,Argentina,clinical acquired,2013
+AU13,resistant,TPA,Austria,clinical acquired,2013
+AU15,resistant,TPA,Austria,clinical acquired,2013
+AU16,resistant,TPA,Austria,clinical acquired,2013
+AU17,resistant,TPA,Austria,clinical acquired,2013
+B3,,TPA,China,,2015
+BAL3,sensitive,TPA,USA,rabbit inoculation,1973
+BAL73,sensitive,TPA,USA,rabbit inoculation,1973
+BOSA,sensitive,TEN,Bosnia,,1950
+C3,,TPA,China,,2015
+CDC2,sensitive,TPE,Ghana,,1980
+CHI,sensitive,TPA,USA,,1951
+CZ27,sensitive,TPA,Czech Republic,clinical congenital,2012
+CZ33,resistant,TPA,Czech Republic,clinical acquired,2013
+DAL,sensitive,TPA,USA,,1991
+FRI,sensitive,TPE,Guinea,,1962
+GAU,sensitive,TPE,Congo,,1960
+GHA1,sensitive,TPE,Ghana,rabbit inoculation,1989
+GRA2,sensitive,TPA,USA,rabbit inoculation,1999
+IND1,sensitive,TPE,Indonesia,rabbit inoculation,1990
+K3,,TPA,China,rabbit inoculation,2015
+MEXA,sensitive,TPA,Mexico,,1953
+NE12,resistant,TPA,Netherlands,clinical acquired,2013
+NE13,resistant,TPA,Netherlands,clinical acquired,2013
+NE14,resistant,TPA,Netherlands,clinical acquired,2013
+NE15,resistant,TPA,Netherlands,clinical acquired,2013
+NE17,resistant,TPA,Netherlands,clinical acquired,2013
+NE19,resistant,TPA,Netherlands,clinical acquired,2013
+NE20,resistant,TPA,Netherlands,clinical acquired,2013
+NIC,sensitive,TPA,USA,rabbit inoculation,1912
+NIC1,sensitive,TPA,USA,rabbit inoculation,1912
+NIC2,sensitive,TPA,USA,rabbit inoculation,1912
+P3,,TPA,China,,2014
+PT_SIF0697,,TPA,Portugal,clinical acquired,2009
+PT_SIF0751,,TPA,Portugal,clinical acquired,2009
+PT_SIF0875,,TPA,Portugal,clinical acquired,2010
+PT_SIF0877_3,,TPE,Portugal,clinical acquired,2010
+PT_SIF0908,,TPA,Portugal,clinical acquired,2010
+PT_SIF0954,,TPA,Portugal,clinical acquired,2010
+PT_SIF1002,,TPA,Portugal,clinical acquired,2011
+PT_SIF1020,,TPA,Portugal,clinical acquired,2011
+PT_SIF1063,,TPA,Portugal,clinical acquired,2012
+PT_SIF1127,,TPA,Portugal,clinical acquired,2012
+PT_SIF1135,,TPA,Portugal,clinical acquired,2013
+PT_SIF1140,,TPA,Portugal,clinical acquired,2013
+PT_SIF1142,,TPA,Portugal,clinical acquired,2013
+PT_SIF1156,,TPA,Portugal,clinical acquired,2013
+PT_SIF1167,,TPA,Portugal,clinical acquired,2013
+PT_SIF1183,,TPA,Portugal,clinical acquired,2013
+PT_SIF1196,,TPA,Portugal,clinical acquired,2013
+PT_SIF1200,,TPA,Portugal,clinical acquired,2013
+PT_SIF1242,,TPA,Portugal,clinical acquired,2014
+PT_SIF1252,,TPA,Portugal,clinical acquired,2014
+PT_SIF1261,,TPA,Portugal,clinical acquired,2014
+PT_SIF1278,,TPA,Portugal,clinical acquired,2014
+PT_SIF1280,,TPA,Portugal,clinical acquired,2014
+PT_SIF1299,,TPA,Portugal,clinical acquired,2014
+PT_SIF1348,,TPA,Portugal,clinical acquired,2014
+Q3,,TPA,China,rabbit inoculation,2015
+SAM1,sensitive,TPE,Western Samoa,rabbit inoculation,1953
+SAMD,sensitive,TPE,Western Samoa,rabbit inoculation,1953
+SEA81,sensitive,TPA,USA,rabbit inoculation,1981
+SEA86,sensitive,TPA,USA,rabbit inoculation,1986
+SHC-0,,TPA,China,rabbit inoculation,2014
+SHD-R,,TPA,China,rabbit inoculation,2014
+SHE-V,,TPA,China,rabbit inoculation,2014
+SHG-I2,,TPA,China,rabbit inoculation,2014
+SS14,,TPA,USA,,1977
+SW1,resistant,TPA,Switzerland,clinical acquired,2012
+SW4,resistant,TPA,Switzerland,clinical acquired,2012
+SW6,resistant,TPA,Switzerland,clinical acquired,2012
+SW8,resistant,TPA,Switzerland,clinical acquired,2012
+UW1,resistant,TPA,USA,rabbit inoculation,2004

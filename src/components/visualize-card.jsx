@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+// import { Card, Form, Button, Alert, ButtonGroup, } from "react-bootstrap";
 import { Card, Form } from "react-bootstrap";
 import { isEqual } from "lodash";
 
@@ -68,7 +69,6 @@ const selectStates = {
 };
 
 class VisualizeDataCard extends Component {
-    state = {};
 
     shouldComponentUpdate(nextProp, nextState) {
         if (
@@ -82,6 +82,7 @@ class VisualizeDataCard extends Component {
             return false;
         }
     }
+
 
     render() {
         return (

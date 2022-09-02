@@ -151,8 +151,8 @@ class App extends Component {
   };
   tree = this.tree.branch_length(this.tree_branch_upgma);
 
-
   initialState = {
+    // resetClick: 0,
     isLoaded: false,
     dragActive: false,
     hiddenNodes: [],
@@ -271,8 +271,129 @@ class App extends Component {
           all_snps: json.all_snps,
         });
       }
-      $("#welcome-modal-button").text("Run App");
+      $("#welcome-modal-button").text("Close");
+      this.sortSnpData();
     }
+  };
+
+  resetZoom = function () {
+    for (let id of [
+      "#heatmap-container",
+      "#md-container",
+      "#zoom-phylotree",
+      "#container-labels",
+      "#guidelines-container",
+    ]) {
+      if (d3v5.select(id).node()) {
+        let selection = d3v5.select(id);
+        let transformString = `translate(${0},${0})scale(${1},${1})`;
+        selection.attr("transform", `${transformString}`);
+      }
+    }
+  };
+  /**
+   * Resets the view to the original state of the visualization.
+   */
+
+  resetApp = () => {
+    this.setState({
+      hiddenNodes: [],
+      cladeNumber: 0,
+      cladeSelection: [],
+      in_gene_tree: 0,
+      subtree_size: 0,
+      subtree_snps: 0,
+      in_gene_clade: 0,
+      numOfSigGoTerms: 0,
+      go_result: [],
+      tree_result: {},
+      createdFilters: [],
+      nameOfFilters: [],
+      activeFilters: [],
+      cladogram: false,
+      collapsedClades: [],
+      selectedNodes: [],
+      visualizedMD: [],
+      visualizedSNPs: [],
+      SNPTable: {},
+      selectedNodeId: null,
+    });
+    this.resetZoom();
+    const all_nodes = this.tree.get_nodes();
+    const root = [all_nodes[0]];
+    const descendants = root.concat(this.tree.select_all_descendants(root[0], true, true));
+    this.tree.modify_selection(descendants, undefined, undefined, undefined, "false");
+    all_nodes.forEach((node) => {
+      if (node["show-snp-table"]) {
+        node["show-snp-table"] = false;
+      }
+      if (node["own-collapse"]) {
+        node["show-name"] = "";
+        node["own-collapse"] = false;
+        this.handleDecollapse(node, false);
+      }
+    });
+    this.handleShowNodes(root[0]);
+    this.tree.update();
+    this.tree.trigger_refresh();
+  };
+
+  /**
+   * Loads the given example data.
+   *
+   * @param {string} exampleName - Name of the example data to load.
+   */
+  handleExampleLoad = async (exampleName) => {
+    this.setState(this.initialState);
+    this.handleLoadingToggle(true);
+
+    let response = await fetch(`/api/load-example`, {
+      method: "post",
+      body: exampleName,
+    });
+
+    let json = await response.json();
+    if (response.status === 400 || response.status === 500) {
+      console.error(json.message);
+      alert("Error by processing files. Please revise the files uploaded. Details in console.");
+    } else {
+      this.handleLoadingToggle(false);
+      let { metadataInfo = {} } = json;
+      if (exampleName === "toy") metadataInfo["Size"].extent = ["Small", "Medium", "Large", "Huge"];
+      let ordinalValues = _.toPairs(metadataInfo).filter(
+        (d) => d[1].type.toLowerCase() === "ordinal"
+      );
+      if (ordinalValues.length !== 0) {
+        this.setState({
+          ordinalValues: ordinalValues.map((d) => [d[0], d[1].extent]),
+        });
+      }
+      metadataInfo = this.createColorScales(metadataInfo);
+      metadataInfo = this.modifyExampleColorScales(metadataInfo, exampleName);
+      this.setState({
+        orderChanged: true,
+        isLoaded: true,
+        computeStatistics: true,
+        statisticFilesUploaded: true,
+        goFilesUploaded: true,
+        snpsToGene: json.snps_to_gene,
+        gene_to_go: json.id_to_go,
+        go_to_snp_pos: json.go_to_snp_pos,
+        newick: json.newick,
+        snpPerColumn: json.snpPerColumn,
+        snpdata: { support: json.support, notsupport: json.notSupport },
+        availableSNPs: json.availableSNPs,
+        ids: json.ids,
+        taxamd: json.taxaInfo || [],
+        snpmd: json.snpInfo || [],
+        mdinfo: metadataInfo,
+        node_to_snps: json.node_to_snps,
+        tree_size: json.tree_size,
+        tree_snps: json.num_snps,
+        all_snps: json.all_snps,
+      });
+    }
+    this.sortSnpData();
   };
 
   //----------------------------------------------------------------------------------------
@@ -616,6 +737,29 @@ class App extends Component {
       d3.layout.phylotree.is_node_visible(node)
     );
   };
+  /**
+   * Prepares the data for the preloaded example datasets
+   * @param {dict} metadata
+   * @param {str} exampleId
+   * @returns
+   */
+  modifyExampleColorScales = (metadata, exampleId) => {
+    if (exampleId === "syphilis") {
+      metadata["Macrolide resistance"].colorScale = d3.scale
+        .ordinal()
+        .domain(["resistant", "sensitive"])
+        .range(["#EA3325", "#3B75AF"]);
+    } else if (exampleId === "lepra") {
+      metadata["Continent Origin"].extent = ["EU", "OC", "NA", "SA", "AS", "AF"];
+      metadata["Continent Origin"].colorScale = d3.scale.category20();
+
+      metadata["Origin Date"].colorScale = d3.scale
+        .linear()
+        .domain(metadata["Origin Date"].extent)
+        .range(["red", "lightgray"]);
+    }
+    return metadata;
+  };
 
   createColorScales = (metadata) => {
     _.keys(metadata).forEach((k) => {
@@ -914,11 +1058,14 @@ class App extends Component {
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
     return clade.name;
   };
-  handleDecollapse = (cladeNode) => {
+  handleDecollapse = (cladeNode, should_update = true) => {
     let filteredClades = this.state.collapsedClades.filter((n) => {
       return !Object.is(n.cladeParent, cladeNode);
     });
-    this.tree.toggle_collapse(cladeNode).update();
+    this.tree.toggle_collapse(cladeNode);
+    if (should_update) {
+      this.tree.update();
+    }
     this.setState({ collapsedClades: filteredClades });
   };
 
@@ -993,6 +1140,7 @@ class App extends Component {
                 onMouseUp={() => this.setState({ dragActive: false })}
               >
                 <Phylotree
+                  //
                   dragActive={this.state.dragActive}
                   sendStatisticsRequest={this.sendStatisticsRequest}
                   handleLoadingToggle={this.handleLoadingToggle}
@@ -1006,7 +1154,6 @@ class App extends Component {
                   updateSNPTable={this.updateSNPTable}
                   tree={this.tree}
                   updateCladogramm={this.handleCladogramm}
-
                   onShowMyNodes={this.handleShowNodes}
                   onCollapse={this.handleCollapse}
                   onDecollapse={this.handleDecollapse}
@@ -1048,6 +1195,8 @@ class App extends Component {
               </div>
 
               <Toolbox
+                resetZoom={this.resetZoom}
+                resetApp={this.resetApp}
                 loadFiles={this.handleSubmitAllFiles}
                 onChangeOrder={this.handleChangeOrder}
                 onApplyAllFilters={this.handleApplyAllFilter}
@@ -1072,6 +1221,7 @@ class App extends Component {
                 onDeleteFilter={this.handleDeleteFilter}
                 onDeleteAllFilters={this.handleDeleteAllFilters}
                 handleLoadingToggle={this.handleLoadingToggle}
+                handleExampleLoad={this.handleExampleLoad}
               />
             </div>
             {this.state.statisticsModalShow && (

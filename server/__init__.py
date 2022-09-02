@@ -7,6 +7,7 @@ from time import perf_counter, sleep
 from server.backend_prepare_data import prepare_data, read_file_content
 from server.backend_prepare_statistics import read_statistic_file_content, prepare_statistics
 from server.backend_compute_statistics import go_enrichment, tree_enrichment
+from server.backend_prepare_examples import return_info_examples
 from flask import Flask, request, session, jsonify
 from markupsafe import escape
 import multiprocessing as mp
@@ -18,8 +19,9 @@ import sys
 app = Flask(__name__, static_folder='../build', static_url_path='/')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 here = os.path.dirname(__file__)
-app.config['EXAMPLE_DATA'] = os.path.join(here,'MiniExample')
-app.config['FILES_STREPTOMYCES'] = os.path.join(here, 'data', 'caseStudy_colnames')
+app.config['EXAMPLE_DATA'] = os.path.join(here, 'MiniExample')
+app.config['FILES_STREPTOMYCES'] = os.path.join(
+    here, 'data', 'caseStudy_colnames')
 
 
 @app.route('/api/upload', methods=['POST'])
@@ -31,7 +33,6 @@ def upload_data():
     """
 
     # noinspection PyPep8,PyBroadException
-    print(request.files)
     try:
         nwk_data, snp_data, taxainfo_data, taxainfo_sep = read_file_content()
         # you may use the following lines to store data in session
@@ -62,38 +63,59 @@ def load_init_example():
     """
     try:
         nwk_data = bytes(
-            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_nwk.nwk"), "r").read(), 'utf-8')
-        # print(nwk_data)
+            open(os.path.join(app.config['EXAMPLE_DATA'], "mini_nwk.nwk"), "r").read(), 'utf-8')
         snp_data = bytes(
-            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_snp.tsv"), "r").read(), 'utf-8')
+            open(os.path.join(app.config['EXAMPLE_DATA'], "mini_snp.tsv"), "r").read(), 'utf-8')
         taxainfo_data = bytes(
-            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_nodeinfo.csv"), "r").read(), 'utf-8')
-        return prepare_data(nwk_data, snp_data, taxainfo_data, ",",True)
+            open(os.path.join(app.config['EXAMPLE_DATA'], "mini_nodeinfo.csv"), "r").read(), 'utf-8')
+        return prepare_data(nwk_data, snp_data, taxainfo_data, ",", True)
     except ValueError as e:
         print("error", e.args)
         return jsonify({'error': 'internal server error'}), 500
 
-@app.route('/api/init-stats', methods=['POST'])
+
+@app.route('/api/load-example', methods=['POST'])
+def load_chosen_example():
+    """ Loads files evidente-start example from directory, parsed data,
+     invokes classico and sends result to client.
+    :return: preprocessed phylogenetic data as :type Json-object
+    """
+    try:
+        example_id = str(request.get_data().decode('UTF-8'))
+        nwk_data, snp_data, taxainfo_data, gff_data, go_data, metadata_sep, gff_sep, go_sep = return_info_examples(
+            example_id)
+        main_data, available_snps = prepare_data(
+            nwk_data, snp_data, taxainfo_data, metadata_sep, True, True)
+        stats_data = prepare_statistics(gff_data.decode(
+            'utf8'), gff_sep, go_data.decode('utf-8'), go_sep, available_snps, True)
+        jsonresponse = {**main_data, **stats_data}
+        return jsonify(jsonresponse), 200
+    except ValueError as e:
+        print("error", e.args)
+        return jsonify({'error': 'internal server error'}), 500
+
+
+@ app.route('/api/init-stats', methods=['POST'])
 def load_init_stats():
-    """ Loads statistical files evidente-start example from directory, parses data 
+    """ Loads statistical files evidente-start example from directory, parses data
      and sends result to client.
     :return: preprocessed statistical data as :type Json-object
     """
     try:
         gff_data = bytes(
-            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_gff.csv"), "r").read(), 'utf-8')
-        # print(nwk_data)
+            open(os.path.join(app.config['EXAMPLE_DATA'], "mini_gff.csv"), "r").read(), 'utf-8')
         go_data = bytes(
-            open(os.path.join(app.config['EXAMPLE_DATA'],"mini_go_terms.csv"), "r").read(), 'utf-8')
+            open(os.path.join(app.config['EXAMPLE_DATA'], "mini_go_terms.csv"), "r").read(), 'utf-8')
         available_snps = request.form['available_snps'].split(',')
         response = prepare_statistics(gff_data.decode(
-            'utf8'),",", go_data.decode('utf-8'), ",", available_snps)
+            'utf8'), ",", go_data.decode('utf-8'), ",", available_snps)
         return response
     except ValueError as e:
         print("error", e.args)
         return jsonify({'error': 'internal server error'}), 500
 
-@app.route('/api/statistic-upload', methods=['POST'])
+
+@ app.route('/api/statistic-upload', methods=['POST'])
 def prepare_statistics_data():
     """Parses data sent by frontend, prepares statistical data and
     sends result to client.
@@ -121,7 +143,7 @@ def prepare_statistics_data():
         return jsonify({'error': 'internal server error'}), 500
 
 
-@app.route('/api/statistics-request', methods=['POST'])
+@ app.route('/api/statistics-request', methods=['POST'])
 def compute_statistics():
     """Parses data sent by frontend,  computes go-enrichment and
     sends result to client.
@@ -144,7 +166,7 @@ def compute_statistics():
         return jsonify({'error': 'internal server error'}), 500
 
 
-@app.route('/api/tree-statistics-request', methods=['POST'])
+@ app.route('/api/tree-statistics-request', methods=['POST'])
 def compute_tree_statitics():
     """Parses data sent by frontend,  performs tree-analysis and
       sends result to client.
@@ -153,7 +175,6 @@ def compute_tree_statitics():
       """
     try:
         data = request.get_json()
-        # print(request.get_json())
         nwk = data["nwk"]
         support = data["support"]
         num_to_lab = data["num_to_label"]
@@ -173,7 +194,7 @@ def compute_tree_statitics():
 # just for debugging purposes:
 
 
-@app.route('/<path:subpath>', methods=['POST'])
+@ app.route('/<path:subpath>', methods=['POST'])
 def show_post_subpath(subpath):
     """shows content of POST message"""
 
@@ -191,7 +212,7 @@ def show_post_subpath(subpath):
         abort(500)
 
 
-@app.route('/<path:subpath>', methods=['GET'])
+@ app.route('/<path:subpath>', methods=['GET'])
 def show_get_subpath(subpath):
     """shows the content of GET message"""
 
@@ -200,18 +221,19 @@ def show_get_subpath(subpath):
     abort(501)
 
 
-@app.route('/test_timeout', methods=['GET'])
+@ app.route('/test_timeout', methods=['GET'])
 def test_timeout():
     print("start sleep")
     sleep(301)
     return jsonify("done")
 
 
-@app.route('/', methods=['GET'])
+@ app.route('/', methods=['GET'])
 def index():
     return app.send_static_file('index.html')
 
+
 if __name__ == "__main__":
-    mp.set_start_method('spawn')    
+    mp.set_start_method('spawn')
 
     app.run(debug=True, port=int("3001"))
