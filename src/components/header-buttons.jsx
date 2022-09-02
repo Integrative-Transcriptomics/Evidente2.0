@@ -45,11 +45,11 @@ export default function HeaderButtons(props) {
                         <span>Reset Zoom</span><YoutubeSearchedForIcon fontSize="large" />
                     </Button>
                     <Button className="button-with-icon" variant="secondary" href="https://github.com/Integrative-Transcriptomics/Evidente2.0/wiki/User-Manual" target="_blank">
-                        <span>User Manual</span><MenuBookIcon fontSize="large" />
+                        <span>User Guide</span><MenuBookIcon fontSize="large" />
                     </Button>
 
                     <Button className="button-with-icon" variant="secondary" href="https://github.com/Integrative-Transcriptomics/Evidente2.0/" target="_blank">
-                        <span>Source Code</span>
+                        <span>GitHub</span>
                         <GitHubIcon fontSize="large" />
 
                     </Button>
