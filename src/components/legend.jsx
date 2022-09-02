@@ -147,7 +147,7 @@ class Legend extends Component {
                                     this.props.onChange(row.name);
                                   }}
                                 >
-                                <EditIcon/>
+                                  <EditIcon />
                                 </IconButton>
                               </TableCell>
                             </React.Fragment>

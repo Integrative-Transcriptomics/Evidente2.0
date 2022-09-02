@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-
 import HeaderButtons from "./header-buttons";
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
@@ -102,12 +101,13 @@ class Toolbox extends Component {
                 let minExtent = parseFloat(extent[0].toFixed(2));
                 addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
                 let textLeft = addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
+                textLeft.style("cursor", "default");
 
                 let maxExtent = parseFloat(extent[1].toFixed(2));
                 let posRight = cellWidth - marginText;
                 addTexts(group, posRight, yPosition, "end", maxExtent, colorScale(extent[1]));
                 let textRight = addTexts(group, posRight, yPosition, "end", maxExtent, colorScale(extent[1]));
-
+                textRight.style("cursor", "default");
                 if (!isStatic) {
                     addMouseOver(textLeft, minExtent);
                     addMouseOver(textRight, maxExtent);
@@ -163,19 +163,36 @@ class Toolbox extends Component {
                 let groupAllele = svg.selectAll("rect").data(extent).enter();
 
                 const addRectangle = (posY, fill, isMargin) => {
+                    let isPositiveN = (snp) => !isMargin && snp === "N"
                     groupAllele
                         .append("svg:rect")
                         .attr("width", legendCubeWidth - 4)
                         .attr("height", legendCubeHeight - 4)
                         .attr("y", posY)
                         .attr("x", (d) => xScale(d))
-                        .attr("fill", !isMargin ? fill : "white")
-                        .attr("stroke", fill)
+                        .attr("fill", (d) => !isMargin && d !== "N" ? fill(d) : "white")
+                        .attr("stroke", (d) => isPositiveN(d) ? "white" : fill(d))
+                        .attr("id", (d) => isPositiveN(d) ? "SNP-legend-N" : null)
                         .attr("stroke-width", 2);
                 };
+                addRectangle(yScale(posSpecificity), colorScale, false); // adds Positive SNPs
+                addRectangle(yScale(negSpecificity), colorScale, true); // adds Negative SNPs
+                if (svg.select("#SNP-legend-N").node()) {
+                    let textForSupportingN = svg.insert("text", "#SNP-legend-N")
+                        .attr("x", parseInt(svg.select("#SNP-legend-N").attr("x")) + (legendCubeWidth / 2 - 1))
+                        .attr("text-anchor", "middle")
+                        .attr("dominant-baseline", "middle")
+                        .attr("y", parseInt(svg.select("#SNP-legend-N").attr("y")) + (legendCubeHeight / 2 - 1))
+                        .style("font-size", `${Math.min(cellWidth, 10)}px`)
+                        .text("N/A")
+                        .style("cursor", "default");
 
-                addRectangle(yScale(posSpecificity), (d) => colorScale(d), false); // adds Positive SNPs
-                addRectangle(yScale(negSpecificity), (d) => colorScale(d), true); // adds Negative SNPs
+                    svg.select("#SNP-legend-N").remove()
+                    if (!isStatic) {
+                        addMouseOver(textForSupportingN, "Not Available");
+                    }
+
+                }
 
                 svg.attr("transform", `translate(${marginLeft}, 12)`);
                 if (isStatic) {
