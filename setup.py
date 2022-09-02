@@ -7,5 +7,5 @@ setup(
     install_requires=[
         'flask',
     ],
-    package_data={'server': ['MiniExample/*','classico.jar']},
+    package_data={'server': ['MiniExample/*','classico.jar', 'Leprosy/*', 'Syphilis/*']},
 )
