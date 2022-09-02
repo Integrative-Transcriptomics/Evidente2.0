@@ -77,7 +77,7 @@ class Toolbox extends Component {
                 //Append a linearGradient element to the defs and give it a unique id
                 var linearGradient = defs
                     .append("linearGradient")
-                    .attr("id", `linear-gradient-${name.replace(/ /g, "-")}`);
+                    .attr("id", `linear-gradient-${name.replace(/ /g, "-")}${isStatic ? "-static" : ""}`);
                 //Horizontal gradient
                 linearGradient.attr("x1", "0%").attr("y1", "0%").attr("x2", "100%").attr("y2", "0%");
                 //Set the color for the start (0%)
@@ -97,7 +97,7 @@ class Toolbox extends Component {
                     .append("rect")
                     .attr("width", cellWidth)
                     .attr("height", elementHeight)
-                    .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")})`);
+                    .style("fill", `url(#linear-gradient-${name.replace(/ /g, "-")}${isStatic ? "-static" : ""})`);
 
                 let minExtent = parseFloat(extent[0].toFixed(2));
                 addTexts(group, marginText, yPosition, "start", minExtent, colorScale(extent[0]));
