@@ -266,7 +266,7 @@ class Tools extends Component {
             </Accordion.Toggle>
             <Accordion.Collapse eventKey='0'>
               <Card.Body>
-                <FileUploadForm />
+                <FileUploadForm loadFiles={this.props.loadFiles} />
               </Card.Body>
             </Accordion.Collapse>
           </Card>
@@ -428,26 +428,29 @@ class Tools extends Component {
                     Export visualizations
                   </Form.Label>
                   <Form.Group>
-                    <Button
-                      variant='primary'
-                      onClick={() => {
-                        this.props.handleLoadingToggle(true);
-                        this.onExport("PNG");
-                        this.props.handleLoadingToggle(false);
-                      }}
-                    >
-                      As PNG
-                    </Button>
-                    <Button
-                      variant='primary'
-                      onClick={() => {
-                        this.props.handleLoadingToggle(true);
-                        this.onExport("PDF");
-                        this.props.handleLoadingToggle(false);
-                      }}
-                    >
-                      As PDF
-                    </Button>
+                    <ButtonGroup>
+
+                      <Button
+                        variant='primary'
+                        onClick={() => {
+                          this.props.handleLoadingToggle(true);
+                          this.onExport("PNG");
+                          this.props.handleLoadingToggle(false);
+                        }}
+                      >
+                        As PNG
+                      </Button>
+                      <Button
+                        variant='primary'
+                        onClick={() => {
+                          this.props.handleLoadingToggle(true);
+                          this.onExport("PDF");
+                          this.props.handleLoadingToggle(false);
+                        }}
+                      >
+                        As PDF
+                      </Button>
+                    </ButtonGroup>
                   </Form.Group>
                 </Form>
                 {/* <Grid container spacing={2} direction='row' alignItems='center' justify='center'>
