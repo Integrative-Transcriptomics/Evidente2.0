@@ -6,9 +6,12 @@
 
 
 import csv
-from typing import Tuple
-from flask import request, jsonify
+from flask import request
+import json
+from goatools.anno.update_association import update_association
+
 from server.backend_compute_statistics import load_go_basic
+from server.serialize_sets import serialize_sets
 
 
 def read_statistic_file_content():
@@ -49,7 +52,7 @@ def read_statistic_file_content():
             go_sep = ','
         elif goterm.mimetype != "text/tab-separated-values" \
                 and not ".tsv" in goterm.filename \
-                and goterm.mimetype != "application/octet-stream"\
+                and goterm.mimetype != "application/octet-stream" \
                 and goterm.mimetype != "text/x-go":
             raise ValueError("unexpected taxainfofile type ",
                              goterm.mimetype)
@@ -73,6 +76,7 @@ def read_statistic_file_content():
     return go_data, go_sep, gff_data, gff_sep, available_snps
 
 
+
 def prepare_statistics(gff, gff_sep, go_terms, go_sep, available_snps, return_dict=False):
     """Prepares gff and go data for statistical computations
        Holds possibility to use snp_info data in addition to gff
@@ -87,25 +91,25 @@ def prepare_statistics(gff, gff_sep, go_terms, go_sep, available_snps, return_di
     :param snp_info_sep: separator to parse snp_info as :type str
     :param go_terms: go_term file as :type str
     :param go_sep: separator to parse go file as :type str
-    :return: json: json containing snp_with_go as :type dict
+    :return: return_json: json containing snp_with_go as :type dict
     """
-    #snps_to_gene = parse_snp_info(snp_info,snp_info_sep)
+    # snps_to_gene = parse_snp_info(snp_info,snp_info_sep)
     go_hierarchy = load_go_basic()
 
     gene_range_with_locus_tag = parse_gff(gff, gff_sep)
     snps_to_gene, gene_to_snp = get_gene_for_snp(
         available_snps, gene_range_with_locus_tag)
-    id_to_go, go_to_snp = parse_go_terms(go_terms, go_sep, gene_to_snp)
+    id_to_go = parse_go_terms(go_terms, go_sep, gene_to_snp)
     id_to_go, go_to_snp = add_all_propagated_terms(
-        go_hierarchy, id_to_go, go_to_snp)
+        go_hierarchy, id_to_go, gene_to_snp)
 
-    json = dict()
-    json["snps_to_gene"] = snps_to_gene
-    json["go_to_snp_pos"] = go_to_snp
-    json["id_to_go"] = id_to_go
+    return_json = dict()
+    return_json["snps_to_gene"] = snps_to_gene
+    return_json["go_to_snp_pos"] = go_to_snp
+    return_json["id_to_go"] = id_to_go
     if return_dict:
-        return json
-    return jsonify(json)
+        return return_json
+    return json.dumps(return_json, default=serialize_sets)
 
 
 def parse_gff(gff, gff_sep):
@@ -124,7 +128,7 @@ def parse_gff(gff, gff_sep):
                 gene_range_with_locus_tag.append(
                     [line[3], line[4], get_locus_tag(line[8])])
     # sort by start position
-    #gene_range_with_locus_tag_sorted = sorted(gene_range_with_locus_tag,key=lambda x:int(x[0]))
+    # gene_range_with_locus_tag_sorted = sorted(gene_range_with_locus_tag,key=lambda x:int(x[0]))
     return gene_range_with_locus_tag
 
 
@@ -179,7 +183,7 @@ def search_gene_binary(gene_range_with_locus_tag, snp_pos):
     if len(gene_range_with_locus_tag) == 0:
         return False
     else:
-        middle = len(gene_range_with_locus_tag)//2  # floor division
+        middle = len(gene_range_with_locus_tag) // 2  # floor division
         mid_gene = gene_range_with_locus_tag[middle]
         start = int(mid_gene[0])
         end = int(mid_gene[1])
@@ -189,7 +193,7 @@ def search_gene_binary(gene_range_with_locus_tag, snp_pos):
             if snp_pos < start:
                 return search_gene_binary(gene_range_with_locus_tag[:middle], snp_pos)
             else:
-                return search_gene_binary(gene_range_with_locus_tag[middle+1:], snp_pos)
+                return search_gene_binary(gene_range_with_locus_tag[middle + 1:], snp_pos)
 
 
 def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
@@ -200,7 +204,6 @@ def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
     :return: id_to_go: gene id to go-term mapping as :type dict
     """
     id_to_go = dict()
-    go_to_snps = dict()
     for line in csv.reader(go_terms.split('\n'), delimiter=go_sep):
         if len(line) >= 2:
             locus_tag = line[0].strip()
@@ -208,60 +211,48 @@ def parse_go_terms(go_terms, go_sep, locus_tag_to_snps):
             line_go_terms = [go.strip() for go in line_go_terms_]
             if line_go_terms:
                 if id_to_go.__contains__(locus_tag):
-                    id_to_go[locus_tag].extend(line_go_terms)
+                    id_to_go[locus_tag].update(line_go_terms)
                 else:
-                    id_to_go[locus_tag] = line_go_terms
-                #
-    for locus, go_terms in id_to_go.items():
-        for go_term in go_terms:
-            if locus_tag_to_snps.__contains__(locus):
-                go_to_snps.setdefault(go_term, []).extend(
-                    locus_tag_to_snps[locus])
-
-    return id_to_go, go_to_snps
+                    id_to_go[locus_tag] = set(line_go_terms)
+    return id_to_go
 
 
-def add_all_propagated_terms_to_snps(go_hierarchy, go_to_snp):
+def add_all_propagated_terms_to_snps(id_to_go, id_to_snp):
     """Extends go-term snp association by all parents of directly
     associated go-terms.
 
-    :param go_hierarchy:
-    :param go_to_snp: go-term to snp mapping for all directly associated
-    go-terms as :type dict
-    :return: go_to_snp2: go-term to snp mapping containing all associated
+    :param id_to_go: extended mappings from gene to go-term as :type dict()
+    :param id_to_snp: mapping from snp-position to locus-tag as :type dict()
+    :return: go_to_snp: go-term to snp mapping containing all associated
     go-terms as :type dict
     """
-    go_terms = go_to_snp
-    go_to_snp2 = dict()
-    for go_term, snps in go_terms.items():
-        go_to_snp2.setdefault(go_term, []).extend(snps)
-        parents = collect_parents(go_term, go_hierarchy)
-        for parent in parents:
-            go_to_snp2.setdefault(parent, []).extend(snps)
-    return go_to_snp2
+    go_to_snp = {}
+    for id in id_to_go:
+        if id in id_to_snp:
+            for go in id_to_go[id]:
+                if go in go_to_snp:
+                    go_to_snp[go].update(id_to_snp[id])
+                else:
+                    go_to_snp[go] = set(id_to_snp[id])
+    return go_to_snp
 
 
-def add_all_propagated_terms(go_hierarchy, id_to_go, go_to_snp):
+def add_all_propagated_terms(go_hierarchy, id_to_go, gene_to_snp):
     """Extends gene-go and go-snp association by parent terms of
     directly associated go-terms
 
     :param go_hierarchy:
     :param id_to_go: gene to go-term mapping as :type dict()
-    :param go_to_snp: go-term to snp mapping as :type dict()
+    :param gene_to_snp: mapping from snp-position to locus-tag as :type dict()
     :return: id_to_go_ext, go_to_snp_ext: extended mappings from gene to go-term
     and go-term to snps as :type dict
     """
-    go_to_snp_ext = add_all_propagated_terms_to_snps(
-        go_hierarchy, go_to_snp.copy())
-    id_to_go_ext = dict()
-    for id in id_to_go.keys():
-        gos = id_to_go[id]
-        go_set = set(gos)
-        for go in gos:
-            parents = collect_parents(go, go_hierarchy)
-            go_set.update(parents)
-        id_to_go_ext[id] = list(go_set)
-    return id_to_go_ext, go_to_snp_ext
+
+    # go_to_snp_ext = add_all_propagated_terms_to_snps(
+    #    go_hierarchy, go_to_snp.copy())
+    update_association(id_to_go, go_hierarchy, None)
+    go_to_snp_ext = add_all_propagated_terms_to_snps(id_to_go, gene_to_snp)
+    return id_to_go, go_to_snp_ext
 
 
 def collect_parents(go_id, go_hierarchy):
@@ -277,7 +268,6 @@ def collect_parents(go_id, go_hierarchy):
         parents = []
 
     return parents
-
 
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------

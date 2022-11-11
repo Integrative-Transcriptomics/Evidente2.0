@@ -3,11 +3,13 @@
 # Written by Sophie Pesch 2021
 import os
 from os import abort
-from time import perf_counter, sleep
+import json
+from time import sleep
 from server.backend_prepare_data import prepare_data, read_file_content
 from server.backend_prepare_statistics import read_statistic_file_content, prepare_statistics
 from server.backend_compute_statistics import go_enrichment, tree_enrichment
 from server.backend_prepare_examples import return_info_examples
+from server.serialize_sets import serialize_sets
 from flask import Flask, request, session, jsonify
 from markupsafe import escape
 import multiprocessing as mp
@@ -89,7 +91,7 @@ def load_chosen_example():
         stats_data = prepare_statistics(gff_data.decode(
             'utf8'), gff_sep, go_data.decode('utf-8'), go_sep, available_snps, True)
         jsonresponse = {**main_data, **stats_data}
-        return jsonify(jsonresponse), 200
+        return json.dumps(jsonresponse,default=serialize_sets), 200
     except ValueError as e:
         print("error", e.args)
         return jsonify({'error': 'internal server error'}), 500
