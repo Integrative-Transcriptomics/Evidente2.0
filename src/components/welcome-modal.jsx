@@ -19,7 +19,7 @@ class WelcomeModal extends Component {
             >
                 <p style={{ textAlign: "justify" }}>
                     Evidente is loaded with a default toy example with seven samples, 28 SNPs and four
-                    different metadata, in order for you to get to know this tool. Furtherer example datasets can be used from the
+                    different metadata, in order for you to get to know this tool. Further example datasets can be selected from the
                     menu <span style={{ fontStyle: "italic" }}>Example Datasets</span>.
                     In order to upload your own files, please direct yourself to
                     the "Load files" menu.

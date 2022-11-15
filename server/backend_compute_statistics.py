@@ -9,6 +9,7 @@ from flask import jsonify
 import wget
 import os
 import time
+import json
 from goatools import obo_parser
 import multiprocessing as mp
 from multiprocessing.pool import ThreadPool
@@ -16,6 +17,7 @@ from multiprocessing.pool import ThreadPool
 from server.backend_go_enrichment import GOEnrichment
 from server.backend_nwk_parser import Tree
 from server.backend_tree_enrichment import FindClades
+from server.serialize_sets import serialize_sets
 
 # class NoDaemonProcess(multiprocessing.Process):
 #     @property
@@ -63,11 +65,11 @@ def go_enrichment(all_snps, positions, snps_to_gene,gene_to_go, sig_level):
     #end = perf_counter()
     #time_needed = end - start
     #print(f"Needed {time_needed:0.4f} seconds for go enrichment over {num_assoc_go_terms} associated go-terms")
-    json = dict()
-    json["go_result"] = result
-    json["in_gene_tree"] =  in_gene_tree
-    json["in_gene_clade"] = in_gene_clade
-    return jsonify(json)
+    return_json = dict()
+    return_json["go_result"] = result
+    return_json["in_gene_tree"] =  in_gene_tree
+    return_json["in_gene_clade"] = in_gene_clade
+    return json.dumps(return_json,default=serialize_sets)
 
 
 def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene, gene_to_go, sig_level):
@@ -85,7 +87,7 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
     :param snps_to_gene: snp-gene association as :type dict
     :param gene_to_go: gene-go asscociation as :type dict
     :param sig_level: significance-level as :type int
-    :return: json: clade-result association containing all clades
+    :return: return_json: clade-result association containing all clades
                    with significant results in the enrichment analysis stored
                    as tree-go-result in a :type json-object
     """
@@ -121,10 +123,10 @@ def tree_enrichment(nwk,support, num_to_lab, all_snps, node_to_snp, snps_to_gene
                 in_gene_tree = response[5]
     pool.join()
     #create json-object for response to client
-    json = dict()
-    json["tree_go_result"] = all_results
-    json["in_gene_tree"] = in_gene_tree
-    return jsonify(json)
+    return_json = dict()
+    return_json["tree_go_result"] = all_results
+    return_json["in_gene_tree"] = in_gene_tree
+    return json.dumps(return_json,default=serialize_sets)
 
 
 def helper_multiprocess_enrichment(clade, node_to_snp, leaves_tree, all_snps, snps_to_gene, gene_to_go, sig_level, go_hierarchy):
