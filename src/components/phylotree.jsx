@@ -80,6 +80,7 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
+
     /**
      * Opens modal for rename of clade
      * @param {Object} node

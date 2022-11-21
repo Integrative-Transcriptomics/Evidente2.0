@@ -34,6 +34,7 @@ import * as _ from "lodash";
 
 import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
+import { ThreeSixty } from "@material-ui/icons";
 
 class App extends Component {
   state = {};
@@ -64,6 +65,20 @@ class App extends Component {
           let translateY = Math.max(transformY.y, scaleDifference);
           let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
           selection.attr("transform", `${transformString}`);
+          
+          //!Experiment
+
+          var which_function = this.tree.spacing_x;
+          which_function(which_function () + (-e.deltaY/53)).update();
+
+          if(which_function() <= 15){
+            this.tree.collapse_node_by_depth("collapse",4);
+
+          }
+          if(which_function() >= 25){
+              this.tree.collapse_node_by_depth("expand",4);
+              
+          }
         }
       }
     }
