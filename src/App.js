@@ -67,18 +67,14 @@ class App extends Component {
           selection.attr("transform", `${transformString}`);
           
           //!Experiment
-
-          var which_function = this.tree.spacing_x;
-          which_function(which_function () + (-e.deltaY/53)).update();
-
-          if(which_function() <= 15){
+          if(scale <= 1.0){
             this.tree.collapse_node_by_depth("collapse",4);
 
           }
-          if(which_function() >= 25){
+          if(scale>= 1.4){
               this.tree.collapse_node_by_depth("expand",4);
-              
           }
+          this.tree.update();
         }
       }
     }
