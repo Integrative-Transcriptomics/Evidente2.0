@@ -80,7 +80,72 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
+    collNode(node) {
+        if (!node["own-collapse"]) {
+            node["own-collapse"] = true;
+            node["show-name"] = this.props.onCollapse(node);
+        }
+        this.props.onSelection(this.props.tree.get_selection());
+    }
+    decollNode(node){
+        if (node["own-collapse"]) {
+            node["show-name"] = "";
+            node["own-collapse"] = false;
+            this.props.onDecollapse(node);
+        }
+        this.props.onSelection(this.props.tree.get_selection());
+    }
 
+    collapseNodeByDepth(depth, mode){
+        
+        const addTimeoutCursor = (func, time = 10) => {
+            document.body.style.cursor = "wait";
+            window.setTimeout(() => {
+                func();
+                document.body.style.cursor = "default";
+            }, time);
+        };
+
+        var node_with_most_children = [];
+        var maxdepth = 0;
+        
+        var nodes = this.props.tree.get_nodes();
+        nodes.forEach(function(node){
+          if(node.depth > maxdepth){
+            maxdepth = node.depth;
+          }
+        })
+        
+        var filter =maxdepth/depth;
+      
+        nodes.forEach(function(node){
+            if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
+                if(node.depth > filter){
+                    node_with_most_children.push(node);                
+                }
+            }     
+        });
+        if(mode === "expand"){
+            node_with_most_children.forEach(function(n){
+                if(!n.is_under_collapsed_parent){
+                    addTimeoutCursor(
+                        () =>
+                            this.decollNode(n, this.props.tree, this.props.onCollapse),
+                        5
+                    )
+                    //this.decollNode(n, this.props.tree, this.props.onCollapse);
+                }
+            },this);
+          }
+        if (mode === "collapse") {
+            node_with_most_children.forEach(function(n){
+                if(!n.is_under_collapsed_parent){
+                    this.collNode(n);
+                }
+            },this);
+        }
+    }
+      
     /**
      * Opens modal for rename of clade
      * @param {Object} node
@@ -262,6 +327,13 @@ class Phylotree extends Component {
                 "transform",
                 `${transformString}`
             );
+
+            if(scale >= 1.2){
+                this.collapseNodeByDepth(4, "collapse");
+            }
+            if(scale <= 1.0){
+                this.collapseNodeByDepth(4, "expand");
+            }
 
         }
 

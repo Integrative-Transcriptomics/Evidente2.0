@@ -34,7 +34,7 @@ import * as _ from "lodash";
 
 import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
-import { ThreeSixty } from "@material-ui/icons";
+//import { ThreeSixty } from "@material-ui/icons";
 
 class App extends Component {
   state = {};
@@ -67,14 +67,15 @@ class App extends Component {
           selection.attr("transform", `${transformString}`);
           
           //!Experiment
-          if(scale <= 1.0){
-            this.tree.collapse_node_by_depth("collapse",4);
+          // if(scale <= 1.0){
+          //   this.tree.collapse_node_by_depth("collapse",4);
 
-          }
-          if(scale>= 1.4){
-              this.tree.collapse_node_by_depth("expand",4);
-          }
-          this.tree.update();
+          // }
+          // if(scale>= 1.4){
+          //     this.tree.collapse_node_by_depth("expand",4);
+          // }
+          // this.tree.update();
+        
         }
       }
     }
