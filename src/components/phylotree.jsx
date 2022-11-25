@@ -131,7 +131,7 @@ class Phylotree extends Component {
                     addTimeoutCursor(
                         () =>
                             this.decollNode(n, this.props.tree, this.props.onCollapse),
-                        5
+                        1
                     )
                     //this.decollNode(n, this.props.tree, this.props.onCollapse);
                 }
@@ -335,6 +335,15 @@ class Phylotree extends Component {
                 this.collapseNodeByDepth(4, "expand");
             }
 
+        }
+        else{
+            console.log(this.props.get_state_yscale);
+            if(this.props.get_state_yscale <= 1.0){
+                this.collapseNodeByDepth(4, "collapse");
+            }
+            if(this.props.get_state_yscale >= 1.3){
+                this.collapseNodeByDepth(4, "expand");
+            }
         }
 
     }

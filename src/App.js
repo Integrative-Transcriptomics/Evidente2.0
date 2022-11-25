@@ -65,7 +65,10 @@ class App extends Component {
           let translateY = Math.max(transformY.y, scaleDifference);
           let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
           selection.attr("transform", `${transformString}`);
-          
+          this.setState({
+            yscale: scale,
+          });
+          //console.log("App: " + scale)
           //!Experiment
           // if(scale <= 1.0){
           //   this.tree.collapse_node_by_depth("collapse",4);
@@ -281,6 +284,7 @@ class App extends Component {
           tree_size: json.tree_size,
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
+          yscale: 0,
         });
       }
       $("#welcome-modal-button").text("Close");
@@ -329,6 +333,7 @@ class App extends Component {
       visualizedSNPs: [],
       SNPTable: {},
       selectedNodeId: null,
+      yscale: 0,
     });
     this.resetZoom();
     const all_nodes = this.tree.get_nodes();
@@ -1130,6 +1135,10 @@ class App extends Component {
     this.handleInitTool();
   }
 
+  get get_yscale(){
+    return this.state.yscale;
+  }
+
   render() {
     let shownNodes = this.tree
       .get_nodes()
@@ -1179,6 +1188,7 @@ class App extends Component {
                   cladogramState={this.state.cladogram}
                   dialog={this.dialog}
                   shownNodes={shownNodes}
+                  get_state_yscale = {this.get_yscale}
                 />
 
                 <Labels divID={"labels_viz"} shownNodes={shownNodes} />
