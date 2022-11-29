@@ -68,16 +68,6 @@ class App extends Component {
           this.setState({
             yscale: scale,
           });
-          //console.log("App: " + scale)
-          //!Experiment
-          // if(scale <= 1.0){
-          //   this.tree.collapse_node_by_depth("collapse",4);
-
-          // }
-          // if(scale>= 1.4){
-          //     this.tree.collapse_node_by_depth("expand",4);
-          // }
-          // this.tree.update();
         
         }
       }

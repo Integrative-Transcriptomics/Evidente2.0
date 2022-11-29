@@ -142,11 +142,11 @@ class Phylotree extends Component {
             node_with_most_children.forEach(function(n){
                 if(!n.is_under_collapsed_parent){
                     this.collNode(n);
-                    addTimeoutCursor(
-                        () =>
-                            this.collNode(n),
-                        1
-                    )
+                    // addTimeoutCursor(
+                    //     () =>
+                    //         this.collNode(n),
+                    //     1
+                    // )
                     
                 }
             },this);
