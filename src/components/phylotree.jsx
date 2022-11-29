@@ -7,7 +7,7 @@ import React, { Component } from "react";
 
 class Phylotree extends Component {
     state = {};
-
+    did_collapse = false;
     /**
      * For general node styling within the phylogenetic tree
      *
@@ -15,6 +15,7 @@ class Phylotree extends Component {
      * @param {Object} node
      */
     nodeStyler = (container, node) => {
+        this.did_collapse=false;
         let is_leaf = d3.layout.phylotree.is_leafnode(node)
         let is_collapsed = node["own-collapse"]
         let div = d3.select("#tooltip");
@@ -130,10 +131,10 @@ class Phylotree extends Component {
                 if(!n.is_under_collapsed_parent){
                     addTimeoutCursor(
                         () =>
-                            this.decollNode(n, this.props.tree, this.props.onCollapse),
+                            this.decollNode(n),
                         1
                     )
-                    //this.decollNode(n, this.props.tree, this.props.onCollapse);
+                    //this.decollNode(n);
                 }
             },this);
           }
@@ -141,6 +142,12 @@ class Phylotree extends Component {
             node_with_most_children.forEach(function(n){
                 if(!n.is_under_collapsed_parent){
                     this.collNode(n);
+                    addTimeoutCursor(
+                        () =>
+                            this.collNode(n),
+                        1
+                    )
+                    
                 }
             },this);
         }
@@ -328,21 +335,18 @@ class Phylotree extends Component {
                 `${transformString}`
             );
 
-            if(scale >= 1.2){
-                this.collapseNodeByDepth(4, "collapse");
-            }
-            if(scale <= 1.0){
-                this.collapseNodeByDepth(4, "expand");
-            }
-
         }
         else{
             console.log(this.props.get_state_yscale);
-            if(this.props.get_state_yscale <= 1.0){
+
+            if(!this.did_collapse && this.props.get_state_yscale <= 1.0){
                 this.collapseNodeByDepth(4, "collapse");
+                this.did_collapse=true;
+
             }
-            if(this.props.get_state_yscale >= 1.3){
+            if(this.did_collapse && this.props.get_state_yscale >= 1.3){
                 this.collapseNodeByDepth(4, "expand");
+                this.did_collapse=false;
             }
         }
 
