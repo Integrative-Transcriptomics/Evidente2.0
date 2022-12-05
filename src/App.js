@@ -31,48 +31,88 @@ import * as d3 from "d3";
 import * as d3v5 from "d3v5";
 import * as $ from "jquery";
 import * as _ from "lodash";
-
 import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
 //import { ThreeSixty } from "@material-ui/icons";
 
 class App extends Component {
   state = {};
+  called =false;
+  tx = 0;
+  ty = 0;
+  scale = 1;
   chosenMD = "";
+  
   // Create vertical zoom for all components
+  // verticalZoom = (e) => {
+  //   if (!e.ctrlKey) {
+  //     for (let id of [
+  //       "#heatmap-container",
+  //       "#md-container",
+  //       "#zoom-phylotree",
+  //       "#container-labels",
+  //       "#guidelines-container",
+  //     ]) {
+  //       if (d3v5.select(id).node()) {
+  //         let selection = d3v5.select(id);
+  //         let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
+  //         transform = d3.transform(transform);
+  //         let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
+  //         let transformY = { y: transform.translate[1], k: transform.scale[1] };
+  //         let scale = transformY.k + e.deltaY * -0.001;
+  //         scale = Math.min(Math.max(0.8, scale), 10);
+  //         //TODO if scale is smaller than one, allow movement
+  //         let scaleDifference = Math.min(
+  //           0,
+  //           this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
+  //         );
+  //         let translateY = Math.max(transformY.y, scaleDifference);
+  //         let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
+  //         .attr("transform", `${transformString}`);
+  //         this.setState({
+  //           yscale: scale,
+  //         });
+        
+  //       }
+  //     }
+  //   }
+  // };
   verticalZoom = (e) => {
     if (!e.ctrlKey) {
-      for (let id of [
-        "#heatmap-container",
-        "#md-container",
-        "#zoom-phylotree",
-        "#container-labels",
-        "#guidelines-container",
-      ]) {
-        if (d3v5.select(id).node()) {
-          let selection = d3v5.select(id);
-          let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
-          transform = d3.transform(transform);
-          let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
-          let transformY = { y: transform.translate[1], k: transform.scale[1] };
-          let scale = transformY.k + e.deltaY * -0.001;
-          scale = Math.min(Math.max(0.8, scale), 10);
-          //TODO if scale is smaller than one, allow movement
-          let scaleDifference = Math.min(
-            0,
-            this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
-          );
-          let translateY = Math.max(transformY.y, scaleDifference);
-          let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
-          selection.attr("transform", `${transformString}`);
-          this.setState({
-            yscale: scale,
-          });
-        
+
+
+        if(!this.called){
+          
+          function handleZoom() {      
+            for (let id of [
+              "#heatmap-container",
+              "#md-container",
+              "#guidelines-container",
+              "#container-labels",
+              "#zoom-phylotree"
+            ]) {
+
+            d3v5.select(id)
+              //.attr('transform', d3v5.event.transform);
+              .attr("transform", "translate(" + 0+ "," + d3v5.event.transform.y+ ") scale(1," + d3v5.event.transform.k + ") ");
+          }
         }
+          
+          let zoom = d3v5.zoom()
+            .on('zoom', handleZoom)
+            .scaleExtent([0.7, 5]);;
+          
+          d3v5.selectAll('svg')
+            .call(zoom);        
+        }
+        
       }
-    }
+      this.called = true;
+    
   };
+
+
+
   verticalDrag = (ev) => {
     if (this.state.dragActive) {
       for (let id of [

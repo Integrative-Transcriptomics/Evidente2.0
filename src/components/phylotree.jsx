@@ -8,6 +8,7 @@ import React, { Component } from "react";
 class Phylotree extends Component {
     state = {};
     did_collapse = false;
+    called = false;
     /**
      * For general node styling within the phylogenetic tree
      *
@@ -305,6 +306,19 @@ class Phylotree extends Component {
                 .append("g")
                 .attr("id", "zoom-phylotree")
         );
+
+        // d3.select("svg").call(d3.behavior.zoom()
+        // .scaleExtent([0.5, 8])
+        // .on("zoom", zoom));
+    
+        // function zoom() {
+        //     d3.select("svg").attr("transform", "translate(" 
+        //         + d3.event.translate 
+        //         + ")scale(" + d3.event.scale + ")");
+        // }
+
+
+
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
         let gradient = d3.select("#tree-display")
@@ -315,6 +329,9 @@ class Phylotree extends Component {
             .attr({ offset: "0%", "stop-color": "black" })
         gradient.append("stop")
             .attr({ offset: "100%", "stop-color": "white" })
+
+        
+
     }
     // Implements horizontal zoom only for the tree component
     horizontalZoom = (ev) => {
@@ -336,18 +353,17 @@ class Phylotree extends Component {
             );
 
         }
-        else{
-            console.log(this.props.get_state_yscale);
+         else{
+        //     if(!this.did_collapse && this.props.get_state_yscale <= 1.0){
+        //         this.collapseNodeByDepth(4, "collapse");
+        //         this.did_collapse=true;
 
-            if(!this.did_collapse && this.props.get_state_yscale <= 1.0){
-                this.collapseNodeByDepth(4, "collapse");
-                this.did_collapse=true;
+        //     }
+        //     if(this.did_collapse && this.props.get_state_yscale >= 1.3){
+        //         this.collapseNodeByDepth(4, "expand");
+        //         this.did_collapse=false;
+        //     }
 
-            }
-            if(this.did_collapse && this.props.get_state_yscale >= 1.3){
-                this.collapseNodeByDepth(4, "expand");
-                this.did_collapse=false;
-            }
         }
 
     }
