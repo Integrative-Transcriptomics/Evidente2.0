@@ -77,10 +77,12 @@ class App extends Component {
   //     }
   //   }
   // };
+
+
   verticalZoom = (e) => {
     if (!e.ctrlKey) {
 
-
+        
         if(!this.called){
           
           function handleZoom() {      
@@ -91,10 +93,15 @@ class App extends Component {
               "#container-labels",
               "#zoom-phylotree"
             ]) {
-
-            d3v5.select(id)
-              //.attr('transform', d3v5.event.transform);
-              .attr("transform", "translate(" + 0+ "," + d3v5.event.transform.y+ ") scale(1," + d3v5.event.transform.k + ") ");
+            
+            if(id === "#zoom-phylotree"){
+              d3v5.select(id)
+                .attr("transform", "translate(" + 0 + "," + d3v5.event.transform.y+ ") scale("+ d3v5.select(id).attr("vertical-scale") + "," + d3v5.event.transform.k + ") ");
+            }
+            else{
+              d3v5.select(id)
+                .attr("transform", "translate(" + 0 + "," + d3v5.event.transform.y+ ") scale("+ 1 + "," + d3v5.event.transform.k + ") ");
+            }
           }
         }
           
@@ -105,42 +112,91 @@ class App extends Component {
           d3v5.selectAll('svg')
             .call(zoom);        
         }
-        
-      }
       this.called = true;
-    
+      }       
   };
 
 
 
-  verticalDrag = (ev) => {
-    if (this.state.dragActive) {
-      for (let id of [
-        "#heatmap-container",
-        "#md-container",
-        "#zoom-phylotree",
-        "#container-labels",
-        "#guidelines-container",
-      ]) {
-        if (d3v5.select(id).node()) {
-          let selection = d3v5.select(id);
-          let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
-          transform = d3.transform(transform);
-          let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
-          let transformY = { y: transform.translate[1], k: transform.scale[1] };
+  // Create vertical zoom for all components
+  // verticalZoom = (e) => {
+  //   if (!e.ctrlKey) {
+  //     if(!this.called){
+  //       function handleZoom(app) {
+  //         for (let id of [
+  //           "#heatmap-container",
+  //           "#md-container",
+  //           "#zoom-phylotree",
+  //           "#container-labels",
+  //           "#guidelines-container",
+  //         ]) {
+  //           if (d3v5.select(id).node()) {
+          
+            
+  //             let selection = d3v5.select(id);
+  //             let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
+  //             transform = d3.transform(transform);
+  //             let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
+  //             let transformY = { y: transform.translate[1], k: transform.scale[1] };
+  //             let scale = transformY.k + e.deltaY * -0.001;
+  //             scale = Math.min(Math.max(0.8, scale), 10);
+  //             //TODO if scale is smaller than one, allow movement
+  //             let scaleDifference = Math.min(
+  //               0,
+  //               app.svgContainer.offsetHeight - app.svgContainer.offsetHeight * transformY.k
+  //             );
+  //             let translateY = Math.max(transformY.y, scaleDifference);
+  //             let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
+  //             return d3v5.select(id).attr("transform", `${transformString}`);
+  //           }
+  //         }
+  //       }
+  //       let zoom = d3v5.zoom()
+  //         .on('zoom', handleZoom(this))
+  //         .scaleExtent([0.7, 5]);;
+          
+  //       d3v5.selectAll('svg')
+  //         .call(zoom); 
+  //     }
 
-          let translateY = transformY.y + ev.movementY;
-          let scaleDifference = Math.min(
-            0,
-            this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
-          );
-          translateY = Math.max(Math.min(0, translateY), scaleDifference);
-          let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${transformY.k})`;
-          selection.attr("transform", `${transformString}`);
-        }
-      }
-    }
-  };
+  //     this.called = true;
+  //   }
+  // };
+
+
+
+
+
+
+
+  // verticalDrag = (ev) => {
+  //   if (this.state.dragActive) {
+  //     for (let id of [
+  //       "#heatmap-container",
+  //       "#md-container",
+  //       "#zoom-phylotree",
+  //       "#container-labels",
+  //       "#guidelines-container",
+  //     ]) {
+  //       if (d3v5.select(id).node()) {
+  //         let selection = d3v5.select(id);
+  //         let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
+  //         transform = d3.transform(transform);
+  //         let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
+  //         let transformY = { y: transform.translate[1], k: transform.scale[1] };
+
+  //         let translateY = transformY.y + ev.movementY;
+  //         let scaleDifference = Math.min(
+  //           0,
+  //           this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
+  //         );
+  //         translateY = Math.max(Math.min(0, translateY), scaleDifference);
+  //         let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${transformY.k})`;
+  //         selection.attr("transform", `${transformString}`);
+  //       }
+  //     }
+  //   }
+  // };
 
   tree = d3.layout
     .phylotree()

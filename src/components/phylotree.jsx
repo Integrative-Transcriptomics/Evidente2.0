@@ -305,6 +305,7 @@ class Phylotree extends Component {
                 .attr("transform", `translate(${[0, margin_top]})`)
                 .append("g")
                 .attr("id", "zoom-phylotree")
+                .attr("vertical-scale", 1)
         );
 
         // d3.select("svg").call(d3.behavior.zoom()
@@ -351,6 +352,8 @@ class Phylotree extends Component {
                 "transform",
                 `${transformString}`
             );
+
+            selection.attr("vertical-scale", scale)
 
         }
          else{
@@ -470,6 +473,10 @@ class Phylotree extends Component {
         });
 
         this.runSelection();
+    }
+
+    test = function(){
+        console.log("test worked")
     }
 
     /**
