@@ -305,7 +305,8 @@ class Phylotree extends Component {
                 .attr("transform", `translate(${[0, margin_top]})`)
                 .append("g")
                 .attr("id", "zoom-phylotree")
-                .attr("vertical-scale", 1)
+                .attr("horizontal-scale", 1)
+                .attr("x-koordinate",0)
         );
 
         // d3.select("svg").call(d3.behavior.zoom()
@@ -334,10 +335,10 @@ class Phylotree extends Component {
         
 
     }
-    // Implements horizontal zoom only for the tree component
+    //Implements horizontal zoom only for the tree component
     horizontalZoom = (ev) => {
-        if (ev.ctrlKey) {
-            ev.preventDefault()
+         if (ev.ctrlKey) {
+             ev.preventDefault()
             let selection = d3.select("#zoom-phylotree")
             let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
             transform = d3.transform(transform)
@@ -346,17 +347,13 @@ class Phylotree extends Component {
             scale = Math.min(Math.max(0.8, scale), 10);
             let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
             let translateX = Math.max(transform.translate[0], scaleDifference);
-
             let transformString = `translate(${translateX},${transform.translate[1]})scale(${scale},${transform.scale[1]})`;
-            selection.attr(
-                "transform",
-                `${transformString}`
+            selection.attr("transform",`${transformString}`
             );
-
-            selection.attr("vertical-scale", scale)
-
+            selection.attr("horizontal-scale", scale)
         }
-         else{
+        else{
+            //console.log(d3.select("#zoom-phylotree").attr("vertical-scale"))
         //     if(!this.did_collapse && this.props.get_state_yscale <= 1.0){
         //         this.collapseNodeByDepth(4, "collapse");
         //         this.did_collapse=true;
@@ -386,6 +383,7 @@ class Phylotree extends Component {
                 "transform",
                 `${transformString}`
             );
+            selection.attr("x-koordinate", translateX);
         }
     }
 

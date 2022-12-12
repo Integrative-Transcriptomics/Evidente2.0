@@ -36,8 +36,8 @@ import HeatmapView from "./components/heatmap-view";
 //import { ThreeSixty } from "@material-ui/icons";
 
 class App extends Component {
+  zoom = null;
   state = {};
-  called =false;
   tx = 0;
   ty = 0;
   scale = 1;
@@ -55,7 +55,7 @@ class App extends Component {
   //     ]) {
   //       if (d3v5.select(id).node()) {
   //         let selection = d3v5.select(id);
-  //         let transNo SNPs oform = selection.attr("transform") || "translate(0,0)scale(1,1)";
+  //         let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
   //         transform = d3.transform(transform);
   //         let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
   //         let transformY = { y: transform.translate[1], k: transform.scale[1] };
@@ -79,46 +79,47 @@ class App extends Component {
   // };
 
 
-  verticalZoom = (e) => {
-    if (!e.ctrlKey) {
+  verticalZoom = () => {      
+    function handleZoom() { 
 
-        
-        if(!this.called){
-          
-          function handleZoom() {      
-            for (let id of [
-              "#heatmap-container",
-              "#md-container",
-              "#guidelines-container",
-              "#container-labels",
-              "#zoom-phylotree"
-            ]) {
-            
-            if(id === "#zoom-phylotree"){
-              d3v5.select(id)
-                .attr("transform", 
-                  "translate(" + 0 + "," + d3v5.event.transform.y+ ") scale("+ d3v5.select(id).attr("vertical-scale") + "," + d3v5.event.transform.k + ") ");
-              d3.select(id).selectAll("circle").attr("r",2)
-
+        for (let id of [
+          "#heatmap-container",
+          "#md-container",
+          "#guidelines-container",
+          "#container-labels",
+          "#zoom-phylotree"
+          ]) {
               
-            }
-            else{
-              d3v5.select(id)
-                .attr("transform", "translate(" + 0 + "," + d3v5.event.transform.y+ ") scale("+ 1 + "," + d3v5.event.transform.k + ") ");
-            }
+          if(id === "#zoom-phylotree"){
+            var yscale = d3v5.event.transform.k;   
+            d3v5.select(id)
+            .attr("transform", 
+                  "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
+                  "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
+            .attr("vertical-scale", yscale);  
+            
+          }
+          else{
+            d3v5.select(id)
+                .attr("transform", 
+                      "translate(" + 0 + "," + d3v5.event.transform.y+ ")"+
+                      "scale("+ 1 + "," + d3v5.event.transform.k + ") ");
           }
         }
-          
-          let zoom = d3v5.zoom()
-            .on('zoom', handleZoom)
-            .scaleExtent([0.7, 5]);;
-          
-          d3v5.selectAll('svg')
-            .call(zoom)
-            .on("mouse.zoom", null);;        
-        } 
-      this.called = true;
-      }       
+    }
+    this.zoom = d3v5.zoom()
+      .on('zoom', handleZoom)
+      .scaleExtent([0.7, 5]);
+        
+
+        d3v5.selectAll('svg')
+        .call(this.zoom)
+        .on("dblclick.zoom", null)
+        //.on("wheel", () => { if (d3v5.event.ctrlKey) d3v5.event.preventDefault() })
+        // .on("mousedown.zoom", null)
+        // .on("touchstart.zoom", null)
+        // .on("touchmove.zoom", null)
+        // .on("touchend.zoom", null);    
   };
 
   // verticalDrag = (ev) => {
@@ -340,8 +341,10 @@ class App extends Component {
     ]) {
       if (d3v5.select(id).node()) {
         let selection = d3v5.select(id);
-        let transformString = `translate(${0},${0})scale(${1},${1})`;
-        selection.attr("transform", `${transformString}`);
+        // let transformString = `translate(${0},${0})scale(${1},${1})`;
+        // selection.attr("transform", `${transformString}`);
+        selection.transition()
+          .call(this.zoom.transform, d3v5.zoomIdentity);
       }
     }
   };
@@ -1162,6 +1165,10 @@ class App extends Component {
     // this.tree.update();
   };
 
+  get get_yscale(){
+    return this.state.yscale;
+  }
+
   componentDidMount() {
     d3.select("body")
       .classed("overflow-allowed", true)
@@ -1171,11 +1178,10 @@ class App extends Component {
       .style("display", "none");
 
     this.handleInitTool();
+    this.verticalZoom();
   }
 
-  get get_yscale(){
-    return this.state.yscale;
-  }
+
 
   render() {
     let shownNodes = this.tree
@@ -1193,7 +1199,7 @@ class App extends Component {
                 id='parent-svg'
                 className='parent-svgs'
                 ref={(el) => (this.svgContainer = el)}
-                onWheel={this.verticalZoom}
+                //onWheel={this.verticalZoom}
                 onMouseDown={() => this.setState({ dragActive: true })}
                 onMouseMove={this.verticalDrag}
                 onMouseUp={() => this.setState({ dragActive: false })}
