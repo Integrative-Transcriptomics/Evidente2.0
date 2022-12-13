@@ -286,6 +286,10 @@ class Phylotree extends Component {
         return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick)
     }
 
+    updateComponent(init){
+
+    }
+
     componentDidUpdate(prevProp) {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
@@ -351,6 +355,9 @@ class Phylotree extends Component {
             selection.attr("transform",`${transformString}`
             );
             selection.attr("horizontal-scale", scale)
+            selection.attr("x-koordinate", translateX)
+
+            console.log(this.props.yscale)
         }
         else{
             //console.log(d3.select("#zoom-phylotree").attr("vertical-scale"))
