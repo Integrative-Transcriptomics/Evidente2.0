@@ -117,9 +117,8 @@ class App extends Component {
           .attr("transform", 
                 "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
                 "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
-          .attr("vertical-scale", yscale); 
           this.setState({yscale: yscale})
-          console.log(this.state.yscale)
+          //console.log(this.state.yscale)
                     
         }
         else{
@@ -129,6 +128,8 @@ class App extends Component {
                     "scale("+ 1 + "," + d3v5.event.transform.k + ") ");
         }
       }
+
+      
     }
     this.setState({yscale: 2}); 
     this.zoom = d3v5.zoom()
@@ -140,6 +141,11 @@ class App extends Component {
         .call(this.zoom)
         .on("dblclick.zoom", null)    
   };
+
+  handleLabelSelection = ()=>{
+      d3v5.select("#container-labels").select("text").style('fill', 'darkOrange');
+  }
+
 
   tree = d3.layout
     .phylotree()
@@ -1098,7 +1104,7 @@ class App extends Component {
       cladeLeaves: collapsedNodes,
     };
     cladeNode.name = clade.name;
-
+    console.log(cladeNode.name)
     cladeNode["show-name"] = clade.name;
     let actualNumber = this.state.cladeNumber;
     let jointNodes = this.state.collapsedClades.concat([clade]);
@@ -1169,8 +1175,6 @@ class App extends Component {
     this.verticalZoom();
   }
 
-
-
   render() {
     let shownNodes = this.tree
       .get_nodes()
@@ -1188,9 +1192,9 @@ class App extends Component {
                 className='parent-svgs'
                 ref={(el) => (this.svgContainer = el)}
                 //onWheel={this.verticalZoom}
-                onMouseDown={() => this.setState({ dragActive: true })}
-                onMouseMove={this.verticalDrag}
-                onMouseUp={() => this.setState({ dragActive: false })}
+                // onMouseDown={() => this.setState({ dragActive: true })}
+                // onMouseMove={this.verticalDrag}
+                // onMouseUp={() => this.setState({ dragActive: false })}
               >
                 <Phylotree
                   //
@@ -1224,7 +1228,7 @@ class App extends Component {
                   yscale = {this.state.yscale}
                 />
 
-                <Labels divID={"labels_viz"} shownNodes={shownNodes} />
+                <Labels divID={"labels_viz"} shownNodes={shownNodes} onSelection={this.handleLabelSelection}/>
                 <div className='mchild'>
                   {this.state.isLoaded ? (
                     <HeatmapView
@@ -1244,6 +1248,7 @@ class App extends Component {
                       mdinfo={this.state.mdinfo}
                       margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
                       SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+                      
                     />
                   ) : null}
                 </div>

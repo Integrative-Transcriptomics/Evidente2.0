@@ -43,14 +43,7 @@ class Labels extends Component {
         ticks
             .selectAll("text")
             .classed("noselect", true)
-            .on("mouseover", (d) => {
-                d3.selectAll(`.node-${d}.guides`).classed("highlighted-guide", true);
-                div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
-                div
-                    .html(d)
-                    .style("left", d3.event.pageX + "px")
-                    .style("top", d3.event.pageY - 28 + "px");
-            })
+            .on("mouseover", this.defaultMouseOver)
             .on("mouseout", (d) => {
                 d3.selectAll(`.node-${d}.guides`).classed("highlighted-guide", false);
                 div.transition().duration(500).style("opacity", 0);
@@ -113,7 +106,103 @@ class Labels extends Component {
                 ev.preventDefault()
             }
         })
+        this.container.addEventListener("mousedown", this.labelsClick)
+        this.container.addEventListener("mousemove", this.selectLabels)
+        this.container.addEventListener("mouseup", this.clearRectangle)
     }
+
+    defaultMouseOver = (d) => {
+        let div = d3.select("#tooltip")
+        d3.selectAll(`.node-${d}.guides`).classed("highlighted-guide", true);
+        div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+        div
+            .html(d)
+            .style("left", d3.event.pageX + "px")
+            .style("top", d3.event.pageY - 28 + "px");
+    }
+
+    labelsClick = (e)=>{
+        d3.select("#container-labels").select(".selection").remove();
+        if(e.ctrlKey){
+            this.props.onSelection();
+
+            //var svg = document.querySelector("svg");
+            var svg = document.getElementById("display_labels_viz")
+            var pt = svg.createSVGPoint();
+            pt.x = e.pageX;
+            pt.y = e.pageY;
+            pt = pt.matrixTransform(svg.getScreenCTM().inverse());
+            let guideStyle = {
+                "fill":"steelblue",
+                "opacity": 0.5,
+            } 
+
+            d3.select("#container-labels").append( "rect")
+            .attr({
+                rx      : 6,
+                ry      : 6,
+                class   : "selection",
+                x       : pt.x,
+                y       : pt.y-50,
+                width   : 0,
+                height  : 0
+            })
+            .style(guideStyle)
+            
+            d3.select("#container-labels").selectAll("text")
+                .on("mouseover", (d) => {
+                    console.log(d)
+                })
+
+        }
+    }
+    selectLabels = (e)=>{
+        if(e.ctrlKey){
+            var svg = document.getElementById("display_labels_viz")
+            var pt = svg.createSVGPoint();
+            pt.x = e.pageX;
+            pt.y = e.pageY;
+            pt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        
+            var s = d3.select("#container-labels").select("rect.selection");
+            if( !s.empty()) { 
+                var d = {
+                        x       : parseInt( s.attr( "x"), 10),
+                        y       : parseInt( s.attr( "y"), 10),
+                        width   : parseInt( s.attr( "width"), 10),
+                        height  : parseInt( s.attr( "height"), 10)
+                    },
+                    move = {
+                        x : pt.x - d.x,
+                        y : pt.y-50 - d.y
+                    }
+                ;
+                
+                if( move.x < 1 || (move.x*2<d.width)) {
+                    d.x = pt.x;
+                    d.width -= move.x;
+                } else {
+                    d.width = move.x;       
+                }
+        
+                if( move.y < 1 || (move.y*2<d.height)) {
+                    d.y = pt.y-50;
+                    d.height -= move.y;
+                } else {
+                    d.height = move.y;       
+                }
+            
+                s.attr( d);
+            }   
+        }
+    }
+
+    clearRectangle = ()=>{
+        d3.select("#container-labels").select(".selection").remove();
+        d3.select("#container-labels").selectAll("text")
+            .on("mouseover", this.defaultMouseOver);
+    }
+
 
     render() {
         return (

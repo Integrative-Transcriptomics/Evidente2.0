@@ -113,8 +113,10 @@ class Phylotree extends Component {
         
         var nodes = this.props.tree.get_nodes();
         nodes.forEach(function(node){
+        
           if(node.depth > maxdepth){
             maxdepth = node.depth;
+            
           }
         })
         
@@ -153,6 +155,12 @@ class Phylotree extends Component {
             },this);
         }
     }
+
+    // collapse_lca = function(list_of_nodenames){
+    //     //var ancestor = this.props.tree.get_lca(list_of_nodenames);
+    // }
+  
+
       
     /**
      * Opens modal for rename of clade
@@ -281,19 +289,29 @@ class Phylotree extends Component {
         }
     }
 
-    shouldComponentUpdate(nextProp, nextState) {
+    shouldComponentUpdate(nextProp) {
 
-        return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick)
-    }
-
-    updateComponent(init){
-
+        return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) ||
+        (nextProp.yscale !== undefined && nextProp.yscale !== this.props.yscale)
     }
 
     componentDidUpdate(prevProp) {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
-        }
+            return
+        } 
+
+        //if (prevProp.yscale > this.props.yscale) {
+        if (this.props.yscale < 0.9 && !this.did_collapse) {
+            this.collapseNodeByDepth(4, "collapse");
+            this.did_collapse=true;
+
+        } 
+        if(1.3 < this.props.yscale && this.did_collapse){
+            this.collapseNodeByDepth(4, "expand");
+            this.did_collapse=false;
+
+        }      
     }
 
     componentDidMount() {
@@ -312,19 +330,6 @@ class Phylotree extends Component {
                 .attr("horizontal-scale", 1)
                 .attr("x-koordinate",0)
         );
-
-        // d3.select("svg").call(d3.behavior.zoom()
-        // .scaleExtent([0.5, 8])
-        // .on("zoom", zoom));
-    
-        // function zoom() {
-        //     d3.select("svg").attr("transform", "translate(" 
-        //         + d3.event.translate 
-        //         + ")scale(" + d3.event.scale + ")");
-        // }
-
-
-
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
         let gradient = d3.select("#tree-display")
@@ -335,8 +340,6 @@ class Phylotree extends Component {
             .attr({ offset: "0%", "stop-color": "black" })
         gradient.append("stop")
             .attr({ offset: "100%", "stop-color": "white" })
-
-        
 
     }
     //Implements horizontal zoom only for the tree component
@@ -357,16 +360,26 @@ class Phylotree extends Component {
             selection.attr("horizontal-scale", scale)
             selection.attr("x-koordinate", translateX)
 
-            console.log(this.props.yscale)
+
+            if(!this.did_collapse && scale <= 1.0){
+                // this.collapseNodeByDepth(4, "collapse");
+                // this.did_collapse=true;
+                //this.collapse_lca(['Toy_strain_1', 'Toy_strain_2'])
+
+            }
+            if(this.did_collapse && scale >= 1.3){
+                this.collapseNodeByDepth(4, "expand");
+                this.did_collapse=false;
+            }
+
         }
         else{
-            //console.log(d3.select("#zoom-phylotree").attr("vertical-scale"))
-        //     if(!this.did_collapse && this.props.get_state_yscale <= 1.0){
+        //     if(!this.did_collapse && this.props.yscale <= 1.0){
         //         this.collapseNodeByDepth(4, "collapse");
         //         this.did_collapse=true;
 
         //     }
-        //     if(this.did_collapse && this.props.get_state_yscale >= 1.3){
+        //     if(this.did_collapse && this.props.yscale >= 1.3){
         //         this.collapseNodeByDepth(4, "expand");
         //         this.did_collapse=false;
         //     }
@@ -480,9 +493,6 @@ class Phylotree extends Component {
         this.runSelection();
     }
 
-    test = function(){
-        console.log("test worked")
-    }
 
     /**
      * Updates after each selection the corresponding views

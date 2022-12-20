@@ -66,9 +66,7 @@ class Heatmap extends Component {
         }
         if (this.state.expectedWidth !== expectedVizWidth) {
             this.setState({ expectedWidth: expectedVizWidth })
-
         }
-
 
         if (init) {
             this.initHeatmap(container);
