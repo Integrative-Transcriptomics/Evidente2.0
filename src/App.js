@@ -142,9 +142,7 @@ class App extends Component {
         .on("dblclick.zoom", null)    
   };
 
-  handleLabelSelection = ()=>{
-      d3v5.select("#container-labels").select("text").style('fill', 'darkOrange');
-  }
+
 
 
   tree = d3.layout
@@ -224,6 +222,8 @@ class App extends Component {
     loadAnimationShow: false,
     cladogram: false,
     yscale: 1,
+    selectedLabels:[],
+    
 
     //-------------------------------------------------
     // added for holding preprocessed statistical data
@@ -321,6 +321,7 @@ class App extends Component {
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
           yscale: 1,
+          selectedLabels:[],
         });
       }
       $("#welcome-modal-button").text("Close");
@@ -372,6 +373,7 @@ class App extends Component {
       SNPTable: {},
       selectedNodeId: null,
       yscale: 1,
+      selectedLabels :[],
     });
     this.resetZoom();
     const all_nodes = this.tree.get_nodes();
@@ -1145,6 +1147,14 @@ class App extends Component {
     this.setState({ hiddenNodes: filteredNodes });
   };
 
+  handleLabelSelection = (list)=>{
+    this.setState({selectedLabels : list});
+  }
+  clearLabelSelection = ()=>{
+    this.setState({selectedLabels : []})
+  }
+
+
   handleSelection = (selection) => {
     let filteredSelection = selection.filter((node) => {
       return (
@@ -1226,9 +1236,15 @@ class App extends Component {
                   dialog={this.dialog}
                   shownNodes={shownNodes}
                   yscale = {this.state.yscale}
+                  selectedLeafs = {this.state.selectedLabels}
                 />
 
-                <Labels divID={"labels_viz"} shownNodes={shownNodes} onSelection={this.handleLabelSelection}/>
+                <Labels 
+                  divID={"labels_viz"} 
+                  shownNodes={shownNodes} 
+                  onSelection={this.handleLabelSelection}
+                  clearSelection = {this.clearLabelSelection}
+                  />
                 <div className='mchild'>
                   {this.state.isLoaded ? (
                     <HeatmapView

@@ -156,9 +156,11 @@ class Phylotree extends Component {
         }
     }
 
-    // collapse_lca = function(list_of_nodenames){
-    //     //var ancestor = this.props.tree.get_lca(list_of_nodenames);
-    // }
+    collapse_lca = function(list_of_nodenames){
+
+        var ancestor = this.props.tree.get_lca(list_of_nodenames);
+        this.collapseNode(ancestor)
+    }
   
 
       
@@ -292,7 +294,8 @@ class Phylotree extends Component {
     shouldComponentUpdate(nextProp) {
 
         return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) ||
-        (nextProp.yscale !== undefined && nextProp.yscale !== this.props.yscale)
+        (nextProp.yscale !== undefined && nextProp.yscale !== this.props.yscale) ||
+        (nextProp.selectedLeafs !== undefined && nextProp.selectedLeafs !== this.props.selectedLeafs)
     }
 
     componentDidUpdate(prevProp) {
@@ -300,6 +303,10 @@ class Phylotree extends Component {
             this.renderTree(this.props.newick);
             return
         } 
+
+        if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
+            this.collapse_lca(this.props.selectedLeafs);
+        }
 
         //if (prevProp.yscale > this.props.yscale) {
         if (this.props.yscale < 0.9 && !this.did_collapse) {
@@ -364,7 +371,7 @@ class Phylotree extends Component {
             if(!this.did_collapse && scale <= 1.0){
                 // this.collapseNodeByDepth(4, "collapse");
                 // this.did_collapse=true;
-                //this.collapse_lca(['Toy_strain_1', 'Toy_strain_2'])
+                this.collapse_lca(["Toy_strain_1", "Toy_strain_2"])
 
             }
             if(this.did_collapse && scale >= 1.3){

@@ -4,6 +4,7 @@ import { isEqual } from "lodash";
 
 class Labels extends Component {
     state = {};
+    selectedLabels = [];
     globalHeight = 0;
     globalWidth = 0;
 
@@ -106,9 +107,9 @@ class Labels extends Component {
                 ev.preventDefault()
             }
         })
-        this.container.addEventListener("mousedown", this.labelsClick)
-        this.container.addEventListener("mousemove", this.selectLabels)
-        this.container.addEventListener("mouseup", this.clearRectangle)
+        this.container.addEventListener("mousedown", this.initiateSelection)
+        this.container.addEventListener("mousemove", this.createSelectionRectangle)
+        this.container.addEventListener("mouseup", this.clearSelectionRectangle)
     }
 
     defaultMouseOver = (d) => {
@@ -121,7 +122,8 @@ class Labels extends Component {
             .style("top", d3.event.pageY - 28 + "px");
     }
 
-    labelsClick = (e)=>{
+    initiateSelection = (e)=>{
+        this.selectedLabels = [];
         d3.select("#container-labels").select(".selection").remove();
         if(e.ctrlKey){
             this.props.onSelection();
@@ -151,12 +153,18 @@ class Labels extends Component {
             
             d3.select("#container-labels").selectAll("text")
                 .on("mouseover", (d) => {
-                    console.log(d)
+                    if(!this.selectedLabels.includes(d)){
+                        this.selectedLabels.push(d);
+                    }
+                    else{
+                        var elementToRemove = this.selectedLabels.indexOf(d);
+                        this.selectedLabels.splice(elementToRemove, 1) 
+                    }
+                    
                 })
-
         }
     }
-    selectLabels = (e)=>{
+    createSelectionRectangle = (e)=>{
         if(e.ctrlKey){
             var svg = document.getElementById("display_labels_viz")
             var pt = svg.createSVGPoint();
@@ -197,10 +205,13 @@ class Labels extends Component {
         }
     }
 
-    clearRectangle = ()=>{
+    clearSelectionRectangle = ()=>{
         d3.select("#container-labels").select(".selection").remove();
         d3.select("#container-labels").selectAll("text")
             .on("mouseover", this.defaultMouseOver);
+        console.log(this.selectedLabels);    
+        this.props.onSelection(this.selectedLabels);
+        
     }
 
 
