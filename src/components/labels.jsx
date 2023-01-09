@@ -139,13 +139,16 @@ class Labels extends Component {
                 "opacity": 0.5,
             } 
 
+            console.log("mouse: " + pt.y)
+            console.log("tree: "+ this.props.yTreeKoordinate)
+
             d3.select("#container-labels").append( "rect")
             .attr({
                 rx      : 6,
                 ry      : 6,
                 class   : "selection",
                 x       : pt.x,
-                y       : pt.y-50,
+                y       : pt.y-50-this.props.yTreeKoordinate,
                 width   : 0,
                 height  : 0
             })
@@ -182,7 +185,7 @@ class Labels extends Component {
                     },
                     move = {
                         x : pt.x - d.x,
-                        y : pt.y-50 - d.y
+                        y : pt.y-50- this.props.yTreeKoordinate - d.y
                     }
                 ;
                 
@@ -208,10 +211,8 @@ class Labels extends Component {
     clearSelectionRectangle = ()=>{
         d3.select("#container-labels").select(".selection").remove();
         d3.select("#container-labels").selectAll("text")
-            .on("mouseover", this.defaultMouseOver);
-        console.log(this.selectedLabels);    
-        this.props.onSelection(this.selectedLabels);
-        
+            .on("mouseover", this.defaultMouseOver);   
+        this.props.onSelection(this.selectedLabels);        
     }
 
 

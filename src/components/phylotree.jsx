@@ -304,9 +304,9 @@ class Phylotree extends Component {
             return
         } 
 
-        if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
-            this.collapse_lca(this.props.selectedLeafs);
-        }
+        // if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
+        //     this.collapse_lca(this.props.selectedLeafs);
+        // }
 
         //if (prevProp.yscale > this.props.yscale) {
         if (this.props.yscale < 0.9 && !this.did_collapse) {
@@ -369,9 +369,8 @@ class Phylotree extends Component {
 
 
             if(!this.did_collapse && scale <= 1.0){
-                // this.collapseNodeByDepth(4, "collapse");
-                // this.did_collapse=true;
-                this.collapse_lca(["Toy_strain_1", "Toy_strain_2"])
+                this.collapseNodeByDepth(4, "collapse");
+                this.did_collapse=true;
 
             }
             if(this.did_collapse && scale >= 1.3){

@@ -118,7 +118,8 @@ class App extends Component {
                 "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
                 "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
           this.setState({yscale: yscale})
-          //console.log(this.state.yscale)
+          this.setState({yTreeKoordinate: d3v5.event.transform.y})
+          //console.log(d3v5.event.transform.y)
                     
         }
         else{
@@ -222,6 +223,7 @@ class App extends Component {
     loadAnimationShow: false,
     cladogram: false,
     yscale: 1,
+    yTreeKoordinate:0,
     selectedLabels:[],
     
 
@@ -321,6 +323,7 @@ class App extends Component {
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
           yscale: 1,
+          yTreeKoordinate:0,
           selectedLabels:[],
         });
       }
@@ -373,6 +376,7 @@ class App extends Component {
       SNPTable: {},
       selectedNodeId: null,
       yscale: 1,
+      yTreeKoordinate:0,
       selectedLabels :[],
     });
     this.resetZoom();
@@ -1244,6 +1248,7 @@ class App extends Component {
                   shownNodes={shownNodes} 
                   onSelection={this.handleLabelSelection}
                   clearSelection = {this.clearLabelSelection}
+                  yTreeKoordinate = {this.state.yTreeKoordinate}
                   />
                 <div className='mchild'>
                   {this.state.isLoaded ? (
