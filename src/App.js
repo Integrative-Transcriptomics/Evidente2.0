@@ -1114,6 +1114,7 @@ class App extends Component {
     cladeNode["show-name"] = clade.name;
     let actualNumber = this.state.cladeNumber;
     let jointNodes = this.state.collapsedClades.concat([clade]);
+    
     this.tree.toggle_collapse(cladeNode).update();
 
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });

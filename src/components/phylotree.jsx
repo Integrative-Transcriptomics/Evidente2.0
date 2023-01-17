@@ -108,7 +108,7 @@ class Phylotree extends Component {
             }, time);
         };
 
-        var node_with_most_children = [];
+        var nodes_to_collapse = [];
         var maxdepth = 0;
         
         var nodes = this.props.tree.get_nodes();
@@ -125,12 +125,12 @@ class Phylotree extends Component {
         nodes.forEach(function(node){
             if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
                 if(node.depth > filter){
-                    node_with_most_children.push(node);                
+                    nodes_to_collapse.push(node);                
                 }
             }     
         });
         if(mode === "expand"){
-            node_with_most_children.forEach(function(n){
+            nodes_to_collapse.forEach(function(n){
                 if(!n.is_under_collapsed_parent){
                     addTimeoutCursor(
                         () =>
@@ -142,24 +142,36 @@ class Phylotree extends Component {
             },this);
           }
         if (mode === "collapse") {
-            node_with_most_children.forEach(function(n){
-                if(!n.is_under_collapsed_parent){
-                    this.collNode(n);
-                    // addTimeoutCursor(
-                    //     () =>
-                    //         this.collNode(n),
-                    //     1
-                    // )
-                    
+            for(let i = 0; i < nodes_to_collapse.length; i++){
+                if(!nodes_to_collapse[i].is_under_collapsed_parent){
+                    this.collNode(nodes_to_collapse[i]);
                 }
-            },this);
+
+            }
+            // nodes_to_collapse.forEach(function(n){
+            //     if(!n.is_under_collapsed_parent){
+            //         this.collNode(n);
+            //         // addTimeoutCursor(
+            //         //     () =>
+            //         //         this.collNode(n),
+            //         //     1
+            //         // )
+                    
+            //     }
+            // },this);
         }
     }
 
     collapse_lca = function(list_of_nodenames){
 
         var ancestor = this.props.tree.get_lca(list_of_nodenames);
-        this.collapseNode(ancestor)
+        if(ancestor !== undefined && !d3.layout.phylotree.is_leafnode(ancestor)){
+            this.collapseNode(ancestor)
+        }
+        else{
+            alert("Clades can not be collapsed further. You need to select at least two more leafnodes.")
+        }
+        
     }
   
 
@@ -304,21 +316,21 @@ class Phylotree extends Component {
             return
         } 
 
-        // if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
-        //     this.collapse_lca(this.props.selectedLeafs);
-        // }
+        if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
+            this.collapse_lca(this.props.selectedLeafs);
+        }
 
-        //if (prevProp.yscale > this.props.yscale) {
-        if (this.props.yscale < 0.9 && !this.did_collapse) {
-            this.collapseNodeByDepth(4, "collapse");
-            this.did_collapse=true;
+        // //if (prevProp.yscale > this.props.yscale) {
+        // if (this.props.yscale < 0.9 && !this.did_collapse) {
+        //     this.collapseNodeByDepth(4, "collapse");
+        //     this.did_collapse=true;
 
-        } 
-        if(1.3 < this.props.yscale && this.did_collapse){
-            this.collapseNodeByDepth(4, "expand");
-            this.did_collapse=false;
+        // } 
+        // if(1.3 < this.props.yscale && this.did_collapse){
+        //     this.collapseNodeByDepth(4, "expand");
+        //     this.did_collapse=false;
 
-        }      
+        // }      
     }
 
     componentDidMount() {
@@ -368,15 +380,15 @@ class Phylotree extends Component {
             selection.attr("x-koordinate", translateX)
 
 
-            if(!this.did_collapse && scale <= 1.0){
-                this.collapseNodeByDepth(4, "collapse");
-                this.did_collapse=true;
+            // if(!this.did_collapse && scale <= 1.0){
+            //     this.collapseNodeByDepth(4, "collapse");
+            //     this.did_collapse=true;
 
-            }
-            if(this.did_collapse && scale >= 1.3){
-                this.collapseNodeByDepth(4, "expand");
-                this.did_collapse=false;
-            }
+            // }
+            // if(this.did_collapse && scale >= 1.3){
+            //     this.collapseNodeByDepth(4, "expand");
+            //     this.did_collapse=false;
+            // }
 
         }
         else{

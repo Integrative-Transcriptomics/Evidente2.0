@@ -125,6 +125,11 @@ class Labels extends Component {
     initiateSelection = (e)=>{
         this.selectedLabels = [];
         d3.select("#container-labels").select(".selection").remove();
+        d3.select("#container-labels").selectAll("text").each(function(d, i){
+            d3.select(this)
+                .style("fill", "black")
+                .style("font-weight", 400);
+        });
         if(e.ctrlKey){
             this.props.onSelection();
 
@@ -139,8 +144,8 @@ class Labels extends Component {
                 "opacity": 0.5,
             } 
 
-            console.log("mouse: " + pt.y)
-            console.log("tree: "+ this.props.yTreeKoordinate)
+            // console.log("mouse: " + pt.y)
+            // console.log("tree: "+ this.props.yTreeKoordinate)
 
             d3.select("#container-labels").append( "rect")
             .attr({
@@ -154,17 +159,17 @@ class Labels extends Component {
             })
             .style(guideStyle)
             
-            d3.select("#container-labels").selectAll("text")
-                .on("mouseover", (d) => {
-                    if(!this.selectedLabels.includes(d)){
-                        this.selectedLabels.push(d);
-                    }
-                    else{
-                        var elementToRemove = this.selectedLabels.indexOf(d);
-                        this.selectedLabels.splice(elementToRemove, 1) 
-                    }
+            // d3.select("#container-labels").selectAll("text")
+            //     .on("mouseover", (d) => {
+            //         if(!this.selectedLabels.includes(d)){
+            //             this.selectedLabels.push(d);
+            //         }
+            //         else{
+            //             var elementToRemove = this.selectedLabels.indexOf(d);
+            //             this.selectedLabels.splice(elementToRemove, 1);
+            //         }
                     
-                })
+            //     });
         }
     }
     createSelectionRectangle = (e)=>{
@@ -204,6 +209,36 @@ class Labels extends Component {
                 }
             
                 s.attr( d);
+
+                var list =[];
+
+                d3.select("#container-labels").selectAll("text").each(function(d, i){
+                    
+                    var elementBox = this.getBoundingClientRect();
+                    var rectBox = d3.select("#container-labels").select("rect").node().getBoundingClientRect()
+                    // console.log("rect: " + d3.select("#container-labels").select("rect").node().getBoundingClientRect().bottom)
+                    // console.log("label" + i + ": " + elementBox.bottom )
+                    if(
+                        rectBox.left <= elementBox.left &&
+                        rectBox.top <= elementBox.top &&
+                        rectBox.right >= elementBox.right &&
+                        rectBox.bottom >= elementBox.bottom  
+                    ){
+                        d3.select(this)
+                            .style("fill", "blue")
+                            .style("font-weight", 1000)
+                        list.push(d);
+                        //console.log(list)
+                        
+                    }
+                    else{
+                        d3.select(this)
+                            .style("fill", "black")
+                            .style("font-weight", 400)
+                    }
+                });
+                this.selectedLabels = list
+                console.log(this.selectedLabels)
             }   
         }
     }
@@ -212,7 +247,8 @@ class Labels extends Component {
         d3.select("#container-labels").select(".selection").remove();
         d3.select("#container-labels").selectAll("text")
             .on("mouseover", this.defaultMouseOver);   
-        this.props.onSelection(this.selectedLabels);        
+        this.props.onSelection(this.selectedLabels);
+        this.props.clearSelection();
     }
 
 
