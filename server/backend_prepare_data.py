@@ -102,14 +102,20 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
         # fill support
         # noinspection SpellCheckingInspection
         fill_support(support, os.path.join(
-            tmpdir, "supportSplitKeys.txt"), ids)
+            tmpdir, "mono.txt"), ids)
+
+        # TODO: fill paraphyletic
+        # fill_support(paraphyletic, os.path.join(
+        #    tmpdir, "para.txt"), ids)
+
         # fill 'notSupport'
         # noinspection SpellCheckingInspection
         fill_not_support(not_support,
-                         os.path.join(tmpdir, "notSupportSplitKeys.txt"), ids)
+                         os.path.join(tmpdir, "poly.txt"), ids)
 
     # get available SNPS and SNP per column
-    available_snps, snp_per_column = get_snps(support, not_support)
+    available_snps, snp_per_column = get_snps(
+        support, not_support)  # TODO Adapt to paraphyletic
     # fill metaDataInfo and taxainfo_mod:
     if has_taxainfo:
         get_meta_data(metadatainfo, taxainfo, taxainfo_sep, taxainfo_mod)
@@ -120,7 +126,7 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
     # propagate SNPs from Classico assignement down to leaves
     # needed for statistical computations
     node_to_snps, tree_size, num_snps, all_snps = propagate_snps_to_leaves(
-        support, not_support, ids["numToLabel"], nwk.decode('UTF-8'))
+        support, not_support, ids["numToLabel"], nwk.decode('UTF-8'))  # TODO Adapt to paraphyletic
 
     # prepare data format for response to frontend:
     data = dict()
@@ -129,6 +135,7 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
     data["newick"] = re.sub("[^a-zA-Z0-9.:,()_-]", "_", nwk.decode('UTF-8'))
     data["support"] = support
     data["notSupport"] = not_support
+    # data["paraphyletic"] = paraphyletic # TODO Adapt to paraphyletic
     data["snpPerColumn"] = snp_per_column
     data["availableSNPs"] = available_snps
     data["taxaInfo"] = taxainfo_mod
@@ -162,8 +169,9 @@ def call_classico(tmpdir, nwk, snp):
         fp_nwk.flush()
         fp_snp.flush()
         env = dict(os.environ)
-        subprocess.run(["java", "-jar", ScriptDir + "/classico.jar", fp_snp.name,
-                        fp_nwk.name, tmpdir], env=env)
+        print(tmpdir)
+        subprocess.run(["java", "-jar", ScriptDir + "/classicoV2.jar", "--snptable", fp_snp.name,
+                        "--nwk", fp_nwk.name, "--out", tmpdir], env=env)
 
 
 def create_number_label_mapping(ids, filename):
@@ -191,12 +199,13 @@ def fill_support(support, filename, ids):
     with open(filename) as tsv:
         for line in csv.reader(tsv, delimiter="\t"):
             # handle root case (no -> in line)
-            if(len(line[0].split(" ")) > 1):
+            if (len(line[0].split(" ")) > 1):
                 node = ids["numToLabel"][line[0].split(" ")[1]]
             else:
                 node = ids["numToLabel"][line[0].split("->")[1]]
             for pos, allele in re.findall(r"([0-9]+):\[(.)\]", line[2]):
                 support.append({"node": node, "pos": pos, "allele": allele})
+        print(support)
 
 
 def fill_not_support(not_support, filename, ids):
