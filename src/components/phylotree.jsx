@@ -4,6 +4,7 @@ import "../../node_modules/phylotree/src/main";
 import * as $ from "jquery";
 import * as _ from "lodash";
 import React, { Component } from "react";
+import { ThreeSixtyOutlined } from "@material-ui/icons";
 
 class Phylotree extends Component {
     state = {};
@@ -98,6 +99,19 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
+    findNodesByDepth(depth){
+        const nodes = this.props.tree.get_nodes();
+        var nodes_to_collapse = [];
+        nodes.forEach(function(node){
+            if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
+                if(node.depth === depth){
+                    nodes_to_collapse.push(node);                
+                }
+            }     
+        });
+        return nodes_to_collapse
+    }
+    
     collapseNodeByDepth(depth, mode){
         
         const addTimeoutCursor = (func, time = 10) => {
@@ -108,27 +122,9 @@ class Phylotree extends Component {
             }, time);
         };
 
-        var nodes_to_collapse = [];
-        var maxdepth = 0;
-        
-        var nodes = this.props.tree.get_nodes();
-        nodes.forEach(function(node){
-        
-          if(node.depth > maxdepth){
-            maxdepth = node.depth;
+        var nodes_to_collapse = this.findNodesByDepth(depth);
+        var maxdepth = this.props.tree.get_max_depth_of_tree();
             
-          }
-        })
-        
-        var filter =maxdepth/depth;
-      
-        nodes.forEach(function(node){
-            if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
-                if(node.depth > filter){
-                    nodes_to_collapse.push(node);                
-                }
-            }     
-        });
         if(mode === "expand"){
             nodes_to_collapse.forEach(function(n){
                 if(!n.is_under_collapsed_parent){
@@ -148,17 +144,6 @@ class Phylotree extends Component {
                 }
 
             }
-            // nodes_to_collapse.forEach(function(n){
-            //     if(!n.is_under_collapsed_parent){
-            //         this.collNode(n);
-            //         // addTimeoutCursor(
-            //         //     () =>
-            //         //         this.collNode(n),
-            //         //     1
-            //         // )
-                    
-            //     }
-            // },this);
         }
     }
 
@@ -321,16 +306,16 @@ class Phylotree extends Component {
         }
 
         // //if (prevProp.yscale > this.props.yscale) {
-        // if (this.props.yscale < 0.9 && !this.did_collapse) {
-        //     this.collapseNodeByDepth(4, "collapse");
-        //     this.did_collapse=true;
+        if (this.props.yscale < 0.9 && !this.did_collapse) {
+            this.collapseNodeByDepth(4, "collapse");
+            this.did_collapse=true;
 
-        // } 
-        // if(1.3 < this.props.yscale && this.did_collapse){
-        //     this.collapseNodeByDepth(4, "expand");
-        //     this.did_collapse=false;
+        } 
+        if(1.3 < this.props.yscale && this.did_collapse){
+            this.collapseNodeByDepth(4, "expand");
+            this.did_collapse=false;
 
-        // }      
+        }      
     }
 
     componentDidMount() {
@@ -457,6 +442,60 @@ class Phylotree extends Component {
                 ,
                 (node) => node.depth === 0  // condition on when to display the menu
             );
+
+            d3.layout.phylotree.add_custom_menu(
+                tnode, // add to this node
+                () => "Collapse nodes by depth ", // display this text for the menu
+                () => {
+                    const input = prompt("Enter the depth");
+                    if(input){
+                        if(!isNaN(parseInt(input))){
+                           var selectedNodes = this.findNodesByDepth(parseInt(input));
+                            
+                                selectedNodes.forEach((node)=>{
+                                    this.props.tree.modify_selection(
+                                        this.props.tree.select_all_descendants(node, true, true),
+                                        undefined,
+                                        undefined,
+                                        undefined,
+                                        "true"
+                                    );
+                                });  
+                            setTimeout(() => {
+                                var answer = window.confirm("Are you sure you want to collapse these nodes?")
+                                if(answer){
+                                    this.collapseNodeByDepth(parseInt(input), "collapse")                           
+                                    selectedNodes.forEach((node)=>{
+                                        this.props.tree.modify_selection(
+                                            this.props.tree.select_all_descendants(node, true, true),
+                                            undefined,
+                                            undefined,
+                                            undefined,
+                                            "false"
+                                        );
+                                    });
+                                }
+                                else{
+                                    selectedNodes.forEach((node)=>{
+                                        this.props.tree.modify_selection(
+                                            this.props.tree.select_all_descendants(node, true, true),
+                                            undefined,
+                                            undefined,
+                                            undefined,
+                                            "false"
+                                        );
+                                    });
+                                }
+                            }, 1);
+                        }
+                    }
+                    
+                        
+                    }
+                ,
+                (node) => node.depth === 0  // condition on when to display the menu
+            );
+            
             d3.layout.phylotree.add_custom_menu(
                 tnode,
                 () => "Show SNPs in sidebar",

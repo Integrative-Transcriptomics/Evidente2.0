@@ -35,7 +35,9 @@ import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
 //import { ThreeSixty } from "@material-ui/icons";
 
+
 class App extends Component {
+  cladeNum = 0;
   zoom = null;
   state = {};
   tx = 0;
@@ -142,9 +144,6 @@ class App extends Component {
         .call(this.zoom)
         .on("dblclick.zoom", null)    
   };
-
-
-
 
   tree = d3.layout
     .phylotree()
@@ -1103,14 +1102,20 @@ class App extends Component {
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
 
+    // let clade = {
+    //   name: "Clade_" + this.state.cladeNumber,
+    //   showname: "Clade_" + this.state.cladeNumber,
+    //   cladeParent: cladeNode,
+    //   cladeLeaves: collapsedNodes,
+    // };
     let clade = {
-      name: "Clade_" + this.state.cladeNumber,
-      showname: "Clade_" + this.state.cladeNumber,
+      name: "Clade_" + this.cladeNum,
+      showname: "Clade_" + this.cladeNum,
       cladeParent: cladeNode,
       cladeLeaves: collapsedNodes,
     };
+
     cladeNode.name = clade.name;
-    console.log(cladeNode.name)
     cladeNode["show-name"] = clade.name;
     let actualNumber = this.state.cladeNumber;
     let jointNodes = this.state.collapsedClades.concat([clade]);
@@ -1118,6 +1123,7 @@ class App extends Component {
     this.tree.toggle_collapse(cladeNode).update();
 
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
+    this.cladeNum = this.cladeNum +1;
     return clade.name;
   };
   handleDecollapse = (cladeNode, should_update = true) => {

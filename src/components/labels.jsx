@@ -238,7 +238,7 @@ class Labels extends Component {
                     }
                 });
                 this.selectedLabels = list
-                console.log(this.selectedLabels)
+                //console.log(this.selectedLabels)
             }   
         }
     }
