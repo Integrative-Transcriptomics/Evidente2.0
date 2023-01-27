@@ -135,7 +135,7 @@ class Labels extends Component {
 
             //var svg = document.querySelector("svg");
             var svg = document.getElementById("display_labels_viz")
-            var pt = svg.createSVGPoint();
+            var pt = svg.createSVGPoint(); //getboundingclientrect
             pt.x = e.pageX;
             pt.y = e.pageY;
             pt = pt.matrixTransform(svg.getScreenCTM().inverse());

@@ -140,9 +140,11 @@ class App extends Component {
       .scaleExtent([0.7, 5])
       //.translateExtent([[0, 0],[800, 600]]); 
 
-        d3v5.selectAll('svg')
-        .call(this.zoom)
-        .on("dblclick.zoom", null)    
+    d3v5.selectAll('svg')
+      .call(this.zoom)
+      .on("dblclick.zoom", null)
+
+    
   };
 
   tree = d3.layout
@@ -1020,8 +1022,9 @@ class App extends Component {
     this.handleShowOnHeatmap(this.tree.descendants(node));
   }
 
+  //! list of nodes to hide
   handleApplyAllFilter = () => {
-    let root = this.tree.get_nodes()[0];
+    let root = this.tree.get_nodes()[0]; //get root
     this.tempShowNodes(root);
     let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
     let resultingNodes = this.tree
@@ -1212,10 +1215,10 @@ class App extends Component {
                 id='parent-svg'
                 className='parent-svgs'
                 ref={(el) => (this.svgContainer = el)}
-                //onWheel={this.verticalZoom}
-                // onMouseDown={() => this.setState({ dragActive: true })}
-                // onMouseMove={this.verticalDrag}
-                // onMouseUp={() => this.setState({ dragActive: false })}
+                onWheel={this.verticalZoom}
+                onMouseDown={() => this.setState({ dragActive: true })}
+                onMouseMove={this.verticalDrag}
+                onMouseUp={() => this.setState({ dragActive: false })}
               >
                 <Phylotree
                   //

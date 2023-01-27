@@ -306,16 +306,16 @@ class Phylotree extends Component {
         }
 
         // //if (prevProp.yscale > this.props.yscale) {
-        if (this.props.yscale < 0.9 && !this.did_collapse) {
-            this.collapseNodeByDepth(4, "collapse");
-            this.did_collapse=true;
+        // if (this.props.yscale < 0.9 && !this.did_collapse) {
+        //     this.collapseNodeByDepth(4, "collapse");
+        //     this.did_collapse=true;
 
-        } 
-        if(1.3 < this.props.yscale && this.did_collapse){
-            this.collapseNodeByDepth(4, "expand");
-            this.did_collapse=false;
+        // } 
+        // if(1.3 < this.props.yscale && this.did_collapse){
+        //     this.collapseNodeByDepth(4, "expand");
+        //     this.did_collapse=false;
 
-        }      
+        // }      
     }
 
     componentDidMount() {
