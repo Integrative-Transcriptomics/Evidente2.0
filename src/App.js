@@ -121,7 +121,6 @@ class App extends Component {
                 "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
           this.setState({yscale: yscale})
           this.setState({yTreeKoordinate: d3v5.event.transform.y})
-          //console.log(d3v5.event.transform.y)
                     
         }
         else{
@@ -136,15 +135,20 @@ class App extends Component {
     }
     this.setState({yscale: 2}); 
     this.zoom = d3v5.zoom()
+      .filter(() => {
+        if (d3v5.event.type === 'wheel' || d3v5.event.type === 'mousedown') {
+          // don't allow zooming when pressing [shift] key
+          return !d3v5.event.shiftKey && !d3v5.event.ctrlKey;
+        }
+        return true;
+      })
       .on('zoom', handleZoom.bind(this))
       .scaleExtent([0.7, 5])
       //.translateExtent([[0, 0],[800, 600]]); 
 
     d3v5.selectAll('svg')
       .call(this.zoom)
-      .on("dblclick.zoom", null)
-
-    
+      .on("dblclick.zoom", null)   
   };
 
   tree = d3.layout

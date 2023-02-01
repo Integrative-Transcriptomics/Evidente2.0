@@ -83,6 +83,10 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
+    /**
+     * Aggregates the selected clade
+     * @param {Object} node 
+     */
     collNode(node) {
         if (!node["own-collapse"]) {
             node["own-collapse"] = true;
@@ -90,6 +94,10 @@ class Phylotree extends Component {
         }
         this.props.onSelection(this.props.tree.get_selection());
     }
+    /**
+     * Aggregates the selected clade
+     * @param {Object} node 
+     */
     decollNode(node){
         if (node["own-collapse"]) {
             node["show-name"] = "";
@@ -99,6 +107,11 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
+    /**
+     * find all nodes of defined depth
+     * @param {Object} depth 
+     * @returns 
+     */
     findNodesByDepth(depth){
         const nodes = this.props.tree.get_nodes();
         var nodes_to_collapse = [];
@@ -112,8 +125,12 @@ class Phylotree extends Component {
         return nodes_to_collapse
     }
     
+    /**
+     * Aggregate all nodes of defined depth
+     * @param {Object} depth 
+     * @param {Object} mode 
+     */
     collapseNodeByDepth(depth, mode){
-        
         const addTimeoutCursor = (func, time = 10) => {
             document.body.style.cursor = "wait";
             window.setTimeout(() => {
@@ -147,6 +164,10 @@ class Phylotree extends Component {
         }
     }
 
+    /**
+     * Find the LCA of a list of nodes and aggregate it
+     * @param {Object} list_of_nodenames 
+     */
     collapse_lca = function(list_of_nodenames){
 
         var ancestor = this.props.tree.get_lca(list_of_nodenames);
@@ -159,6 +180,9 @@ class Phylotree extends Component {
         
     }
   
+    filterSupportingSNPs(){
+
+    }
 
       
     /**
@@ -364,31 +388,11 @@ class Phylotree extends Component {
             selection.attr("horizontal-scale", scale)
             selection.attr("x-koordinate", translateX)
 
-
-            // if(!this.did_collapse && scale <= 1.0){
-            //     this.collapseNodeByDepth(4, "collapse");
-            //     this.did_collapse=true;
-
-            // }
-            // if(this.did_collapse && scale >= 1.3){
-            //     this.collapseNodeByDepth(4, "expand");
-            //     this.did_collapse=false;
-            // }
-
         }
-        else{
-        //     if(!this.did_collapse && this.props.yscale <= 1.0){
-        //         this.collapseNodeByDepth(4, "collapse");
-        //         this.did_collapse=true;
-
-        //     }
-        //     if(this.did_collapse && this.props.yscale >= 1.3){
-        //         this.collapseNodeByDepth(4, "expand");
-        //         this.did_collapse=false;
-        //     }
-
-        }
-
+        if (ev.shiftKey) {
+            //console.log("test")
+            
+        } 
     }
 
     //Implements horizontal drag only for the tree component
@@ -447,9 +451,11 @@ class Phylotree extends Component {
                 tnode, // add to this node
                 () => "Collapse nodes by depth ", // display this text for the menu
                 () => {
+                    document.body.style.cursor = "wait";
                     const input = prompt("Enter the depth");
                     if(input){
                         if(!isNaN(parseInt(input))){
+                        
                            var selectedNodes = this.findNodesByDepth(parseInt(input));
                             
                                 selectedNodes.forEach((node)=>{
@@ -461,8 +467,9 @@ class Phylotree extends Component {
                                         "true"
                                     );
                                 });  
-                            setTimeout(() => {
+                                setTimeout(() => {                                
                                 var answer = window.confirm("Are you sure you want to collapse these nodes?")
+                                
                                 if(answer){
                                     this.collapseNodeByDepth(parseInt(input), "collapse")                           
                                     selectedNodes.forEach((node)=>{
@@ -473,7 +480,7 @@ class Phylotree extends Component {
                                             undefined,
                                             "false"
                                         );
-                                    });
+                                    });  
                                 }
                                 else{
                                     selectedNodes.forEach((node)=>{
@@ -486,7 +493,9 @@ class Phylotree extends Component {
                                         );
                                     });
                                 }
+                                document.body.style.cursor = "default";
                             }, 1);
+                            
                         }
                     }
                     

@@ -510,9 +510,7 @@ class Heatmap extends Component {
                 "transform",
                 `${transformString}`
             );
-
         }
-
     }
 
     horizontalDrag = (ev) => {
