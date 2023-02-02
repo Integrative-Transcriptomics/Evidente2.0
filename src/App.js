@@ -1200,7 +1200,7 @@ class App extends Component {
       .style("display", "none");
 
     this.handleInitTool();
-    //this.verticalZoom();
+    this.verticalZoom();
   }
 
   render() {

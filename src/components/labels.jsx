@@ -159,6 +159,13 @@ class Labels extends Component {
             this.props.clearSelection();
         }
         var brush = d3v5.brushY()
+                        .filter(() => {
+                            if (d3v5.event.type === 'mousedown') {
+                            // don't allow zooming when pressing [shift] key
+                            return d3v5.event.ctrlKey;
+                            }
+                            return true;
+                        })
                         .on("start brush", brushed.bind(this));
         
         brush.on("end", endBrush.bind(this))
