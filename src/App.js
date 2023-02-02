@@ -1200,7 +1200,7 @@ class App extends Component {
       .style("display", "none");
 
     this.handleInitTool();
-    this.verticalZoom();
+    //this.verticalZoom();
   }
 
   render() {
@@ -1263,6 +1263,7 @@ class App extends Component {
                   onSelection={this.handleLabelSelection}
                   clearSelection = {this.clearLabelSelection}
                   yTreeKoordinate = {this.state.yTreeKoordinate}
+                  yscale = {this.state.yscale}
                   />
                 <div className='mchild'>
                   {this.state.isLoaded ? (

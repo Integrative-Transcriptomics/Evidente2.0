@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import * as d3 from "d3";
 import { isEqual } from "lodash";
+import * as d3v5 from "d3v5";
 
 class Labels extends Component {
     state = {};
@@ -81,6 +82,7 @@ class Labels extends Component {
     }
 
     componentDidMount() {
+        
         let svg = d3
             .select(`#${this.props.divID}`)
             .append("svg")
@@ -97,7 +99,7 @@ class Labels extends Component {
             .append("g")
             .attr("class", " own-label y axis")
             .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
-
+        
         this.globalHeight = this.container.offsetHeight;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
@@ -107,9 +109,7 @@ class Labels extends Component {
                 ev.preventDefault()
             }
         })
-        this.container.addEventListener("mousedown", this.initiateSelection)
-        this.container.addEventListener("mousemove", this.createSelectionRectangle)
-        this.container.addEventListener("mouseup", this.clearSelectionRectangle)
+        this.selectLabels();
     }
 
     defaultMouseOver = (d) => {
@@ -122,136 +122,49 @@ class Labels extends Component {
             .style("top", d3.event.pageY - 28 + "px");
     }
 
-    initiateSelection = (e)=>{
-        this.selectedLabels = [];
-        d3.select("#container-labels").select(".selection").remove();
-        d3.select("#container-labels").selectAll("text").each(function(d, i){
-            d3.select(this)
-                .style("fill", "black")
-                .style("font-weight", 400);
-        });
-        if(e.ctrlKey){
-            this.props.onSelection();
+    selectLabels = ()=>{
+        var list =[];
 
-            //var svg = document.querySelector("svg");
-            var svg = document.getElementById("display_labels_viz")
-            var pt = svg.createSVGPoint(); //getboundingclientrect
-            pt.x = e.pageX;
-            pt.y = e.pageY;
-            pt = pt.matrixTransform(svg.getScreenCTM().inverse());
-            let guideStyle = {
-                "fill":"steelblue",
-                "opacity": 0.5,
-            } 
-
-            // console.log("mouse: " + pt.y)
-            // console.log("tree: "+ this.props.yTreeKoordinate)
-
-            d3.select("#container-labels").append( "rect")
-            .attr({
-                rx      : 6,
-                ry      : 6,
-                class   : "selection",
-                x       : pt.x,
-                y       : pt.y-50-this.props.yTreeKoordinate,
-                width   : 0,
-                height  : 0
-            })
-            .style(guideStyle)
-            
-            // d3.select("#container-labels").selectAll("text")
-            //     .on("mouseover", (d) => {
-            //         if(!this.selectedLabels.includes(d)){
-            //             this.selectedLabels.push(d);
-            //         }
-            //         else{
-            //             var elementToRemove = this.selectedLabels.indexOf(d);
-            //             this.selectedLabels.splice(elementToRemove, 1);
-            //         }
+        function brushed() {
+            list = [];
+            d3v5.select("#container-labels").selectAll("text").each(function(d){     
+                var elementBox = this.getBoundingClientRect();
+                var rectBox = d3v5.select("rect.selection").node().getBoundingClientRect()
+                if(
+                    rectBox.left <= elementBox.left &&
+                    rectBox.top <= elementBox.top &&
+                    rectBox.right >= elementBox.right &&
+                    rectBox.bottom >= elementBox.bottom  
+                ){
+                    d3v5.select(this)
+                        .style("fill", "blue")
+                        .style("font-weight", 1000)
+                    list.push(d);
                     
-            //     });
-        }
-    }
-    createSelectionRectangle = (e)=>{
-        if(e.ctrlKey){
-            var svg = document.getElementById("display_labels_viz")
-            var pt = svg.createSVGPoint();
-            pt.x = e.pageX;
-            pt.y = e.pageY;
-            pt = pt.matrixTransform(svg.getScreenCTM().inverse());
-        
-            var s = d3.select("#container-labels").select("rect.selection");
-            if( !s.empty()) { 
-                var d = {
-                        x       : parseInt( s.attr( "x"), 10),
-                        y       : parseInt( s.attr( "y"), 10),
-                        width   : parseInt( s.attr( "width"), 10),
-                        height  : parseInt( s.attr( "height"), 10)
-                    },
-                    move = {
-                        x : pt.x - d.x,
-                        y : pt.y-50- this.props.yTreeKoordinate - d.y
-                    }
-                ;
-                
-                if( move.x < 1 || (move.x*2<d.width)) {
-                    d.x = pt.x;
-                    d.width -= move.x;
-                } else {
-                    d.width = move.x;       
                 }
-        
-                if( move.y < 1 || (move.y*2<d.height)) {
-                    d.y = pt.y-50;
-                    d.height -= move.y;
-                } else {
-                    d.height = move.y;       
+                else{
+                    d3v5.select(this)
+                        .style("fill", "black")
+                        .style("font-weight", 400)
                 }
-            
-                s.attr( d);
-
-                var list =[];
-
-                d3.select("#container-labels").selectAll("text").each(function(d, i){
-                    
-                    var elementBox = this.getBoundingClientRect();
-                    var rectBox = d3.select("#container-labels").select("rect").node().getBoundingClientRect()
-                    // console.log("rect: " + d3.select("#container-labels").select("rect").node().getBoundingClientRect().bottom)
-                    // console.log("label" + i + ": " + elementBox.bottom )
-                    if(
-                        rectBox.left <= elementBox.left &&
-                        rectBox.top <= elementBox.top &&
-                        rectBox.right >= elementBox.right &&
-                        rectBox.bottom >= elementBox.bottom  
-                    ){
-                        d3.select(this)
-                            .style("fill", "blue")
-                            .style("font-weight", 1000)
-                        list.push(d);
-                        //console.log(list)
-                        
-                    }
-                    else{
-                        d3.select(this)
-                            .style("fill", "black")
-                            .style("font-weight", 400)
-                    }
-                });
-                this.selectedLabels = list
-                //console.log(this.selectedLabels)
-            }   
+            });
+            //console.log(list)
+            this.selectedLabels = list
         }
+        function endBrush(){
+            if (!d3v5.event.sourceEvent) return; // Only transition after input.
+            if (!d3v5.event.selection) return; // Ignore empty selections.
+            this.props.onSelection(this.selectedLabels);
+            d3v5.select("#selection-group").call(brush.move, null);
+            this.props.clearSelection();
+        }
+        var brush = d3v5.brushY()
+                        .on("start brush", brushed.bind(this));
+        
+        brush.on("end", endBrush.bind(this))
+        
+        d3v5.select("#container-labels").append('g').attr("id", "selection-group").call(brush);       
     }
-
-    clearSelectionRectangle = ()=>{
-        d3.select("#container-labels").select(".selection").remove();
-        d3.select("#container-labels").selectAll("text")
-            .on("mouseover", this.defaultMouseOver);   
-        this.props.onSelection(this.selectedLabels);
-        this.props.clearSelection();
-    }
-
-
     render() {
         return (
             <div id={this.props.divID} className='labels-child' ref={(el) => (this.container = el)}></div>
