@@ -20,6 +20,7 @@ import UploadFilesModal from "./components/upload-files-modal";
 import UploadGOFilesModal from "./components/upload-go-files-modal";
 import GOResultModal from "./components/go-result-modal";
 import TreeResultModal from "./components/tree-result-modal";
+import CollapseModal from "./components/collapse-modal";
 
 //import ResizableModal from "./components/resizable";
 // import { PushSpinner } from "react-spinners-kit";
@@ -215,12 +216,14 @@ class App extends Component {
     availableSNPs: [],
     collapsedClades: [],
     selectedNodes: [],
+    nodesToCollapse: [],
     visualizedMD: [],
     visualizedSNPs: [],
     SNPTable: {},
     selectedNodeId: null,
     ordinalModalShow: false,
     renameModalShow: false,
+    collapsedModalShow: false,
     createdFilters: [],
     nameOfFilters: [],
     activeFilters: [],
@@ -243,6 +246,7 @@ class App extends Component {
     all_snps: [],
     node_to_snps: {},
     tree_size: 0,
+    tree_depth: 0,
     tree_snps: 0,
     in_gene_tree: 0,
     subtree_size: 0,
@@ -1044,6 +1048,7 @@ class App extends Component {
   handleRenameOpenModal = (node) => {
     this.setState({ renameModalShow: true, changingCladeNode: node });
   };
+
   handleRenameCloseModal = (save, node, name) => {
     name = name.replace(/[^a-zA-Z0-9_-]/g, "_");
     let given_names = this.tree
@@ -1079,6 +1084,27 @@ class App extends Component {
       });
     }
   };
+  handleCollapseModal =()=>{
+    this.setState({collapsedModalShow:true, tree_depth:this.tree.get_max_depth_of_tree()});
+  }
+
+  handleCollapseModalSelection =(value)=>{
+    var selectedNodes = this.handlefindNodesByDepth(parseInt(value));
+  this.setState({nodesToCollapse: selectedNodes})
+    selectedNodes.forEach((node)=>{
+                      this.tree.modify_selection(
+                          this.tree.select_all_descendants(node, true, true),
+                          undefined,
+                          undefined,
+                          undefined,
+                          "true"
+                      );
+                  });
+
+  }
+  handleCollapseCloseModal=()=>{
+    this.setState({collapsedModalShow:false})
+  }
   handleColorChange = (metadataName) => {
     this.chosenMD = metadataName;
     this.setState({ colorScaleModalShow: true });
@@ -1106,9 +1132,21 @@ class App extends Component {
       nodes: nodes,
     });
   };
+  handlefindNodesByDepth(depth){
+    const nodes = this.tree.get_nodes();
+    var nodes_to_collapse = [];
+    nodes.forEach(function(node){
+        if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
+            if(node.depth === depth){
+                nodes_to_collapse.push(node);                
+            }
+        }     
+    });
+    return nodes_to_collapse
+  }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
-
+    console.log(this.state.tree_depth)
     // let clade = {
     //   name: "Clade_" + this.state.cladeNumber,
     //   showname: "Clade_" + this.state.cladeNumber,
@@ -1231,6 +1269,7 @@ class App extends Component {
                   sendStatisticsRequest={this.sendStatisticsRequest}
                   handleLoadingToggle={this.handleLoadingToggle}
                   showRenameModal={this.state.renameModalShow}
+                  showCollapseModal={this.state.collapsedModalShow}
                   allowComputeStatistics={this.allowComputeStatistics}
                   computeStatistics={this.state.computeStatistics}
                   showStatisticsModal={this.showStatisticsModal}
@@ -1247,6 +1286,8 @@ class App extends Component {
                   onHide={this.handleHide}
                   onSelection={this.handleSelection}
                   onOpenRenameClade={this.handleRenameOpenModal}
+                  onOpenCollapseModal = {this.handleCollapseModal}
+                  findNodesByDepth={this.handlefindNodesByDepth}
                   newick={this.state.newick}
                   snpdata={this.state.snpdata}
                   ids={this.state.ids}
@@ -1427,6 +1468,16 @@ class App extends Component {
                 changingCladeNode={this.state.changingCladeNode}
                 name={this.state.changingCladeNode["show-name"]}
                 handleClose={this.handleRenameCloseModal}
+              />
+            )}
+            {this.state.collapsedModalShow && (
+              <CollapseModal
+                id='collapse-modal'
+                show={this.state.collapsedModalShow}
+                tree_depth={this.state.tree_depth}
+                name="testname"
+                handleChanges={this.handleCollapseModalSelection}
+                handleClose={this.handleCollapseCloseModal}
               />
             )}
             {this.state.decideOrdinalModalShow && (

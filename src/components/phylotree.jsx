@@ -112,18 +112,6 @@ class Phylotree extends Component {
      * @param {Object} depth 
      * @returns 
      */
-    findNodesByDepth(depth){
-        const nodes = this.props.tree.get_nodes();
-        var nodes_to_collapse = [];
-        nodes.forEach(function(node){
-            if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
-                if(node.depth === depth){
-                    nodes_to_collapse.push(node);                
-                }
-            }     
-        });
-        return nodes_to_collapse
-    }
     
     /**
      * Aggregate all nodes of defined depth
@@ -139,8 +127,8 @@ class Phylotree extends Component {
             }, time);
         };
 
-        var nodes_to_collapse = this.findNodesByDepth(depth);
-        var maxdepth = this.props.tree.get_max_depth_of_tree();
+        var nodes_to_collapse = this.props.findNodesByDepth(depth);
+        //console.log(this.props.tree.get_max_depth_of_tree());
             
         if(mode === "expand"){
             nodes_to_collapse.forEach(function(n){
@@ -169,6 +157,7 @@ class Phylotree extends Component {
      * @param {Object} list_of_nodenames 
      */
     collapse_lca = function(list_of_nodenames){
+        console.log("phylotree: " + this.props.tree.get_max_depth_of_tree());
 
         var ancestor = this.props.tree.get_lca(list_of_nodenames);
         if(ancestor !== undefined && !d3.layout.phylotree.is_leafnode(ancestor)){
@@ -391,6 +380,35 @@ class Phylotree extends Component {
         }
         if (ev.shiftKey) {
             //console.log("test")
+            function wheelCollapse(node){
+                
+                if(!this.props.tree.is_leafnode(node)){
+                    this.collapseNode(node);
+                    ////! FIX THIS ABOMINATION!!!
+                    // setTimeout(()=>{
+                    //     node.children.forEach(function(childNode){
+                    //         if(!this.props.tree.is_leafnode(childNode) && !childNode.is_under_collapsed_parent){
+                    //             childNode.children.forEach(function(childChildNode){
+                    //                 if(!this.props.tree.is_leafnode(childChildNode) && !childChildNode.is_under_collapsed_parent){
+                    //                     childNode.children.forEach(function(childChildCildNode){
+                    //                         if(!this.props.tree.is_leafnode(childChildCildNode) && !childChildCildNode.is_under_collapsed_parent){
+                    //                             this.collNode(childChildCildNode);
+                    //                         }
+                    //                     },this);
+                    //                 }
+                    //             },this);
+                    //         }
+                    //     },this);
+                    // });
+                } 
+            }
+            d3.selectAll("circle")
+                .on("mouseover", (function(d){
+                    if(!this.props.tree.is_leafnode(d)){
+                        document.body.style.cursor = "zoom-in"
+                    }}).bind(this))
+                .on("mouseleave", function(){document.body.style.cursor = "default"})
+                .on("wheel", wheelCollapse.bind(this))
             
         } 
     }
@@ -450,55 +468,56 @@ class Phylotree extends Component {
             d3.layout.phylotree.add_custom_menu(
                 tnode, // add to this node
                 () => "Collapse nodes by depth ", // display this text for the menu
-                () => {
-                    document.body.style.cursor = "wait";
-                    const input = prompt("Enter the depth");
-                    if(input){
-                        if(!isNaN(parseInt(input))){
+                () => {this.props.onOpenCollapseModal(tnode);
+                    // document.body.style.cursor = "wait";
+                    // const input = prompt("Enter the depth");
+                    // if(input){
+                    //     if(!isNaN(parseInt(input))){
                         
-                           var selectedNodes = this.findNodesByDepth(parseInt(input));
+                    //        var selectedNodes = this.props.findNodesByDepth(parseInt(input));
                             
-                                selectedNodes.forEach((node)=>{
-                                    this.props.tree.modify_selection(
-                                        this.props.tree.select_all_descendants(node, true, true),
-                                        undefined,
-                                        undefined,
-                                        undefined,
-                                        "true"
-                                    );
-                                });  
-                                setTimeout(() => {                                
-                                var answer = window.confirm("Are you sure you want to collapse these nodes?")
+                    //             selectedNodes.forEach((node)=>{
+                    //                 this.props.tree.modify_selection(
+                    //                     this.props.tree.select_all_descendants(node, true, true),
+                    //                     undefined,
+                    //                     undefined,
+                    //                     undefined,
+                    //                     "true"
+                    //                 );
+                    //             });  
+                    //             setTimeout(() => {                                
+                    //             var answer = window.confirm("Are you sure you want to collapse these nodes?")
                                 
-                                if(answer){
-                                    this.collapseNodeByDepth(parseInt(input), "collapse")                           
-                                    selectedNodes.forEach((node)=>{
-                                        this.props.tree.modify_selection(
-                                            this.props.tree.select_all_descendants(node, true, true),
-                                            undefined,
-                                            undefined,
-                                            undefined,
-                                            "false"
-                                        );
-                                    });  
-                                }
-                                else{
-                                    selectedNodes.forEach((node)=>{
-                                        this.props.tree.modify_selection(
-                                            this.props.tree.select_all_descendants(node, true, true),
-                                            undefined,
-                                            undefined,
-                                            undefined,
-                                            "false"
-                                        );
-                                    });
-                                }
-                                document.body.style.cursor = "default";
-                            }, 1);
-                            
-                        }
-                    }
-                    
+                    //             if(answer){
+                    //                 this.collapseNodeByDepth(parseInt(input), "collapse")                           
+                    //                 selectedNodes.forEach((node)=>{
+                    //                     this.props.tree.modify_selection(
+                    //                         this.props.tree.select_all_descendants(node, true, true),
+                    //                         undefined,
+                    //                         undefined,
+                    //                         undefined,
+                    //                         "false"
+                    //                     );
+                    //                 });  
+                    //             }
+                    //             else{
+                    //                 selectedNodes.forEach((node)=>{
+                    //                     this.props.tree.modify_selection(
+                    //                         this.props.tree.select_all_descendants(node, true, true),
+                    //                         undefined,
+                    //                         undefined,
+                    //                         undefined,
+                    //                         "false"
+                    //                     );
+                    //                 });
+                    //             }
+                    //             document.body.style.cursor = "default";
+                    //         }, 1);   
+                    //     } 
+                    // }
+                    // else{
+                    //         document.body.style.cursor = "default";
+                    //     }
                         
                     }
                 ,
