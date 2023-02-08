@@ -104,6 +104,7 @@ class Phylotree extends Component {
             .map((d) => this.props.ids.numToLabel[d.tempid]);
         let supportSNPs = this.props.snpdata.support;
         let notSupportSNPs = this.props.snpdata.notsupport;
+        let paraphyleticSNPs = this.props.snpdata.paraphyletic;
         const modifyListOfSNPs = (listSNPs, listNames) =>
             _.uniqWith(
                 listSNPs
@@ -120,6 +121,8 @@ class Phylotree extends Component {
         let groupedSupport = _.groupBy(uniqSupportSNPs, "inActualNode");
         let uniqNonSupportSNPs = modifyListOfSNPs(notSupportSNPs, [node_name, ...descendants]);
         let groupedNonSupport = _.groupBy(uniqNonSupportSNPs, "inActualNode");
+        let uniqParaphyleticSNPs = modifyListOfSNPs(paraphyleticSNPs, [node_name, ...descendants]);
+        let groupedParaphyletic = _.groupBy(uniqParaphyleticSNPs, uniqNonSupportSNPs, "inActualNode");
         let supportSNPTable = {
             actualNode: groupedSupport.true,
             descendants: groupedSupport.false,
@@ -130,10 +133,15 @@ class Phylotree extends Component {
             descendants: groupedNonSupport.false,
         };
 
-        this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable);
+        let paraphyleticSNPTable = {
+            actualNode: groupedParaphyletic.true,
+            descendants: groupedParaphyletic.false,
+        };
+
+        this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable, paraphyleticSNPTable);
         this.props.tree.trigger_refresh();
 
-        if (uniqSupportSNPs.length === 0 && uniqNonSupportSNPs.length === 0) {
+        if (uniqSupportSNPs.length === 0 && uniqNonSupportSNPs.length === 0 && uniqParaphyleticSNPs.length === 0) {
             alert("This node contains no SNP. Please select another node.");
         } else if (uniqSupportSNPs.length > 0) {
             if (!$("#supportingSNPs-card").hasClass("show")) {

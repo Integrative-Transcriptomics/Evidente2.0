@@ -181,7 +181,7 @@ class App extends Component {
     id_to_go: {},
     go_to_snp_pos: {},
     go_result: [],
-    tree_result: {}, //{7:{"subtree":1, "result":[],"subtree_size":5, "num_snps":20, "num_go_terms":200}},//{},
+    tree_result: {},
     all_snps: [],
     node_to_snps: {},
     tree_size: 0,
@@ -259,7 +259,11 @@ class App extends Component {
           isLoaded: true,
           newick: json.newick,
           snpPerColumn: json.snpPerColumn,
-          snpdata: { support: json.support, notsupport: json.notSupport },
+          snpdata: {
+            support: json.support,
+            notsupport: json.notSupport,
+            paraphyletic: json.paraphyletic,
+          },
           availableSNPs: json.availableSNPs,
           ids: json.ids,
           taxamd: json.taxaInfo || [],
@@ -381,7 +385,11 @@ class App extends Component {
         go_to_snp_pos: json.go_to_snp_pos,
         newick: json.newick,
         snpPerColumn: json.snpPerColumn,
-        snpdata: { support: json.support, notsupport: json.notSupport },
+        snpdata: {
+          support: json.support,
+          notsupport: json.notSupport,
+          paraphyletic: json.paraphyletic,
+        },
         availableSNPs: json.availableSNPs,
         ids: json.ids,
         taxamd: json.taxaInfo || [],
@@ -807,10 +815,14 @@ class App extends Component {
       visualizedMD: ev.map(({ value }) => value),
     });
   };
-  updateSNPTable = (nodeID, supportSNPTable, nonSupportSNPTable) => {
+  updateSNPTable = (nodeID, supportSNPTable, nonSupportSNPTable, paraphyleticSNPTable) => {
     this.setState({
       selectedNodeID: nodeID,
-      SNPTable: { support: supportSNPTable, notsupport: nonSupportSNPTable },
+      SNPTable: {
+        support: supportSNPTable,
+        notsupport: nonSupportSNPTable,
+        paraphyletic: paraphyleticSNPTable,
+      },
     });
   };
 
