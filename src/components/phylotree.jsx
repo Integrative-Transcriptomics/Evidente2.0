@@ -118,39 +118,39 @@ class Phylotree extends Component {
      * @param {Object} depth 
      * @param {Object} mode 
      */
-    collapseNodeByDepth(depth, mode){
-        const addTimeoutCursor = (func, time = 10) => {
-            document.body.style.cursor = "wait";
-            window.setTimeout(() => {
-                func();
-                document.body.style.cursor = "default";
-            }, time);
-        };
+    // collapseNodeByDepth(depth, mode){
+    //     const addTimeoutCursor = (func, time = 10) => {
+    //         document.body.style.cursor = "wait";
+    //         window.setTimeout(() => {
+    //             func();
+    //             document.body.style.cursor = "default";
+    //         }, time);
+    //     };
 
-        var nodes_to_collapse = this.props.findNodesByDepth(depth);
-        //console.log(this.props.tree.get_max_depth_of_tree());
+    //     var nodes_to_collapse = this.props.findNodesByDepth(depth);
+    //     //console.log(this.props.tree.get_max_depth_of_tree());
             
-        if(mode === "expand"){
-            nodes_to_collapse.forEach(function(n){
-                if(!n.is_under_collapsed_parent){
-                    addTimeoutCursor(
-                        () =>
-                            this.decollNode(n),
-                        1
-                    )
-                    //this.decollNode(n);
-                }
-            },this);
-          }
-        if (mode === "collapse") {
-            for(let i = 0; i < nodes_to_collapse.length; i++){
-                if(!nodes_to_collapse[i].is_under_collapsed_parent){
-                    this.collNode(nodes_to_collapse[i]);
-                }
+    //     if(mode === "expand"){
+    //         nodes_to_collapse.forEach(function(n){
+    //             if(!n.is_under_collapsed_parent){
+    //                 addTimeoutCursor(
+    //                     () =>
+    //                         this.decollNode(n),
+    //                     1
+    //                 )
+    //                 //this.decollNode(n);
+    //             }
+    //         },this);
+    //       }
+    //     if (mode === "collapse") {
+    //         for(let i = 0; i < nodes_to_collapse.length; i++){
+    //             if(!nodes_to_collapse[i].is_under_collapsed_parent){
+    //                 this.collNode(nodes_to_collapse[i]);
+    //             }
 
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
     /**
      * Find the LCA of a list of nodes and aggregate it
@@ -316,19 +316,7 @@ class Phylotree extends Component {
 
         if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
             this.collapse_lca(this.props.selectedLeafs);
-        }
-
-        // //if (prevProp.yscale > this.props.yscale) {
-        // if (this.props.yscale < 0.9 && !this.did_collapse) {
-        //     this.collapseNodeByDepth(4, "collapse");
-        //     this.did_collapse=true;
-
-        // } 
-        // if(1.3 < this.props.yscale && this.did_collapse){
-        //     this.collapseNodeByDepth(4, "expand");
-        //     this.did_collapse=false;
-
-        // }      
+        }     
     }
 
     componentDidMount() {

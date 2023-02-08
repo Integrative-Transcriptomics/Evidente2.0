@@ -1089,20 +1089,39 @@ class App extends Component {
   }
 
   handleCollapseModalSelection =(value)=>{
+    this.tree.modify_selection(
+      this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+      undefined,
+      undefined,
+      undefined,
+      "false"
+    );
     var selectedNodes = this.handlefindNodesByDepth(parseInt(value));
-  this.setState({nodesToCollapse: selectedNodes})
-    selectedNodes.forEach((node)=>{
-                      this.tree.modify_selection(
-                          this.tree.select_all_descendants(node, true, true),
-                          undefined,
-                          undefined,
-                          undefined,
-                          "true"
-                      );
-                  });
+    this.setState({nodesToCollapse: selectedNodes});
 
+    selectedNodes.forEach((node)=>{
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(node, true, true),
+        undefined,
+        undefined,
+        undefined,
+        "true"
+      );
+    });
   }
-  handleCollapseCloseModal=()=>{
+  handleCollapseCloseModal=(save)=>{
+    if(save){
+      
+      this.handlecollapseNodeByDepth()
+      console.log("collapsed")
+    }
+    this.tree.modify_selection(
+      this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+      undefined,
+      undefined,
+      undefined,
+      "false"
+    );   
     this.setState({collapsedModalShow:false})
   }
   handleColorChange = (metadataName) => {
@@ -1146,7 +1165,6 @@ class App extends Component {
   }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
-    console.log(this.state.tree_depth)
     // let clade = {
     //   name: "Clade_" + this.state.cladeNumber,
     //   showname: "Clade_" + this.state.cladeNumber,
@@ -1195,6 +1213,17 @@ class App extends Component {
     this.handleShowOnHeatmap(this.tree.descendants(node));
     this.handleSelection(this.tree.get_selection());
   };
+  handlecollapseNodeByDepth(){
+    var nodes_to_collapse = this.state.nodesToCollapse
+    //console.log(this.props.tree.get_max_depth_of_tree());
+    nodes_to_collapse.forEach(function(node){
+      if(!node.is_under_collapsed_parent && !node["own-collapse"]){
+        node["own-collapse"] = true;
+        this.handleCollapse(node);
+      }
+    },this)
+  }
+
   handleShowOnHeatmap = (showNodes) => {
     let namesShowNodes = showNodes.map(({ name }) => name);
     let filteredNodes = this.state.hiddenNodes.filter((n) => {

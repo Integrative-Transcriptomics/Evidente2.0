@@ -5,7 +5,7 @@ import {Button} from "react-bootstrap";
 import {Slider, Typography} from "@material-ui/core";
 
 class CollapseModal extends Component {
-    state={value:this.props.tree_depth}
+    state={value:0}
 
     onChange = (ev, newValue) => {
         this.setState({value:newValue})
@@ -16,7 +16,7 @@ class CollapseModal extends Component {
             <ModalOwn
                 id={this.props.ID}
                 show={this.props.show}
-                onClose={() => {this.props.handleClose();
+                onClose={(save) => {this.props.handleClose(save);
                 }}
                 title="Collapse Nodes by Depth"
             >
