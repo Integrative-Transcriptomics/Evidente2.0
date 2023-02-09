@@ -38,7 +38,7 @@ import HeatmapView from "./components/heatmap-view";
 
 
 class App extends Component {
-  cladeNum = 0;
+  //cladeNum = 0;
   zoom = null;
   state = {};
   tx = 0;
@@ -1203,18 +1203,18 @@ class App extends Component {
   }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
-    // let clade = {
-    //   name: "Clade_" + this.state.cladeNumber,
-    //   showname: "Clade_" + this.state.cladeNumber,
-    //   cladeParent: cladeNode,
-    //   cladeLeaves: collapsedNodes,
-    // };
     let clade = {
-      name: "Clade_" + this.cladeNum,
-      showname: "Clade_" + this.cladeNum,
+      name: "Clade_" + this.state.cladeNumber,
+      showname: "Clade_" + this.state.cladeNumber,
       cladeParent: cladeNode,
       cladeLeaves: collapsedNodes,
     };
+    // let clade = {
+    //   name: "Clade_" + this.cladeNum,
+    //   showname: "Clade_" + this.cladeNum,
+    //   cladeParent: cladeNode,
+    //   cladeLeaves: collapsedNodes,
+    // };
 
     cladeNode.name = clade.name;
     cladeNode["show-name"] = clade.name;
@@ -1225,7 +1225,7 @@ class App extends Component {
     
 
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
-    this.cladeNum = this.cladeNum +1;
+    //this.cladeNum = this.cladeNum +1;
 
     return clade.name;
   };
