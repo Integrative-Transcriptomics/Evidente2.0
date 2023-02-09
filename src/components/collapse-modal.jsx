@@ -5,7 +5,7 @@ import {Button} from "react-bootstrap";
 import {Slider, Typography} from "@material-ui/core";
 
 class CollapseModal extends Component {
-    state={value:0}
+    state={value:0, maxSlider: this.props.tree_depth}
 
     onChange = (ev, newValue) => {
         this.setState({value:newValue})
@@ -29,6 +29,7 @@ class CollapseModal extends Component {
                     valueLabelDisplay="auto"
                     min={0}
                     max={this.props.tree_depth}
+                    value={this.state.value}
                     aria-labelledby = 'range-slider'
                     onChange={(ev, newValue) => this.onChange(ev, newValue)}
                 /> 

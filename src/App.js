@@ -107,6 +107,7 @@ class App extends Component {
 
   verticalZoom = () => {    
     function handleZoom() { 
+      //this.handlecollapseMultipleNodes(this.state.nodesToCollapse)
       for (let id of [
         "#heatmap-container",
         "#md-container",
@@ -1097,7 +1098,7 @@ class App extends Component {
       "false"
     );
     var selectedNodes = this.handlefindNodesByDepth(parseInt(value));
-    this.setState({nodesToCollapse: selectedNodes});
+    this.setState({nodesToCollapse:selectedNodes})
 
     selectedNodes.forEach((node)=>{
       this.tree.modify_selection(
@@ -1109,21 +1110,58 @@ class App extends Component {
       );
     });
   }
+  handlecollapseMultipleNodes(nodeList){
+    //console.log(this.props.tree.get_max_depth_of_tree());
+    nodeList.forEach(function(node){
+      if(!node.is_under_collapsed_parent && !node["own-collapse"]){
+        node["own-collapse"] = true;
+        node["show-name"] = this.handleCollapse(node);
+      }
+    },this)
+    this.handleSelection(this.tree.get_selection())
+  }
   handleCollapseCloseModal=(save)=>{
     if(save){
-      
-      this.handlecollapseNodeByDepth()
-      console.log("collapsed")
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+        undefined,
+        undefined,
+        undefined,
+        "false"
+      );   
+      this.setState({collapsedModalShow:false})
+      document.body.style.cursor = "wait";
+      setTimeout(()=>{
+        this.handlecollapseMultipleNodes(this.state.nodesToCollapse)
+        document.body.style.cursor = "default";
+      });
+      return
     }
-    this.tree.modify_selection(
-      this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
-      undefined,
-      undefined,
-      undefined,
-      "false"
-    );   
-    this.setState({collapsedModalShow:false})
+    else{
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+        undefined,
+        undefined,
+        undefined,
+        "false"
+      );   
+      this.setState({collapsedModalShow:false})
+    }
   }
+  // handleCollapseCloseModal=(save)=>{
+  //   if(save){
+  //     this.setState({nodesToCollapse: this.selection})
+  //     console.log("saved")
+  //   }
+  //   this.tree.modify_selection(
+  //     this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+  //     undefined,
+  //     undefined,
+  //     undefined,
+  //     "false"
+  //   );   
+  //   this.setState({collapsedModalShow:false})
+  // }
   handleColorChange = (metadataName) => {
     this.chosenMD = metadataName;
     this.setState({ colorScaleModalShow: true });
@@ -1184,9 +1222,11 @@ class App extends Component {
     let jointNodes = this.state.collapsedClades.concat([clade]);
     
     this.tree.toggle_collapse(cladeNode).update();
+    
 
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
     this.cladeNum = this.cladeNum +1;
+
     return clade.name;
   };
   handleDecollapse = (cladeNode, should_update = true) => {
@@ -1213,16 +1253,6 @@ class App extends Component {
     this.handleShowOnHeatmap(this.tree.descendants(node));
     this.handleSelection(this.tree.get_selection());
   };
-  handlecollapseNodeByDepth(){
-    var nodes_to_collapse = this.state.nodesToCollapse
-    //console.log(this.props.tree.get_max_depth_of_tree());
-    nodes_to_collapse.forEach(function(node){
-      if(!node.is_under_collapsed_parent && !node["own-collapse"]){
-        node["own-collapse"] = true;
-        this.handleCollapse(node);
-      }
-    },this)
-  }
 
   handleShowOnHeatmap = (showNodes) => {
     let namesShowNodes = showNodes.map(({ name }) => name);
@@ -1325,6 +1355,7 @@ class App extends Component {
                   shownNodes={shownNodes}
                   yscale = {this.state.yscale}
                   selectedLeafs = {this.state.selectedLabels}
+                  nodesToCollapse = {this.state.nodesToCollapse}
                 />
 
                 <Labels 

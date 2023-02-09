@@ -107,12 +107,15 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
-    /**
-     * find all nodes of defined depth
-     * @param {Object} depth 
-     * @returns 
-     */
-    
+    // collapseNodeByDepth(){
+    //     var nodes_to_collapse = this.props.nodesToCollapse
+    //     //console.log(this.props.tree.get_max_depth_of_tree());
+    //     nodes_to_collapse.forEach(function(node){
+    //       if(!node.is_under_collapsed_parent){
+    //         this.collNode(node);
+    //       }
+    //     },this)
+    //   }
     /**
      * Aggregate all nodes of defined depth
      * @param {Object} depth 
@@ -152,6 +155,15 @@ class Phylotree extends Component {
     //     }
     // }
 
+    // collapseNodeByDepth(){
+    //     var nodes_to_collapse = this.props.nodesToCollapse
+    //     //console.log(this.props.tree.get_max_depth_of_tree());
+    //     nodes_to_collapse.forEach(function(node){
+    //       if(!node.is_under_collapsed_parent){
+    //         this.collNode(node);
+    //       }
+    //     },this)
+    //   }
     /**
      * Find the LCA of a list of nodes and aggregate it
      * @param {Object} list_of_nodenames 
@@ -305,7 +317,8 @@ class Phylotree extends Component {
 
         return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) ||
         (nextProp.yscale !== undefined && nextProp.yscale !== this.props.yscale) ||
-        (nextProp.selectedLeafs !== undefined && nextProp.selectedLeafs !== this.props.selectedLeafs)
+        (nextProp.selectedLeafs !== undefined && nextProp.selectedLeafs !== this.props.selectedLeafs) 
+         //|| (nextProp.nodesToCollapse !== undefined && nextProp.nodesToCollapse !== this.props.nodesToCollapse)
     }
 
     componentDidUpdate(prevProp) {
@@ -313,10 +326,16 @@ class Phylotree extends Component {
             this.renderTree(this.props.newick);
             return
         } 
+        // if (prevProp.nodesToCollapse !== this.props.nodesToCollapse){
+        //     this.collapseNodeByDepth();
+        //     return
+        // }
 
         if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
             this.collapse_lca(this.props.selectedLeafs);
-        }     
+            return
+        }    
+
     }
 
     componentDidMount() {
