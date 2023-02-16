@@ -364,6 +364,39 @@ class Tools extends Component {
               </Card.Body>
             </Accordion.Collapse>
           </Card>
+
+
+          <Card>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='6'
+              id='export-card'
+              className='noselect header-accordion'
+            >
+              Filter nodes by SNPs content
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='6'>
+              <Card.Body>
+                <Form>
+                  <Form.Label size={"sm"}>
+                    Collapse nodes with low a SNP content
+                  </Form.Label>
+                  <Button
+                  variant='primary'
+                  onClick={() => {
+                    this.props.onOpenFilterSNPs();
+                  }}
+                >
+                  Choose a treshold
+                </Button>
+                </Form>
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+          
+
+
+
           <Card>
             <Accordion.Toggle
               as={Card.Header}

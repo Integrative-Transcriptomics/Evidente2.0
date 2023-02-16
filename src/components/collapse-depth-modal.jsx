@@ -37,7 +37,6 @@ class CollapseModal extends Component {
                     id={"selectNodes"}
                     variant='secondary'
                     onClick={() => { 
-                        console.log(this.state.value)
                         this.props.handleChanges(this.state.value)                       
                     }}
                 >
