@@ -309,7 +309,8 @@ class Tools extends Component {
                   <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
                     <Tooltip id={`tooltip-tree-analysis`}>
                       A filter group defines all the characteristics a certain node should contain in order to be
-                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.</Tooltip>
+                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.
+                    </Tooltip>
                   }>
                     <HelpIcon />
                   </OverlayTrigger>

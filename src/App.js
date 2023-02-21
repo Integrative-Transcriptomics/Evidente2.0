@@ -22,6 +22,7 @@ import GOResultModal from "./components/go-result-modal";
 import TreeResultModal from "./components/tree-result-modal";
 import CollapseModal from "./components/collapse-depth-modal";
 import FilterSNPsModal from "./components/filter-SNP-modal";
+import ApplyFilterModal from "./components/apply-filter-modal";
 
 //import ResizableModal from "./components/resizable";
 // import { PushSpinner } from "react-spinners-kit";
@@ -227,6 +228,7 @@ class App extends Component {
     renameModalShow: false,
     collapsedModalShow: false,
     filterSNPModalShow:false,
+    applyFilterModalShow:true,
     createdFilters: [],
     nameOfFilters: [],
     activeFilters: [],
@@ -1032,9 +1034,8 @@ class App extends Component {
     this.tree.modify_selection(nodes, "notshown", true, true, "false");
     this.handleShowOnHeatmap(this.tree.descendants(node));
   }
-
   //! list of nodes to hide
-  handleApplyAllFilter = () => {
+  handleFindNodesToFilter = () => {
     let root = this.tree.get_nodes()[0]; //get root
     this.tempShowNodes(root);
     let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
@@ -1045,8 +1046,20 @@ class App extends Component {
         let filterResult = this.testForFilters(node, this.state.createdFilters, taxaDataModified);
         return !filterResult;
       });
-    this.handleHideMultipleNodes(resultingNodes);
+    return resultingNodes
+  }
+ 
+  handleApplyAllFilter = () => {
+    this.handleApplyFilterModalOpen();
+    // let resultingNodes =  this.handleFindNodesToFilter();
+    // this.handleHideMultipleNodes(resultingNodes);
   };
+  handleApplyFilterModalOpen = () =>{
+    this.setState({applyFilterModalShow:true});
+  }
+  handleApplyFilterModalClose = () =>{
+    this.setState({applyFilterModalShow:false});
+  }
 
   handleRenameOpenModal = (node) => {
     this.setState({ renameModalShow: true, changingCladeNode: node });
@@ -1157,7 +1170,6 @@ class App extends Component {
     );
     var selectedNodes = this.handleFilterNodesBySNPContent(parseInt(value));
     this.setState({nodesToCollapse:selectedNodes})
-    console.log(value)
 
     selectedNodes.forEach((node)=>{
       this.tree.modify_selection(
@@ -1603,6 +1615,13 @@ class App extends Component {
                 show={this.state.filterSNPModalShow}
                 handleChanges={this.handleFilterSNPsModalSelection}
                 handleClose={this.handleFilterSNPsCloseModal}
+              />
+            )}
+                        {this.state.applyFilterModalShow && (
+              <ApplyFilterModal
+                id='apply-filter-modal'
+                show={this.state.applyFilterModalShow}
+                handleClose={this.handleApplyFilterModalClose}
               />
             )}
             {this.state.decideOrdinalModalShow && (
