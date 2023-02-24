@@ -286,9 +286,17 @@ class Phylotree extends Component {
     }
 
     componentDidUpdate(prevProp) {
+        
+        d3.selectAll("circle").on("mouseover", (function(d){
+            if(d3.event.shiftKey && !this.props.tree.is_leafnode(d)){
+                document.body.style.cursor = "zoom-in"
+            }}).bind(this))
+        .on("mouseleave", function(){document.body.style.cursor = "default"})
+        .on("wheel", this.wheelCollapse.bind(this)) 
+
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
-            this.labelNodesWithSNPContent();
+            //this.labelNodesWithSNPContent();
             return
         } 
         if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
@@ -315,6 +323,7 @@ class Phylotree extends Component {
         );
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
+
         let gradient = d3.select("#tree-display")
             .append("defs")
             .append("linearGradient")
@@ -323,8 +332,16 @@ class Phylotree extends Component {
             .attr({ offset: "0%", "stop-color": "black" })
         gradient.append("stop")
             .attr({ offset: "100%", "stop-color": "white" });
-
     }
+    
+    wheelCollapse = (node)=>{
+        if(d3.event.shiftKey && !this.props.tree.is_leafnode(node)){
+            this.collapseNode(node);
+        } 
+    }
+
+
+
     //Implements horizontal zoom only for the tree component
     horizontalZoom = (ev) => {
          if (ev.ctrlKey) {
@@ -345,19 +362,12 @@ class Phylotree extends Component {
 
         }
         if (ev.shiftKey) {
-            function wheelCollapse(node){
-                
-                if(!this.props.tree.is_leafnode(node)){
-                    this.collapseNode(node);
-                } 
-            }
-            d3.selectAll("circle")
-                .on("mouseover", (function(d){
-                    if(!this.props.tree.is_leafnode(d)){
-                        document.body.style.cursor = "zoom-in"
-                    }}).bind(this))
-                .on("mouseleave", function(){document.body.style.cursor = "default"})
-                .on("wheel", wheelCollapse.bind(this)) 
+            d3.selectAll("circle").on("mouseover", (function(d){
+                if(d3.event.shiftKey && !this.props.tree.is_leafnode(d)){
+                    document.body.style.cursor = "zoom-in"
+                }}).bind(this))
+            .on("mouseleave", function(){document.body.style.cursor = "default"})
+            .on("wheel", this.wheelCollapse.bind(this)) 
         } 
     }
 

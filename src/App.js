@@ -117,15 +117,25 @@ class App extends Component {
         "#container-labels",
         "#zoom-phylotree"
         ]) {              
-        if(id === "#zoom-phylotree"){
+        if(id === "#zoom-phylotree" ){
           var yscale = d3v5.event.transform.k;   
           d3v5.select(id)
           .attr("transform", 
                 "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
                 "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
           this.setState({yscale: yscale})
-          this.setState({yTreeKoordinate: d3v5.event.transform.y})
-                    
+        }
+        else if (id === "#heatmap-container" &&  d3.select("#heatmap-container")[0][0]!==null){     
+          d3v5.select(id)
+          .attr("transform", 
+                "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
+                "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
+        }
+        else if (id === "#md-container" && d3.select("#md-container")[0][0]!==null){     
+          d3v5.select(id)
+          .attr("transform", 
+                "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
+                "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
         }
         else{
           d3v5.select(id)
@@ -228,7 +238,7 @@ class App extends Component {
     renameModalShow: false,
     collapsedModalShow: false,
     filterSNPModalShow:false,
-    applyFilterModalShow:true,
+    applyFilterModalShow:false,
     createdFilters: [],
     nameOfFilters: [],
     activeFilters: [],
@@ -236,7 +246,7 @@ class App extends Component {
     loadAnimationShow: false,
     cladogram: false,
     yscale: 1,
-    yTreeKoordinate:0,
+
     selectedLabels:[],
     
 
@@ -337,7 +347,6 @@ class App extends Component {
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
           yscale: 1,
-          yTreeKoordinate:0,
           selectedLabels:[],
         });
       }
@@ -390,7 +399,6 @@ class App extends Component {
       SNPTable: {},
       selectedNodeId: null,
       yscale: 1,
-      yTreeKoordinate:0,
       selectedLabels :[],
     });
     this.resetZoom();
@@ -1057,8 +1065,30 @@ class App extends Component {
   handleApplyFilterModalOpen = () =>{
     this.setState({applyFilterModalShow:true});
   }
-  handleApplyFilterModalClose = () =>{
-    this.setState({applyFilterModalShow:false});
+  handleApplyFilterModalClose = (save, hide, collapseAll) =>{
+    if(save){
+      let resultingNodes =  this.handleFindNodesToFilter();
+
+      if(hide){
+        this.handleHideMultipleNodes(resultingNodes);
+        this.setState({applyFilterModalShow:false});
+        return
+      }
+      else{
+        this.handleFindNodesToFilterForCollapse(resultingNodes, collapseAll)
+      }
+    }
+    this.setState({applyFilterModalShow:false});    
+  }
+
+  handleFindNodesToFilterForCollapse = (leafnodeList, collapseAll) =>{
+    var nodesToCollapse = [];
+    leafnodeList.forEach(function(node, i){
+      if(!this.tree.is_leafnode(node)){
+        var pathToRoot = this.tree.path_to_root(node)
+        //this.tree.select_all_descendants(this.tree.path_to_root(node)[2],true,false)
+      }
+    },this)
   }
 
   handleRenameOpenModal = (node) => {
@@ -1433,7 +1463,6 @@ class App extends Component {
                   shownNodes={shownNodes} 
                   onSelection={this.handleLabelSelection}
                   clearSelection = {this.clearLabelSelection}
-                  yTreeKoordinate = {this.state.yTreeKoordinate}
                   />
                 <div className='mchild'>
                   {this.state.isLoaded ? (

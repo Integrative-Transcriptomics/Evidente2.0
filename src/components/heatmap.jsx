@@ -491,6 +491,8 @@ class Heatmap extends Component {
         this.updateComponent(true)
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
+        d3.select(`#${this.props.containerID}`).attr("horizontal-scale", 1)
+        d3.select(`#${this.props.containerID}`).attr("x-koordinate", 0)
     }
 
     horizontalZoom = (ev) => {
@@ -510,6 +512,8 @@ class Heatmap extends Component {
                 "transform",
                 `${transformString}`
             );
+            selection.attr("horizontal-scale", scale)
+            selection.attr("x-koordinate", translateX)
         }
     }
 
@@ -527,6 +531,7 @@ class Heatmap extends Component {
                 "transform",
                 `${transformString}`
             );
+            selection.attr("x-koordinate", translateX)
         }
     }
 
