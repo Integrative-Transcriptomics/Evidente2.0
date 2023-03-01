@@ -980,11 +980,20 @@ class App extends Component {
       this.handleShowNodes(this.tree.get_nodes()[0]); 
     }
     else{
-      document.body.style.cursor = "wait";
-      setTimeout(()=>{
-        this.handleDecollapseMultipleNodes(this.state.filteredNodes)
-        document.body.style.cursor = "default";
-      },10);
+      const all_nodes = this.tree.get_nodes();
+      const root = [all_nodes[0]];
+      const descendants = root.concat(this.tree.select_all_descendants(root[0], true, true));
+      this.tree.modify_selection(descendants, undefined, undefined, undefined, "false");
+      all_nodes.forEach((node) => {
+        if (node["own-collapse"]) {
+          node["show-name"] = "";
+          node["own-collapse"] = false;
+          this.handleDecollapse(node, false);
+        }
+      });
+      this.handleShowNodes(root[0]);
+      this.tree.update();
+      this.tree.trigger_refresh();
     }  
   };
   handleFilterCloseModal = (save, filter, name) => {
@@ -1332,20 +1341,6 @@ class App extends Component {
       },this)
       this.handleSelection(this.tree.get_selection());
     }
-  }
-  handleDecollapseMultipleNodes(nodeList){
-    if(nodeList.length !== 0){
-      nodeList.forEach(function(node){
-        if (node["own-collapse"]) {
-          node["show-name"] = "";
-          node["own-collapse"] = false;
-          this.handleDecollapse(node);
-        }
-        
-        this.handleSelection(this.tree.get_selection());
-      },this)
-      this.tree.update()
-    }  
   }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
