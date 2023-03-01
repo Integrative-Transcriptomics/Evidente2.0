@@ -31,7 +31,7 @@ const selectStates = {
 
 class ApplyFilterModal extends Component {      
 
-    state={disabled:true, hide:false, collapseAll:false}
+    state={disabled:true, hide:false, collapseAll:true}
 
     onChangeSelect = (selectedOption) => {
         if(selectedOption.value === "hide"){
@@ -76,7 +76,7 @@ class ApplyFilterModal extends Component {
                 ></Select>
                 <p style={{ textAlign: "justify" }}>
                 </p>
-                <RadioGroup row name="use-radio-group" defaultValue="collapeAll" onChange={(e, change)=>{this.onChangeRadio(change)}}>
+                <RadioGroup row name="use-radio-group" onChange={(e, change)=>{this.onChangeRadio(change)}}>
                     <FormControlLabel value="collapeAll" label="Collapse all nodes" control={<Radio />} disabled={this.state.disabled} />
                     <FormControlLabel value="noConflictCollapse" label="Do not collapse, in case of a conflict" control={<Radio />} disabled={this.state.disabled} />
                     <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={

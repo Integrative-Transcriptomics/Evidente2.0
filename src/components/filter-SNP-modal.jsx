@@ -18,7 +18,7 @@ class FilterSNPsModal extends Component {
                 show={this.props.show}
                 onClose={(save) => {this.props.handleClose(save);
                 }}
-                title="Collapse Nodes by Depth"
+                title="Collapse Nodes by SNP content"
             >
                 <p style={{ textAlign: "justify" }}>
                     Select a threshold to collapse all nodes that have a lower percentage of supporting SNP than the threshold.

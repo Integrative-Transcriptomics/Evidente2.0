@@ -222,6 +222,7 @@ class App extends Component {
     isLoaded: false,
     dragActive: false,
     hiddenNodes: [],
+    filteredNodes:[],
     cladeNumber: 0,
     mdinfo: [],
     availableSNPs: [],
@@ -974,8 +975,17 @@ class App extends Component {
     });
   };
   handleDeleteAllFilters = () => {
-    this.handleShowNodes(this.tree.get_nodes()[0]);
     this.setState({ createdFilters: [], nameOfFilters: [] });
+    if(this.state.hidden){
+      this.handleShowNodes(this.tree.get_nodes()[0]); 
+    }
+    else{
+      document.body.style.cursor = "wait";
+      setTimeout(()=>{
+        this.handleDecollapseMultipleNodes(this.state.filteredNodes)
+        document.body.style.cursor = "default";
+      },10);
+    }  
   };
   handleFilterCloseModal = (save, filter, name) => {
     let newFilters = [...this.state.createdFilters, filter];
@@ -1067,17 +1077,19 @@ class App extends Component {
   handleApplyFilterModalClose = (save, hide, collapseAll) =>{
     if(save){
       let resultingNodes =  this.handleFindNodesToFilter();
-
       if(hide){
+        this.setState({hidden:true})
         this.handleHideMultipleNodes(resultingNodes);
         this.setState({applyFilterModalShow:false});
         return
       }
       else{
+        this.setState({hidden:false})
         var nodesToCollapse = this.handleFindNodesToFilterForCollapse(resultingNodes, collapseAll)
+        this.setState({filteredNodes:nodesToCollapse})
         document.body.style.cursor = "wait";
         setTimeout(()=>{
-          this.handlecollapseMultipleNodes(nodesToCollapse)
+          this.handleCollapseMultipleNodes(nodesToCollapse)
           document.body.style.cursor = "default";
         });
       }
@@ -1185,7 +1197,7 @@ class App extends Component {
       this.setState({collapsedModalShow:false})
       document.body.style.cursor = "wait";
       setTimeout(()=>{
-        this.handlecollapseMultipleNodes(this.state.nodesToCollapse)
+        this.handleCollapseMultipleNodes(this.state.nodesToCollapse)
         document.body.style.cursor = "default";
       });
       return
@@ -1241,7 +1253,7 @@ class App extends Component {
       this.setState({filterSNPModalShow:false})
       document.body.style.cursor = "wait";
       setTimeout(()=>{
-        this.handlecollapseMultipleNodes(this.state.nodesToCollapse)
+        this.handleCollapseMultipleNodes(this.state.nodesToCollapse)
         document.body.style.cursor = "default";
       });
       return
@@ -1309,7 +1321,7 @@ class App extends Component {
     });
     return nodes_to_collapse
   }
-  handlecollapseMultipleNodes(nodeList){
+  handleCollapseMultipleNodes(nodeList){
     //console.log(this.props.tree.get_max_depth_of_tree());
     if(nodeList.length !== 0){
       nodeList.forEach(function(node){
@@ -1318,8 +1330,22 @@ class App extends Component {
           node["show-name"] = this.handleCollapse(node);
         }
       },this)
-      this.handleSelection(this.tree.get_selection())
+      this.handleSelection(this.tree.get_selection());
     }
+  }
+  handleDecollapseMultipleNodes(nodeList){
+    if(nodeList.length !== 0){
+      nodeList.forEach(function(node){
+        if (node["own-collapse"]) {
+          node["show-name"] = "";
+          node["own-collapse"] = false;
+          this.handleDecollapse(node);
+        }
+        
+        this.handleSelection(this.tree.get_selection());
+      },this)
+      this.tree.update()
+    }  
   }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
