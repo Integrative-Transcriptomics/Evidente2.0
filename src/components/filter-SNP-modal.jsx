@@ -23,7 +23,7 @@ class FilterSNPsModal extends Component {
                 <p style={{ textAlign: "justify" }}>
                     Select a threshold to collapse all nodes that have a lower percentage of supporting SNP than the threshold.
                 </p>
-                <Typography id={`range-slider`}>{"Depth:"}</Typography>
+                <Typography id={`range-slider`}>{"Percentage:"}</Typography>
                 <Slider
                     defaultValue={0}
                     valueLabelDisplay="auto"

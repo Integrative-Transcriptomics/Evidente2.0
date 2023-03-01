@@ -40,7 +40,6 @@ import HeatmapView from "./components/heatmap-view";
 
 
 class App extends Component {
-  //cladeNum = 0;
   zoom = null;
   state = {};
   tx = 0;
@@ -109,7 +108,6 @@ class App extends Component {
 
   verticalZoom = () => {    
     function handleZoom() { 
-      //this.handlecollapseMultipleNodes(this.state.nodesToCollapse)
       for (let id of [
         "#heatmap-container",
         "#md-container",
@@ -1029,6 +1027,7 @@ class App extends Component {
       if (!node["hidden-t"]) {
         node["hidden-t"] = true;
         this.tree.modify_selection([node], "notshown", true, true, "true");
+
       }
     }
     this.handleHide(nodeList);
@@ -1075,7 +1074,12 @@ class App extends Component {
         return
       }
       else{
-        this.handleFindNodesToFilterForCollapse(resultingNodes, collapseAll)
+        var nodesToCollapse = this.handleFindNodesToFilterForCollapse(resultingNodes, collapseAll)
+        document.body.style.cursor = "wait";
+        setTimeout(()=>{
+          this.handlecollapseMultipleNodes(nodesToCollapse)
+          document.body.style.cursor = "default";
+        });
       }
     }
     this.setState({applyFilterModalShow:false});    
@@ -1084,11 +1088,25 @@ class App extends Component {
   handleFindNodesToFilterForCollapse = (leafnodeList, collapseAll) =>{
     var nodesToCollapse = [];
     leafnodeList.forEach(function(node, i){
-      if(!this.tree.is_leafnode(node)){
         var pathToRoot = this.tree.path_to_root(node)
-        //this.tree.select_all_descendants(this.tree.path_to_root(node)[2],true,false)
-      }
+        pathToRoot.shift(); //remove first element
+        var previousNode;
+        pathToRoot.every((parentNode)=>{
+          var descendingLeafs = this.tree.select_all_descendants(parentNode,true,false) //select terminal nodes
+          if(!descendingLeafs.every(elem => leafnodeList.includes(elem) )){
+            if(previousNode !== undefined){
+              nodesToCollapse.push(previousNode)
+            }
+            else if (collapseAll){
+              nodesToCollapse.push(parentNode)
+            }
+            return false
+          }
+          previousNode = parentNode;
+          return true;
+        })
     },this)
+    return nodesToCollapse
   }
 
   handleRenameOpenModal = (node) => {
@@ -1293,13 +1311,15 @@ class App extends Component {
   }
   handlecollapseMultipleNodes(nodeList){
     //console.log(this.props.tree.get_max_depth_of_tree());
-    nodeList.forEach(function(node){
-      if(!node.is_under_collapsed_parent && !node["own-collapse"]){
-        node["own-collapse"] = true;
-        node["show-name"] = this.handleCollapse(node);
-      }
-    },this)
-    this.handleSelection(this.tree.get_selection())
+    if(nodeList.length !== 0){
+      nodeList.forEach(function(node){
+        if(!node["hidden"] && !node["own-collapse"] && !node["notshown"]){
+          node["own-collapse"] = true;
+          node["show-name"] = this.handleCollapse(node);
+        }
+      },this)
+      this.handleSelection(this.tree.get_selection())
+    }
   }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
@@ -1309,12 +1329,6 @@ class App extends Component {
       cladeParent: cladeNode,
       cladeLeaves: collapsedNodes,
     };
-    // let clade = {
-    //   name: "Clade_" + this.cladeNum,
-    //   showname: "Clade_" + this.cladeNum,
-    //   cladeParent: cladeNode,
-    //   cladeLeaves: collapsedNodes,
-    // };
 
     cladeNode.name = clade.name;
     cladeNode["show-name"] = clade.name;
@@ -1322,10 +1336,8 @@ class App extends Component {
     let jointNodes = this.state.collapsedClades.concat([clade]);
     
     this.tree.toggle_collapse(cladeNode).update();
-    
 
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
-    //this.cladeNum = this.cladeNum +1;
 
     return clade.name;
   };
