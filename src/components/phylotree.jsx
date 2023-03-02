@@ -296,7 +296,7 @@ class Phylotree extends Component {
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
-            this.labelNodesWithSNPContent();
+            //this.labelNodesWithSNPContent();
             return
         } 
         if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){

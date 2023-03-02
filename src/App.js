@@ -122,6 +122,7 @@ class App extends Component {
                 "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
                 "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
           this.setState({yscale: yscale})
+          console.log(d3v5.event.transform.y)
         }
         else if (id === "#heatmap-container" &&  d3.select("#heatmap-container")[0][0]!==null){     
           d3v5.select(id)
