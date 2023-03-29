@@ -72,96 +72,112 @@ class App extends Component {
   //         );
   //         let translateY = Math.max(transformY.y, scaleDifference);
   //         let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
-  //         id.attr("transform", `${transformString}`);        
+  //         selection.attr("transform", `${transformString}`);        
   //       }
   //     }
   //   }
   // };
-  // verticalDrag = (ev) => {
-  //   if (this.state.dragActive) {
-  //     for (let id of [
-  //       "#heatmap-container",
-  //       "#md-container",
-  //       "#zoom-phylotree",
-  //       "#container-labels",
-  //       "#guidelines-container",
-  //     ]) {
-  //       if (d3v5.select(id).node()) {
-  //         let selection = d3v5.select(id);
-  //         let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
-  //         transform = d3.transform(transform);
-  //         let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
-  //         let transformY = { y: transform.translate[1], k: transform.scale[1] };
-
-  //         let translateY = transformY.y + ev.movementY;
-  //         let scaleDifference = Math.min(
-  //           0,
-  //           this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
-  //         );
-  //         translateY = Math.max(Math.min(0, translateY), scaleDifference);
-  //         let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${transformY.k})`;
-  //         selection.attr("transform", `${transformString}`);
-  //       }
-  //     }
-  //   }
-  // };
-
-  verticalZoom = () => {    
-    function handleZoom() { 
+  verticalDrag = (ev) => {
+    if (this.state.dragActive && !ev.ctrlKey) {
       for (let id of [
         "#heatmap-container",
         "#md-container",
-        "#guidelines-container",
+        "#zoom-phylotree",
         "#container-labels",
-        "#zoom-phylotree"
-        ]) {              
-        if(id === "#zoom-phylotree" ){
-          var yscale = d3v5.event.transform.k;   
-          d3v5.select(id)
-          .attr("transform", 
-                "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
-                "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
-          this.setState({yscale: yscale})
-          console.log(d3v5.event.transform.y)
-        }
-        else if (id === "#heatmap-container" &&  d3.select("#heatmap-container")[0][0]!==null){     
-          d3v5.select(id)
-          .attr("transform", 
-                "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
-                "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
-        }
-        else if (id === "#md-container" && d3.select("#md-container")[0][0]!==null){     
-          d3v5.select(id)
-          .attr("transform", 
-                "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
-                "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
-        }
-        else{
-          d3v5.select(id)
-              .attr("transform", 
-                    "translate(" + 0 + "," + d3v5.event.transform.y+ ")"+
-                    "scale("+ 1 + "," + d3v5.event.transform.k + ") ");
+        "#guidelines-container",
+      ]) {
+        if (d3v5.select(id).node()) {
+          let selection = d3v5.select(id);
+          let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
+          transform = d3.transform(transform);
+          let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
+          let transformY = { y: transform.translate[1], k: transform.scale[1] };
+
+          let translateY = transformY.y + ev.movementY;
+          // let scaleDifference = Math.min(
+          //   0,
+          //   this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
+          // );
+          //translateY = Math.max(Math.min(0, translateY), scaleDifference);
+          let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${1})`;
+          selection.attr("transform", `${transformString}`);
         }
       }
-
-      
     }
-    this.setState({yscale: 2}); 
-    this.zoom = d3v5.zoom()
-      .filter(() => {
-        if (d3v5.event.type === 'wheel' || d3v5.event.type === 'mousedown') {
-          // don't allow zooming when pressing [shift] key
-          return !d3v5.event.shiftKey && !d3v5.event.ctrlKey;
-        }
-        return true;
-      })
-      .on('zoom', handleZoom.bind(this))
-      .scaleExtent([0.7, 5])
-      //.translateExtent([[0, 0],[800, 600]]); 
+  };
 
-    d3v5.selectAll('svg')
-      .call(this.zoom)
-      .on("dblclick.zoom", null)   
+  //Geometric Zoom
+  // verticalZoom = () => { 
+  //   function handleZoom() { 
+  //     for (let id of [
+  //       "#heatmap-container",
+  //       "#md-container",
+  //       "#guidelines-container",
+  //       "#container-labels",
+  //       "#zoom-phylotree"
+  //       ]) { 
+  //       if(id === "#zoom-phylotree" ){
+  //         this.setState({yscale: d3v5.event.transform.k})
+
+  //         d3v5.selectAll(id)
+  //         .attr("transform", 
+  //             "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
+  //             "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")          
+  //       }
+  //       else if (id === "#heatmap-container" &&  d3.select("#heatmap-container")[0][0]!==null){     
+  //         d3v5.select(id)
+  //         .attr("transform", 
+  //               "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
+  //               "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
+  //       }
+  //       else if (id === "#md-container" && d3.select("#md-container")[0][0]!==null){     
+  //         d3v5.select(id)
+  //         .attr("transform", 
+  //               "translate(" + d3v5.select(id).attr("x-koordinate")+ "," + d3v5.event.transform.y+ ")" +
+  //               "scale("+ d3v5.select(id).attr("horizontal-scale") + "," + d3v5.event.transform.k + ") ")
+  //       }
+  //       else{
+  //         d3v5.select(id)
+  //             .attr("transform", 
+  //                   "translate(" + 0 + "," + d3v5.event.transform.y+ ")"+
+  //                   "scale("+ 1 + "," + d3v5.event.transform.k + ") ");
+  //       }
+  //     }
+  //   }
+  //   this.zoom = d3v5.zoom()
+  //     .filter(() => {
+  //       if (d3v5.event.type === 'wheel' || d3v5.event.type === 'mousedown') {
+  //         // don't allow zooming when pressing [shift] key
+  //         return !d3v5.event.shiftKey && !d3v5.event.ctrlKey;
+  //       }
+  //       return true;
+  //     })
+  //     .on('zoom', handleZoom.bind(this))
+  //     .scaleExtent([0.7, 20])
+  //     //.translateExtent([[0, 0],[800, 600]]); 
+
+  //   d3v5.selectAll('svg')
+  //     .call(this.zoom)
+  //     .on("dblclick.zoom", null)   
+  // };
+
+
+  verticalZoom = (e) => { 
+    if (!e.ctrlKey&&!e.shiftKey) {       
+      var which_function = this.tree.spacing_x;
+      this.tree.size([this.tree.size()[0]-e.deltaY, this.tree.size()[1]]).update()  
+      which_function(which_function()-e.deltaY/100).update()
+      //console.log("spacing: " + which_function() + ", Size:" + this.tree.size())
+
+      this.setState({treeSizeSNPs:(this.tree.size()[0]*0.97), treeSizeHeat:(this.tree.size()[0]*0.97) })
+      if(e.deltaY > 1){
+        this.setState({treeSizeHeat:(this.tree.size()[0]*0.97-120)})
+      }
+      else{
+        this.setState({treeSizeHeat:(this.tree.size()[0]*0.97+120)})
+      }
+      console.log(e.deltaY)
+    }
   };
 
   tree = d3.layout
@@ -246,7 +262,8 @@ class App extends Component {
     loadAnimationShow: false,
     cladogram: false,
     yscale: 1,
-
+    treeSizeSNPs: 929,
+    treeSizeHeat:929, 
     selectedLabels:[],
     
 
@@ -347,6 +364,8 @@ class App extends Component {
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
           yscale: 1,
+          treeSizeSNPs:929,
+          treeSizeHeat:929, 
           selectedLabels:[],
         });
       }
@@ -399,6 +418,8 @@ class App extends Component {
       SNPTable: {},
       selectedNodeId: null,
       yscale: 1,
+      treeSizeSNPs:929,
+      treeSizeHeat:929, 
       selectedLabels :[],
     });
     this.resetZoom();
@@ -1319,6 +1340,7 @@ class App extends Component {
     });
     return nodes_to_collapse
   }
+  //! Here for filter by SNP
   handleFilterNodesBySNPContent(percentage){
     const nodes = this.tree.get_nodes();
     var nodes_to_collapse = [];
@@ -1429,9 +1451,8 @@ class App extends Component {
       .attr("class", "tooltip")
       .attr("id", "tooltip")
       .style("display", "none");
-
     this.handleInitTool();
-    this.verticalZoom();
+    //this.verticalZoom();
   }
 
   render() {
@@ -1490,6 +1511,8 @@ class App extends Component {
                   yscale = {this.state.yscale}
                   selectedLeafs = {this.state.selectedLabels}
                   nodesToCollapse = {this.state.nodesToCollapse}
+                  filterNodesBySNPContent = {this.handleFilterNodesBySNPContent}
+                  collapseMultipleNodes = {this.handleCollapseMultipleNodes}
                 />
 
                 <Labels 
@@ -1497,6 +1520,7 @@ class App extends Component {
                   shownNodes={shownNodes} 
                   onSelection={this.handleLabelSelection}
                   clearSelection = {this.clearLabelSelection}
+                  treeSize = {this.state.treeSizeSNPs}
                   />
                 <div className='mchild'>
                   {this.state.isLoaded ? (
@@ -1517,6 +1541,7 @@ class App extends Component {
                       mdinfo={this.state.mdinfo}
                       margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
                       SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+                      treeSize = {this.state.treeSizeHeat}
                       
                     />
                   ) : null}

@@ -38,7 +38,8 @@ class Heatmap extends Component {
             this.state.expectedWidth !== nextState.expectedWidth ||
             this.state.actualWidth !== nextState.actualWidth ||
             this.props.maxWidth !== nextProp.maxWidth ||
-            this.state.verticalGuideX !== nextState.verticalGuideX;
+            this.state.verticalGuideX !== nextState.verticalGuideX
+            ||((nextProp.treeSize !== undefined && nextProp.treeSize !== this.props.treeSize));
     }
 
     updateComponent(init) {

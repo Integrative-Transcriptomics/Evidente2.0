@@ -12,22 +12,31 @@ class Labels extends Component {
     shouldComponentUpdate(nextProp, nextState) {
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
-        return !isEqual(newNodes, oldNodes)
+        return (!isEqual(newNodes, oldNodes)) ||
+        ((nextProp.treeSize !== undefined && nextProp.treeSize !== this.props.treeSize))
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps, prevState) {       
+        
+        //!Important for zoom: global heigth anpassen
+
         let margin_top = this.globalHeight * 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
         let div = d3.select("#tooltip");
-        let height = this.globalHeight;
+        //let height = this.globalHeight;
+        let height = this.props.treeSize;
         let props = this.props;
         let shownNodes = props.shownNodes;
+
+        console.log("SizeLabel:"+ height)
+
         let yScale = d3.scale
             .ordinal()
             .domain(shownNodes)
             .rangeBands([0, height - margin_top]);
         let cellHeight = (height - margin_top) / shownNodes.length;
+        
         let yAxis = d3.svg
             .axis()
             .scale(yScale)

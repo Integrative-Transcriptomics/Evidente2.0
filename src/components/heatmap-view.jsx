@@ -14,7 +14,7 @@ const HeatmapView = memo((props) => {
     const handleResize = useCallback(() => {
         const margin = container.current.offsetHeight * 0.05
         setMarginTop(margin);
-        setheight(container.current.offsetHeight - margin - props.margin.bottom)
+        setheight(props.treeSize - margin - props.margin.bottom)
         setwidth(container.current.offsetWidth - props.margin.left - props.margin.right)
 
 
@@ -216,6 +216,7 @@ const HeatmapView = memo((props) => {
             SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
             isSNP={true}
             appendLines={props.visualizedMD.length > 0}
+            treeSize={props.treeSize}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
             dragActive={props.dragActive}
@@ -237,6 +238,7 @@ const HeatmapView = memo((props) => {
             isSNP={false}
             createdFilters={props.createdFilters}
             appendLines={false}
+            treeSize={props.treeSize}
         /> : null}
         {showAlert ? <Alert variant={"secondary"} style={{
             height: "100%",

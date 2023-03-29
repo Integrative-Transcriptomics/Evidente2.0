@@ -86,7 +86,7 @@ class Phylotree extends Component {
      * @param {Object} node 
      */
     collNode(node) {
-        if (!node["own-collapse"]) {
+        if (!node["own-collapse"]&& !node["hidden"]) {
             node["own-collapse"] = true;
             node["show-name"] = this.props.onCollapse(node);
         }
@@ -105,6 +105,12 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
+    collapseMultipleNodes(nodeList){
+        nodeList.forEach(function(node){
+            if(!this.props.tree.is_leafnode(node))
+            this.collNode(node)
+        },this)
+    }
     /**
      * Find the LCA of a list of nodes and aggregate it
      * @param {Object} list_of_nodenames 
@@ -297,6 +303,14 @@ class Phylotree extends Component {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
             //this.labelNodesWithSNPContent();
+            if(Object.keys(this.props.tree.get_leafs()).length > 200){
+                var filterNodes = this.props.filterNodesBySNPContent(0.5);
+                console.log(filterNodes)
+                setTimeout(()=>{
+                   this.collapseMultipleNodes(filterNodes) 
+                }); 
+               
+            }
             return
         } 
         if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
@@ -312,7 +326,7 @@ class Phylotree extends Component {
                 .select(this.container)
                 .append("svg")
                 .attr("id", "tree-display")
-                .attr({ height: this.container.offsetHeight, width: this.container.offsetWidth })
+                .attr({ height: this.container.offsetHeight, width: this.container.offsetWidth})
                 .append("g")
                 .attr("id", "transform-group")
                 .attr("transform", `translate(${[0, margin_top]})`)
@@ -321,6 +335,7 @@ class Phylotree extends Component {
                 .attr("horizontal-scale", 1)
                 .attr("x-koordinate",0)
         );
+
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
 
@@ -346,19 +361,23 @@ class Phylotree extends Component {
     horizontalZoom = (ev) => {
          if (ev.ctrlKey) {
              ev.preventDefault()
-            let selection = d3.select("#zoom-phylotree")
-            let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
-            transform = d3.transform(transform)
-            let scale = transform.scale[0]
-            scale = scale + ev.deltaY * -0.001;
-            scale = Math.min(Math.max(0.8, scale), 10);
-            let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
-            let translateX = Math.max(transform.translate[0], scaleDifference);
-            let transformString = `translate(${translateX},${transform.translate[1]})scale(${scale},${transform.scale[1]})`;
-            selection.attr("transform",`${transformString}`
-            );
-            selection.attr("horizontal-scale", scale)
-            selection.attr("x-koordinate", translateX)
+            // let selection = d3.select("#zoom-phylotree")
+            // let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
+            // transform = d3.transform(transform)
+            // let scale = transform.scale[0]
+            // scale = scale + ev.deltaY * -0.001;
+            // scale = Math.min(Math.max(0.8, scale), 10);
+            // let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
+            // let translateX = Math.max(transform.translate[0], scaleDifference);
+            // let transformString = `translate(${translateX},${transform.translate[1]})scale(${scale},${transform.scale[1]})`;
+            // selection.attr("transform",`${transformString}`
+            // );
+            // selection.attr("horizontal-scale", scale)
+            // selection.attr("x-koordinate", translateX)
+            var which_function = this.props.tree.spacing_x;
+            this.props.tree.size([this.props.tree.size()[0], this.props.tree.size()[1]-ev.deltaY]).update()  
+            which_function(which_function()-ev.deltaY/100).update()
+
 
         }
         if (ev.shiftKey) {
@@ -373,14 +392,14 @@ class Phylotree extends Component {
 
     //Implements horizontal drag only for the tree component
     horizontalDrag = (ev) => {
-        if (this.props.dragActive) {
+        if (this.props.dragActive && ev.ctrlKey) {
             ev.preventDefault()
             let selection = d3.select("#zoom-phylotree")
             let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
             transform = d3.transform(transform)
             let translateX = transform.translate[0] + ev.movementX
-            let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
-            translateX = Math.max(Math.min(10, translateX), scaleDifference);
+            // let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
+            //translateX = Math.max(Math.min(10, translateX), scaleDifference);
             let transformString = `translate(${translateX},${transform.translate[1]})scale(${transform.scale[0]},${transform.scale[1]})`;
             selection.attr(
                 "transform",
