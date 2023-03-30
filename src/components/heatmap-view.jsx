@@ -75,10 +75,22 @@ const HeatmapView = memo((props) => {
      * @param mdinfo
      * @param {*} actualClade Object for the actual clade
      */
-    const clusterSNPs = (v, k, mdinfo, actualClade) =>
-        k === "Information"
-            ? actualClade.showname
-            : _.countBy(v.map((d) => `${d.allele}${d.notsupport ? "-" : "+"}`));
+    const clusterSNPs = (v, k, mdinfo, actualClade) => {
+        if (k === "Information") {
+            return actualClade.showname;
+        }
+        else {
+            // Summarize the number of SNPs by allele
+            // Each allele can only be classified to one class
+            let count_alleles = _.countBy(v, (d) => d.allele)
+            // Remove duplicates
+            let set_alleles = _.uniqBy(v, (d) => d.allele)
+            // Add the count to the object
+            set_alleles.map((d) => d.count = count_alleles[d.allele])
+            return set_alleles;
+        }
+    }
+
     /**
      *
      * @param {*} v Value -- Data for the group to aggregate
