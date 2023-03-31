@@ -95,9 +95,8 @@ class Legend extends Component {
 
     this.props.availableMDs.forEach((row) => {
       let isSNP = row.type.toLowerCase() === "snp";
-
       let container = select(`#svg-legend-${row.name.replace(/ /g, "-")}`);
-      container.style("width", cellWidth + "px").style("height", isSNP ? "40px" : "15px");
+      container.style("width", cellWidth + "px").style("height", isSNP ? "55px" : "15px");
       container.selectAll("*").remove();
       this.props.addLegend(container, cellWidth, row);
     });

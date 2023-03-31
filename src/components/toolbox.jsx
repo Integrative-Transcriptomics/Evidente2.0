@@ -112,7 +112,7 @@ class Toolbox extends Component {
                     addMouseOver(textLeft, minExtent);
                     addMouseOver(textRight, maxExtent);
                 }
-                if (isStatic) {
+                else {
 
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
                         height: elementHeight * 2,
@@ -121,9 +121,11 @@ class Toolbox extends Component {
                 break;
 
             case "snp":
-                let cladeSpecificity = ["+", "—"];
-                let specificityLabels = ["sup.", "non-sup."];
-                let [posSpecificity, negSpecificity] = cladeSpecificity;
+
+                // Define the data for the SNP legend
+
+                let cladeSpecificity = ["mono", "para", "poly"];
+                let specificityLabels = ["sup.", "para.", "non-sup."];
                 let marginLeft = 40;
 
                 const createScale = (extent, maxRange) => {
@@ -139,9 +141,9 @@ class Toolbox extends Component {
                 };
 
                 let xScale = createScale(extent, cellWidth - marginLeft);
-                let yScale = createScale(cladeSpecificity, 30);
+                let yScale = createScale(cladeSpecificity, 45);
                 let xAxis = createAxis(xScale, "top");
-                let yAxis = createAxis(createScale(specificityLabels, 30), "left");
+                let yAxis = createAxis(createScale(specificityLabels, 45), "left");
 
                 const renderAxis = (classType, axis, transform = "") => {
                     return svg
@@ -162,21 +164,28 @@ class Toolbox extends Component {
 
                 let groupAllele = svg.selectAll("rect").data(extent).enter();
 
-                const addRectangle = (posY, fill, isMargin) => {
-                    let isPositiveN = (snp) => !isMargin && snp === "N"
+
+                // Function definition that actively adds a rectangle for each SNP to the legend
+                const addRectangle = (typeSNP) => {
+                    let fill = colorScale
+                    let posY = yScale(typeSNP);
+                    let isPositiveN = (snp) => typeSNP === "mono" && snp === "N"
                     groupAllele
                         .append("svg:rect")
                         .attr("width", legendCubeWidth - 4)
-                        .attr("height", legendCubeHeight - 4)
+                        .attr("height", legendCubeHeight - 6)
                         .attr("y", posY)
                         .attr("x", (d) => xScale(d))
-                        .attr("fill", (d) => !isMargin && d !== "N" ? fill(d) : "white")
+                        .attr("fill", (d) => typeSNP === "mono" ? fill(d) : typeSNP === "poly" ? "black" : "white")
                         .attr("stroke", (d) => isPositiveN(d) ? "white" : fill(d))
                         .attr("id", (d) => isPositiveN(d) ? "SNP-legend-N" : null)
                         .attr("stroke-width", 2);
                 };
-                addRectangle(yScale(posSpecificity), colorScale, false); // adds Positive SNPs
-                addRectangle(yScale(negSpecificity), colorScale, true); // adds Negative SNPs
+
+                for (let snp of cladeSpecificity) {
+                    addRectangle(snp);
+                }
+
                 if (svg.select("#SNP-legend-N").node()) {
                     let textForSupportingN = svg.insert("text", "#SNP-legend-N")
                         .attr("x", parseInt(svg.select("#SNP-legend-N").attr("x")) + (legendCubeWidth / 2 - 1))
@@ -194,13 +203,12 @@ class Toolbox extends Component {
 
                 }
 
-                svg.attr("transform", `translate(${marginLeft}, 12)`);
                 if (isStatic) {
-
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
-                        height: elementHeight * 3,
+                        height: elementHeight * 4,
                     });
                 }
+                svg.attr("transform", `translate(${marginLeft}, 12)`);
                 break;
 
             default:
@@ -228,11 +236,8 @@ class Toolbox extends Component {
                 let positionX, positionY;
                 if (isStatic) {
                     let temp = textWidth.map(ceiledCumulativeSum);
-                    console.log(temp)
                     positionX = [0, ...temp.map((d) => d[0])];
                     positionY = [0, ...temp.map((d) => d[1] * elementHeight)];
-                    console.log(positionX, positionY);
-                    console.log(Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight))
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
                         height: Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight),
                         //TODO: here adapt the height
