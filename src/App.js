@@ -44,7 +44,6 @@ class App extends Component {
   state = {};
   tx = 0;
   ty = 0;
-  scale = 1;
   chosenMD = "";
   
   // Create vertical zoom for all components
@@ -169,14 +168,18 @@ class App extends Component {
       which_function(which_function()-e.deltaY/100).update()
       //console.log("spacing: " + which_function() + ", Size:" + this.tree.size())
 
-      this.setState({treeSizeSNPs:(this.tree.size()[0]*0.97), treeSizeHeat:(this.tree.size()[0]*0.97) })
-      if(e.deltaY > 1){
-        this.setState({treeSizeHeat:(this.tree.size()[0]*0.97-120)})
-      }
-      else{
-        this.setState({treeSizeHeat:(this.tree.size()[0]*0.97+120)})
-      }
-      console.log(e.deltaY)
+      this.setState({treeSizeLabels:this.tree.size()[0], treeSizeHeat: this.tree.size()[0]})
+      setTimeout(()=>{
+        this.setState({treeSizeHeat: this.tree.size()[0]})
+      },10);
+      
+      // if(e.deltaY > 1){
+      //   this.setState({treeSizeHeat:(this.tree.size()[0]*0.97-120)})
+      // }
+      // else{
+      //   this.setState({treeSizeHeat:(this.tree.size()[0]*0.97+120)})
+      // }
+      console.log("TreeSize:"+this.tree.size()[0])
     }
   };
 
@@ -262,7 +265,7 @@ class App extends Component {
     loadAnimationShow: false,
     cladogram: false,
     yscale: 1,
-    treeSizeSNPs: 929,
+    treeSizeLabels: 929,
     treeSizeHeat:929, 
     selectedLabels:[],
     
@@ -364,7 +367,7 @@ class App extends Component {
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
           yscale: 1,
-          treeSizeSNPs:929,
+          treeSizeLabels:929,
           treeSizeHeat:929, 
           selectedLabels:[],
         });
@@ -418,7 +421,7 @@ class App extends Component {
       SNPTable: {},
       selectedNodeId: null,
       yscale: 1,
-      treeSizeSNPs:929,
+      treeSizeLabels:929,
       treeSizeHeat:929, 
       selectedLabels :[],
     });
@@ -908,7 +911,7 @@ class App extends Component {
   };
   handleMDChange = (ev) => {
     this.setState({
-      visualizedMD: ev.map(({ value }) => value),
+      visualizedMD: ev.map(({ value }) => value) 
     });
   };
   updateSNPTable = (nodeID, supportSNPTable, nonSupportSNPTable) => {
@@ -1520,7 +1523,7 @@ class App extends Component {
                   shownNodes={shownNodes} 
                   onSelection={this.handleLabelSelection}
                   clearSelection = {this.clearLabelSelection}
-                  treeSize = {this.state.treeSizeSNPs}
+                  treeSize = {this.state.treeSizeLabels}
                   />
                 <div className='mchild'>
                   {this.state.isLoaded ? (

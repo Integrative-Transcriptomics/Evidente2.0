@@ -29,8 +29,6 @@ class Labels extends Component {
         let props = this.props;
         let shownNodes = props.shownNodes;
 
-        console.log("SizeLabel:"+ height)
-
         let yScale = d3.scale
             .ordinal()
             .domain(shownNodes)

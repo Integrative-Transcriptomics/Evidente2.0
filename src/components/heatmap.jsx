@@ -171,7 +171,8 @@ class Heatmap extends Component {
     componentDidUpdate(prevProp, prevState) {
         if (prevState.expectedWidth === this.state.expectedWidth
             && prevState.actualWidth === this.state.actualWidth
-            && prevState.verticalGuideX === this.state.verticalGuideX) {
+            && prevState.verticalGuideX === this.state.verticalGuideX
+            ) {
             this.updateComponent(prevProp.nodes !== this.props.nodes)
         }
     }
