@@ -375,9 +375,14 @@ class Phylotree extends Component {
             // selection.attr("horizontal-scale", scale)
             // selection.attr("x-koordinate", translateX)
             var which_function = this.props.tree.spacing_x;
-            this.props.tree.size([this.props.tree.size()[0], this.props.tree.size()[1]-ev.deltaY]).update()  
-            which_function(which_function()-ev.deltaY/100).update()
-
+            if(this.props.tree.size()[1]< 400 && ev.deltaY >0) { 
+                this.props.tree.size([this.props.tree.size()[0], 331]).update();  
+                which_function(which_function()-ev.deltaY/100).update(); 
+            }
+            else{
+                this.props.tree.size([this.props.tree.size()[0], this.props.tree.size()[1]-ev.deltaY]).update();  
+                which_function(which_function()-ev.deltaY/100).update(); 
+            }
 
         }
         if (ev.shiftKey) {

@@ -77,7 +77,7 @@ class App extends Component {
   //   }
   // };
   verticalDrag = (ev) => {
-    if (this.state.dragActive && !ev.ctrlKey) {
+    if (this.state.dragActive && !ev.ctrlKey ){ 
       for (let id of [
         "#heatmap-container",
         "#md-container",
@@ -162,24 +162,25 @@ class App extends Component {
 
 
   verticalZoom = (e) => { 
-    if (!e.ctrlKey&&!e.shiftKey) {       
-      var which_function = this.tree.spacing_x;
-      this.tree.size([this.tree.size()[0]-e.deltaY, this.tree.size()[1]]).update()  
-      which_function(which_function()-e.deltaY/100).update()
-      //console.log("spacing: " + which_function() + ", Size:" + this.tree.size())
-
-      this.setState({treeSizeLabels:this.tree.size()[0], treeSizeHeat: this.tree.size()[0]})
-      setTimeout(()=>{
-        this.setState({treeSizeHeat: this.tree.size()[0]})
-      },10);
+    if (!e.ctrlKey&&!e.shiftKey) { 
       
-      // if(e.deltaY > 1){
-      //   this.setState({treeSizeHeat:(this.tree.size()[0]*0.97-120)})
-      // }
-      // else{
-      //   this.setState({treeSizeHeat:(this.tree.size()[0]*0.97+120)})
-      // }
-      console.log("TreeSize:"+this.tree.size()[0])
+      var which_function = this.tree.spacing_x;
+
+      if(this.tree.size()[0]< 929 && e.deltaY >0) {     
+        this.tree.size([808, this.tree.size()[1]]).update()  
+        which_function(which_function()-e.deltaY/100).update()
+        this.setState({treeSize:this.tree.size()[0]})
+      }
+      // else if (this.tree.size()[0]> 4758 && e.deltaY <0) {
+      //   this.tree.size([4759, this.tree.size()[1]]).update()  
+      //   which_function(which_function()-e.deltaY/100).update()
+      //   this.setState({treeSize:this.tree.size()[0]})
+      // } 
+      else{
+         this.tree.size([this.tree.size()[0]-e.deltaY, this.tree.size()[1]]).update()  
+         which_function(which_function()-e.deltaY/100).update()
+         this.setState({treeSize:this.tree.size()[0]})
+      }
     }
   };
 
@@ -265,8 +266,7 @@ class App extends Component {
     loadAnimationShow: false,
     cladogram: false,
     yscale: 1,
-    treeSizeLabels: 929,
-    treeSizeHeat:929, 
+    treeSize: 929,
     selectedLabels:[],
     
 
@@ -367,8 +367,7 @@ class App extends Component {
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
           yscale: 1,
-          treeSizeLabels:929,
-          treeSizeHeat:929, 
+          treeSize: 929, 
           selectedLabels:[],
         });
       }
@@ -421,8 +420,7 @@ class App extends Component {
       SNPTable: {},
       selectedNodeId: null,
       yscale: 1,
-      treeSizeLabels:929,
-      treeSizeHeat:929, 
+      treeSize: 929,
       selectedLabels :[],
     });
     this.resetZoom();
@@ -1523,7 +1521,7 @@ class App extends Component {
                   shownNodes={shownNodes} 
                   onSelection={this.handleLabelSelection}
                   clearSelection = {this.clearLabelSelection}
-                  treeSize = {this.state.treeSizeLabels}
+                  treeSize = {this.state.treeSize}
                   />
                 <div className='mchild'>
                   {this.state.isLoaded ? (
@@ -1544,7 +1542,7 @@ class App extends Component {
                       mdinfo={this.state.mdinfo}
                       margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
                       SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
-                      treeSize = {this.state.treeSizeHeat}
+                      treeSize = {this.state.treeSize}
                       
                     />
                   ) : null}
