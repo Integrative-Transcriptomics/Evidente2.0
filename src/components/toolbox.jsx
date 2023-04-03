@@ -5,25 +5,44 @@ import Legend from "./legend";
 import Tools from "./tools";
 import { clamp, last, round, toPairs } from "lodash";
 import * as d3 from "d3";
+import { Button } from "@material-ui/core";
+import { ExpandLess, ExpandMore } from "@material-ui/icons";
+
 
 /**
  * Tools sidebar component
  * Calls Legend, NodeInformation and Tools
  *
  */
-class Toolbox extends Component {
-    state = {};
 
-    calculateTextColor = (fill => {
+const Toolbox = (props) => {
+    const [open, setOpen] = React.useState(true);
+    const handleClick = (event) => {
+        setOpen(!open);
+    };
+    /**
+   * Transforms the metadata from Object of key->values to array of objects
+   *
+   * @param {Object} metadata Object containng the metadata names as keys, content as value.
+   */
+    const metadataToRows = (metadata) =>
+        toPairs(metadata)
+            .filter((d) => d[1].type.toLowerCase() !== "type")
+            .map((d) => ({
+                name: d[0],
+                colorScale: d[1].colorScale,
+                extent: d[1].extent,
+                type: d[1].type,
+            }));
+    const calculateTextColor = (fill) => {
         const aRgbHex = fill.slice(1).match(/.{1,2}/g);
         if (parseInt(aRgbHex[0], 16) * 0.299 + parseInt(aRgbHex[1], 16) * 0.587 + parseInt(aRgbHex[2], 16) * 0.114 > 186) {
             return ("#000000")
         } else {
             return ("#ffffff")
         }
-    })
 
-
+    }
 
     /**
      * Creates the legend within the given container.
@@ -34,7 +53,7 @@ class Toolbox extends Component {
      * @param {Object} rowOfData, defines the data
      * @param {Boolean} isStatic, defines if the output created is done for the tool or for the exporting object
      */
-    addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
+    const addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
         let svg = container.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
         let div = d3.select("#tooltip");
         let elementHeight = 15;
@@ -48,7 +67,7 @@ class Toolbox extends Component {
                     x: posX,
                     y: posY,
                 })
-                .attr("fill", this.calculateTextColor(background))
+                .attr("fill", calculateTextColor(background))
                 .classed("noselect", true)
                 .text(text);
         };
@@ -240,7 +259,6 @@ class Toolbox extends Component {
                     positionY = [0, ...temp.map((d) => d[1] * elementHeight)];
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
                         height: Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight),
-                        //TODO: here adapt the height
                     });
                 }
 
@@ -288,75 +306,93 @@ class Toolbox extends Component {
                 break;
         }
     };
-
-    /**
-     * Transforms the metadata from Object of key->values to array of objects
-     *
-     * @param {Object} metadata Object containng the metadata names as keys, content as value.
-     */
-    metadataToRows = (metadata) =>
-        toPairs(metadata)
-            .filter((d) => d[1].type.toLowerCase() !== "type")
-            .map((d) => ({
-                name: d[0],
-                colorScale: d[1].colorScale,
-                extent: d[1].extent,
-                type: d[1].type,
-            }));
-
-    render() {
-        let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
-        return (
-            <div id='toolbox' className='rchild'>
-                <HeaderButtons
-                    resetApp={this.props.resetApp}
-                    resetZoom={this.props.resetZoom} />
-                <Legend
-                    addLegend={this.addLegend}
-                    orderChanged={this.props.orderChanged}
-                    visSNPs={this.props.visSNPs}
-                    visMd={this.props.visMd}
-                    availableMDs={modifiedMetadata}
-                    onChange={this.props.onColorChange}
-                    onChangeOrder={this.props.onChangeOrder}
-                />
-                <NodeInformation
-                    SNPTable={this.props.SNPTable}
-                    onSNPaddition={this.props.onSNPaddition}
-                    onMultipleSNPaddition={this.props.onMultipleSNPaddition}
-                >
-                    Clade SNPs
-                </NodeInformation>
-                <Tools
-                    handleLoadingToggle={this.props.handleLoadingToggle}
-                    availableMDs={this.props.availableMDs}
-                    availableSNPs={this.props.availableSNPs}
-                    loadFiles={this.props.loadFiles}
-                    onStatisticsTreeRequest={this.props.onStatisticsTreeRequest}
-                    showLatestResults={this.props.showLatestResults}
-                    showLatestResultsTree={this.props.showLatestResultsTree}
-                    onMDChange={this.props.onMDChange}
-                    onSNPChange={this.props.onSNPChange}
-                    visMd={this.props.visMd}
-                    visSNPs={this.props.visSNPs}
-                    orderChanged={this.props.orderChanged}
-                    onColorChange={this.props.onColorChange}
-                    onOpenFilter={this.props.onOpenFilter}
-                    createdFilters={this.props.createdFilters}
-                    remainingNodes={this.props.remainingNodes}
-                    nameOfFilters={this.props.nameOfFilters}
-                    onDeleteFilter={this.props.onDeleteFilter}
-                    onDeleteAllFilters={this.props.onDeleteAllFilters}
-                    onApplyAllFilters={this.props.onApplyAllFilters}
-                    addLegend={this.addLegend}
-                    metadataToRows={this.metadataToRows}
-                    handleExampleLoad={this.props.handleExampleLoad}
-                >
-                    Tools
-                </Tools>
-            </div >
-        );
+    const renderTools = (props) => {
+        return (<React.Fragment>
+            <HeaderButtons
+                resetApp={props.resetApp}
+                resetZoom={props.resetZoom} />
+            <Legend
+                addLegend={addLegend}
+                orderChanged={props.orderChanged}
+                visSNPs={props.visSNPs}
+                visMd={props.visMd}
+                availableMDs={metadataToRows(props.availableMDs)}
+                onChange={props.onColorChange}
+                onChangeOrder={props.onChangeOrder}
+            />
+            <NodeInformation
+                SNPTable={props.SNPTable}
+                onSNPaddition={props.onSNPaddition}
+                onMultipleSNPaddition={props.onMultipleSNPaddition}
+            >
+                Clade SNPs
+            </NodeInformation>
+            <Tools
+                handleLoadingToggle={props.handleLoadingToggle}
+                availableMDs={props.availableMDs}
+                availableSNPs={props.availableSNPs}
+                loadFiles={props.loadFiles}
+                onStatisticsTreeRequest={props.onStatisticsTreeRequest}
+                showLatestResults={props.showLatestResults}
+                showLatestResultsTree={props.showLatestResultsTree}
+                onMDChange={props.onMDChange}
+                onSNPChange={props.onSNPChange}
+                visMd={props.visMd}
+                visSNPs={props.visSNPs}
+                orderChanged={props.orderChanged}
+                onColorChange={props.onColorChange}
+                onOpenFilter={props.onOpenFilter}
+                createdFilters={props.createdFilters}
+                remainingNodes={props.remainingNodes}
+                nameOfFilters={props.nameOfFilters}
+                onDeleteFilter={props.onDeleteFilter}
+                onDeleteAllFilters={props.onDeleteAllFilters}
+                onApplyAllFilters={props.onApplyAllFilters}
+                addLegend={addLegend}
+                metadataToRows={metadataToRows}
+                handleExampleLoad={props.handleExampleLoad}
+            >
+                Tools
+            </Tools>
+        </React.Fragment>)
     }
+
+    return (
+        <div id='toolbox' className={open ? 'rchild' : "rchild-closed"} >
+            <Button onClick={handleClick}>
+                {open ? <ExpandLess /> : <ExpandMore />}
+            </Button>
+
+            {open ? renderTools(props) : null}
+        </div >
+    )
+
 }
+// class Toolbox extends Component {
+
+//     calculateTextColor = (fill => {
+//         const aRgbHex = fill.slice(1).match(/.{1,2}/g);
+//         if (parseInt(aRgbHex[0], 16) * 0.299 + parseInt(aRgbHex[1], 16) * 0.587 + parseInt(aRgbHex[2], 16) * 0.114 > 186) {
+//             return ("#000000")
+//         } else {
+//             return ("#ffffff")
+//         }
+//     })
+
+
+
+
+
+
+
+
+
+//     render() {
+//         let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
+//         return (
+
+//         );
+//     }
+// }
 
 export default Toolbox;

@@ -19,6 +19,7 @@ const HeatmapView = memo((props) => {
 
 
     }, [container, props.margin])
+
     useEffect(() => {
         if (container.current !== null) {
             handleResize();
@@ -201,7 +202,7 @@ const HeatmapView = memo((props) => {
             showAlert = true;
         }
     }
-    return <div ref={container} style={{ height: "100%", display: "flex" }}>
+    return <div ref={container} style={{ width: "auto", height: "100%", display: "flex" }}>
         {props.visSNPs.length > 0 ? <Heatmap
             dragActive={props.dragActive}
             height={height}
@@ -247,11 +248,13 @@ const HeatmapView = memo((props) => {
         /> : null}
         {showAlert ? <Alert variant={"secondary"} style={{
             height: "100%",
+            width: "100%",
             margin: "10px",
             display: "flex",
         }}>
             <div style={{
                 height: "100%",
+                width: "100%",
                 display: "flex", justifyContent: "center",
                 alignItems: "center"
             }}>
