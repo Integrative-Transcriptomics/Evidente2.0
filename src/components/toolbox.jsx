@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import HeaderButtons from "./header-buttons";
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
@@ -267,11 +267,11 @@ const Toolbox = (props) => {
                         ? {
                             x: (d, i) => positionX[i] + textWidth[i] * 0.5,
                             y: (d, i) => positionY[i] + 12,
-                            fill: (d) => this.calculateTextColor(colorScale(d)),
+                            fill: (d) => calculateTextColor(colorScale(d)),
                         }
                         : {
                             x: (d, i) => positions[i] + textWidth[i] * 0.5,
-                            fill: (d) => this.calculateTextColor(colorScale(d)),
+                            fill: (d) => calculateTextColor(colorScale(d)),
                         }
                 );
 
@@ -306,12 +306,13 @@ const Toolbox = (props) => {
                 break;
         }
     };
-    const renderTools = (props) => {
+    const renderTools = (props, statusOpen) => {
         return (<React.Fragment>
             <HeaderButtons
                 resetApp={props.resetApp}
                 resetZoom={props.resetZoom} />
             <Legend
+                toolsShowing={statusOpen}
                 addLegend={addLegend}
                 orderChanged={props.orderChanged}
                 visSNPs={props.visSNPs}
@@ -362,37 +363,10 @@ const Toolbox = (props) => {
             <Button onClick={handleClick}>
                 {open ? <ExpandLess /> : <ExpandMore />}
             </Button>
-
-            {open ? renderTools(props) : null}
+            {open ? renderTools(props, open) : null}
         </div >
     )
 
 }
-// class Toolbox extends Component {
-
-//     calculateTextColor = (fill => {
-//         const aRgbHex = fill.slice(1).match(/.{1,2}/g);
-//         if (parseInt(aRgbHex[0], 16) * 0.299 + parseInt(aRgbHex[1], 16) * 0.587 + parseInt(aRgbHex[2], 16) * 0.114 > 186) {
-//             return ("#000000")
-//         } else {
-//             return ("#ffffff")
-//         }
-//     })
-
-
-
-
-
-
-
-
-
-//     render() {
-//         let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
-//         return (
-
-//         );
-//     }
-// }
 
 export default Toolbox;
