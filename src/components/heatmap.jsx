@@ -85,7 +85,10 @@ class Heatmap extends Component {
                 .tickFormat((d) => d)
                 .orient("top");
 
-            let yScale = d3.scale.ordinal().domain(props.y_elements).rangeBands([0, this.props.height]);
+            let yScale = d3.scale
+            .ordinal()
+            .domain(props.y_elements)
+            .rangeBands([0, this.props.height]);
 
             let yAxis = d3.svg
                 .axis()
@@ -94,6 +97,7 @@ class Heatmap extends Component {
                 .orient("left");
 
             let cellHeight = (this.props.height / props.y_elements.length - 1) - 2 * cellMargin;
+            //let cellHeight = (this.props.height / props.y_elements.length - 1) - 2 * cellMargin;
             container
                 .selectAll(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
                 .call(yAxis)

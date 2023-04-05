@@ -19,8 +19,9 @@ class Labels extends Component {
     componentDidUpdate(prevProps, prevState) {       
         
         //!Important for zoom: global heigth anpassen
-
-        let margin_top = this.globalHeight * 0.05;
+        let global_margin = this.globalHeight * 0.05;
+        let margin_top = this.props.treeSize* 0.05;
+        //console.log("global: " + margin_top1 + " tree: "+ margin_top)
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
         let div = d3.select("#tooltip");
@@ -86,6 +87,7 @@ class Labels extends Component {
             .attr("y1", 0)
             .attr("y2", 0)
             .style(guideStyle);
+        d3.select("#adds-margin").attr("transform", `translate(${[0, global_margin]})`);
     }
 
     componentDidMount() {
@@ -107,7 +109,7 @@ class Labels extends Component {
             .attr("class", " own-label y axis")
             .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
         
-        this.globalHeight = this.container.offsetHeight;
+        this.globalHeight = this.props.treeSize;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
@@ -168,7 +170,7 @@ class Labels extends Component {
         var brush = d3v5.brushY()
                         .filter(() => {
                             if (d3v5.event.type === 'mousedown') {
-                            // don't allow zooming when pressing [shift] key
+                            // do not allow brushing if ctrl is not pressed
                             return d3v5.event.ctrlKey;
                             }
                             return true;

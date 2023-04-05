@@ -77,7 +77,7 @@ class App extends Component {
   //   }
   // };
   verticalDrag = (ev) => {
-    if (this.state.dragActive && !ev.ctrlKey ){ 
+    if (this.state.dragActive && !ev.ctrlKey && !ev.shiftKey){ 
       for (let id of [
         "#heatmap-container",
         "#md-container",
@@ -103,6 +103,31 @@ class App extends Component {
         }
       }
     }
+    // else if(this.state.dragActive){
+    //   for (let id of [
+    //     //"#heatmap-container",
+    //     //"#md-container",
+    //     "#zoom-phylotree",
+    //     "#container-labels",
+    //     //"#guidelines-container",
+    //   ]) {
+    //     let selection = d3v5.select(id);
+    //     let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
+    //     transform = d3.transform(transform);
+    //     let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
+    //     let transformY = { y: transform.translate[1], k: transform.scale[1] };
+
+    //     let translateY = transformY.y + ev.movementY;
+    //     // let scaleDifference = Math.min(
+    //     //   0,
+    //     //   this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
+    //     // );
+    //     //translateY = Math.max(Math.min(0, translateY), scaleDifference);
+    //     let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${1})`;
+    //     selection.attr("transform", `${transformString}`);
+    //   }
+    // }
+      
   };
 
   //Geometric Zoom
@@ -169,7 +194,7 @@ class App extends Component {
       if(this.tree.size()[0]< 929 && e.deltaY >0) {     
         this.tree.size([808, this.tree.size()[1]]).update()  
         which_function(which_function()-e.deltaY/100).update()
-        this.setState({treeSize:this.tree.size()[0]})
+        this.setState({treeSize:this.tree.size()[0]}) //*1.0075
       }
       // else if (this.tree.size()[0]> 4758 && e.deltaY <0) {
       //   this.tree.size([4759, this.tree.size()[1]]).update()  
@@ -180,6 +205,16 @@ class App extends Component {
          this.tree.size([this.tree.size()[0]-e.deltaY, this.tree.size()[1]]).update()  
          which_function(which_function()-e.deltaY/100).update()
          this.setState({treeSize:this.tree.size()[0]})
+
+        //  let selection = d3v5.select("#zoom-phylotree");
+        //  let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
+        //  transform = d3.transform(transform);
+        //  let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
+        //  let transformY = { y: transform.translate[1], k: transform.scale[1] };
+
+        //  let translateY = transformY.y + this.state.treeSize *0.0055 ;
+        //  let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${1})`;
+        //  selection.attr("transform", `${transformString}`);
       }
     }
   };
@@ -376,21 +411,42 @@ class App extends Component {
     }
   };
 
-  resetZoom = function () {
+  // resetZoom = function () {
+  //   for (let id of [
+  //     "#heatmap-container",
+  //     "#md-container",
+  //     "#zoom-phylotree",
+  //     "#container-labels",
+  //     "#guidelines-container",
+  //   ]) {
+  //     if (d3v5.select(id).node()) {
+  //       let selection = d3v5.select(id);
+  //       // let transformString = `translate(${0},${0})scale(${1},${1})`;
+  //       // selection.attr("transform", `${transformString}`);
+  //       selection.transition()
+  //         .call(this.zoom.transform, d3v5.zoomIdentity);
+  //     }
+  //   }
+  // };
+
+  resetZoom = () => {
+    var which_function = this.tree.spacing_x;
+    this.tree.size([929, 691]) 
+    which_function(which_function()-20).update()
+    this.setState({treeSize:this.tree.size()[0]})
+    this.tree.update();
+    this.tree.trigger_refresh();
+
     for (let id of [
-      "#heatmap-container",
-      "#md-container",
-      "#zoom-phylotree",
-      "#container-labels",
-      "#guidelines-container",
-    ]) {
-      if (d3v5.select(id).node()) {
-        let selection = d3v5.select(id);
-        // let transformString = `translate(${0},${0})scale(${1},${1})`;
-        // selection.attr("transform", `${transformString}`);
-        selection.transition()
-          .call(this.zoom.transform, d3v5.zoomIdentity);
-      }
+        "#heatmap-container",
+        "#md-container",
+        "#zoom-phylotree",
+        "#container-labels",
+        "#guidelines-container",
+      ]) {
+        let selection = d3.select(id);
+        let transformString = `translate(${0},${0})scale(${1},${1})`;
+        selection.attr("transform", `${transformString}`);
     }
   };
   /**
@@ -437,6 +493,9 @@ class App extends Component {
         node["own-collapse"] = false;
         this.handleDecollapse(node, false);
       }
+      if(node["just-collapsed"]){
+        node["just-collapsed"]=false;
+      }
     });
     this.handleShowNodes(root[0]);
     this.tree.update();
@@ -449,6 +508,7 @@ class App extends Component {
    * @param {string} exampleName - Name of the example data to load.
    */
   handleExampleLoad = async (exampleName) => {
+    this.resetApp()
     this.setState(this.initialState);
     this.handleLoadingToggle(true);
 
@@ -788,6 +848,7 @@ class App extends Component {
    * @param formData
    */
   handleSubmit = async (formData) => {
+    this.resetApp()
     this.handleLoadingToggle(true);
     let response = await fetch(`/api/upload`, {
       method: "post",
@@ -1361,10 +1422,12 @@ class App extends Component {
         if(!node["hidden"] && !node["own-collapse"] && !node["notshown"]){
           node["own-collapse"] = true;
           node["show-name"] = this.handleCollapse(node);
+          node["just-collapsed"]=true;
         }
       },this)
       this.handleSelection(this.tree.get_selection());
     }
+    this.tree.trigger_refresh();
   }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
@@ -1443,6 +1506,16 @@ class App extends Component {
     this.tree.update();
     // this.tree.update();
   };
+  handleMouseDown = () =>{
+    this.setState({ dragActive: true })
+    const all_nodes = this.tree.get_nodes();
+    all_nodes.forEach((node) => {
+      if(node["just-collapsed"]){
+        node["just-collapsed"]=false;
+      }
+    });
+    this.tree.trigger_refresh();
+  }
 
 
   componentDidMount() {
@@ -1473,7 +1546,7 @@ class App extends Component {
                 className='parent-svgs'
                 ref={(el) => (this.svgContainer = el)}
                 onWheel={this.verticalZoom}
-                onMouseDown={() => this.setState({ dragActive: true })}
+                onMouseDown={this.handleMouseDown}
                 onMouseMove={this.verticalDrag}
                 onMouseUp={() => this.setState({ dragActive: false })}
               >
@@ -1514,6 +1587,7 @@ class App extends Component {
                   nodesToCollapse = {this.state.nodesToCollapse}
                   filterNodesBySNPContent = {this.handleFilterNodesBySNPContent}
                   collapseMultipleNodes = {this.handleCollapseMultipleNodes}
+                  treeSize = {this.state.treeSize}
                 />
 
                 <Labels 

@@ -63,6 +63,9 @@ class Phylotree extends Component {
         if (node["show-snp-table"]) {
             container.selectAll("circle").style({ fill: "lightblue" }).attr({ r: 7 });
         }
+        if (node["just-collapsed"]) {
+            container.selectAll("circle").style({ fill: "red" }).attr({ r: 6 });
+        }
     };
 
     /**
@@ -76,6 +79,9 @@ class Phylotree extends Component {
         } else {
             node["show-name"] = "";
             node["own-collapse"] = false;
+            if(node["just-collapsed"]){
+                node["just-collapsed"]=false;
+            }
             this.props.onDecollapse(node);
         }
         this.props.onSelection(this.props.tree.get_selection());
@@ -101,6 +107,9 @@ class Phylotree extends Component {
             node["show-name"] = "";
             node["own-collapse"] = false;
             this.props.onDecollapse(node);
+            if(node["just-collapsed"]){
+                node["just-collapsed"]=false;
+            }
         }
         this.props.onSelection(this.props.tree.get_selection());
     }
@@ -118,8 +127,11 @@ class Phylotree extends Component {
     collapse_lca = function(list_of_nodenames){
 
         var ancestor = this.props.tree.get_lca(list_of_nodenames);
+
         if(ancestor !== undefined && !d3.layout.phylotree.is_leafnode(ancestor)){
             this.collapseNode(ancestor)
+            ancestor["just-collapsed"]=true
+            this.props.tree.trigger_refresh();
         }
         else{
             alert("Clades can not be collapsed further. You need to select at least two more leafnodes.")
@@ -303,7 +315,7 @@ class Phylotree extends Component {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
             //this.labelNodesWithSNPContent();
-            if(Object.keys(this.props.tree.get_leafs()).length > 200){
+            if(Object.keys(this.props.tree.get_leafs()).length > 150){
                 var filterNodes = this.props.filterNodesBySNPContent(0.5);
                 console.log(filterNodes)
                 setTimeout(()=>{
