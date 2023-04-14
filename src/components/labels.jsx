@@ -20,8 +20,9 @@ class Labels extends Component {
         
         //!Important for zoom: global heigth anpassen
         let global_margin = this.globalHeight * 0.05;
+        //console.log(global_margin)
         let margin_top = this.props.treeSize* 0.05;
-        //console.log("global: " + margin_top1 + " tree: "+ margin_top)
+        console.log("global: " + global_margin + " tree: "+ margin_top)
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
         let div = d3.select("#tooltip");
@@ -34,6 +35,7 @@ class Labels extends Component {
             .ordinal()
             .domain(shownNodes)
             .rangeBands([0, height - margin_top]);
+        
         let cellHeight = (height - margin_top) / shownNodes.length;
         
         let yAxis = d3.svg

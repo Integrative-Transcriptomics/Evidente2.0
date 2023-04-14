@@ -300,7 +300,7 @@ class Phylotree extends Component {
 
         return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) ||
         (nextProp.yscale !== undefined && nextProp.yscale !== this.props.yscale) ||
-        (nextProp.selectedLeafs !== undefined && nextProp.selectedLeafs !== this.props.selectedLeafs) 
+        (nextProp.selectedLeaves !== undefined && nextProp.selectedLeaves !== this.props.selectedLeaves) 
     }
 
     componentDidUpdate(prevProp) {
@@ -315,7 +315,7 @@ class Phylotree extends Component {
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
             //this.labelNodesWithSNPContent();
-            if(Object.keys(this.props.tree.get_leafs()).length > 150){
+            if(Object.keys(this.props.tree.get_leaves()).length > 150){
                 var filterNodes = this.props.filterNodesBySNPContent(0.5);
                 console.log(filterNodes)
                 setTimeout(()=>{
@@ -325,8 +325,8 @@ class Phylotree extends Component {
             }
             return
         } 
-        if(this.props.selectedLeafs.length !== 0 && this.props.selectedLeafs.length !== 1){
-            this.collapse_lca(this.props.selectedLeafs);
+        if(this.props.selectedLeaves.length !== 0 && this.props.selectedLeaves.length !== 1){
+            this.collapse_lca(this.props.selectedLeaves);
             return
         }    
     }

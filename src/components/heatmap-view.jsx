@@ -177,7 +177,11 @@ const HeatmapView = memo((props) => {
         taxaData = taxaData.filter(({Information}) => shownNodes.includes(Information))
         return taxaData;
     }, [clusterData, props.collapsedClades.length, props.mdinfo, props.taxadata, shownNodes]);
-    const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, (props.treeSize-929*0.05-props.margin.bottom)]);
+    const yScale = d3.scale
+        .ordinal()
+        .domain(shownNodes)
+        .rangeBands([0, (props.treeSize-929*0.05-props.margin.bottom)]);
+        
     let snpWidth = 0
     let mdWidth = 0;
     let linesWidth = 50;
@@ -219,10 +223,11 @@ const HeatmapView = memo((props) => {
             isSNP={true}
             appendLines={props.visualizedMD.length > 0}
             treeSize={props.treeSize}
+            //globalMargin={container.current.offsetHeight * 0.05}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
             dragActive={props.dragActive}
-            height={(props.treeSize - props.treeSize*0.05 - props.margin.bottom)}
+            height={(props.treeSize - props.treeSize*0.05   - props.margin.bottom)}
             maxWidth={mdWidth}
             data={filteredTaxaData}
             yScale={yScale}
@@ -241,6 +246,7 @@ const HeatmapView = memo((props) => {
             createdFilters={props.createdFilters}
             appendLines={false}
             treeSize={props.treeSize}
+            //globalMargin={container.current.offsetHeight * 0.05}
         /> : null}
         {showAlert ? <Alert variant={"secondary"} style={{
             height: "100%",

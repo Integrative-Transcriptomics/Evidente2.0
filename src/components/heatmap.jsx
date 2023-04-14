@@ -89,7 +89,6 @@ class Heatmap extends Component {
             .ordinal()
             .domain(props.y_elements)
             .rangeBands([0, this.props.height]);
-
             let yAxis = d3.svg
                 .axis()
                 .scale(yScale)
@@ -168,7 +167,7 @@ class Heatmap extends Component {
                 });
             }
 
-        }
+        }        
         this.highlight_leaves(this.props.selectedNodes);
     }
 
@@ -489,7 +488,7 @@ class Heatmap extends Component {
         let transform = d3v5.select("#zoom-phylotree").attr("transform") || "translate(0,0)scale(1,1)"
         transform = d3.transform(transform)
         container.attr("transform", `translate(0,${transform.translate[1]}), scale(1,${transform.scale[1]}) `)
-        container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`);
+        container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`)
         container.append("g").attr("class", "x axis");
     }
 
@@ -549,7 +548,8 @@ class Heatmap extends Component {
                 width={this.state.expectedWidth}
                 height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
-                <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}>
+                {/* <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}> */}
+                <g transform={`translate( ${this.props.margin.left}, ${46.45})`}>
                     <g id={this.props.containerID}>
                         {this.state.verticalGuideX ?
                             <line x1={this.state.verticalGuideX} x2={this.state.verticalGuideX}
@@ -560,7 +560,8 @@ class Heatmap extends Component {
 
                 </g>
                 {this.props.appendLines ?
-                    <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
+                    // <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
+                    <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${46.45})`}>
                         <GuideLines yScale={this.props.yScale} width={this.props.margin.right}
                             height={this.props.height} setIsCustomWidth={this.props.setIsCustomWidth} />
                     </g>

@@ -188,11 +188,13 @@ class App extends Component {
 
   verticalZoom = (e) => { 
     if (!e.ctrlKey&&!e.shiftKey) { 
+      // console.log(this.tree.get_nodes())
+      // console.log(Object.keys(this.tree.get_leaves()).length)
       
       var which_function = this.tree.spacing_x;
 
-      if(this.tree.size()[0]< 929 && e.deltaY >0) {     
-        this.tree.size([808, this.tree.size()[1]]).update()  
+      if(this.tree.size()[0]< 1049 && e.deltaY >0) {     
+        this.tree.size([928, this.tree.size()[1]]).update()  
         which_function(which_function()-e.deltaY/100).update()
         this.setState({treeSize:this.tree.size()[0]}) //*1.0075
       }
@@ -1197,8 +1199,8 @@ class App extends Component {
         pathToRoot.shift(); //remove first element
         var previousNode;
         pathToRoot.every((parentNode)=>{
-          var descendingLeafs = this.tree.select_all_descendants(parentNode,true,false) //select terminal nodes
-          if(!descendingLeafs.every(elem => leafnodeList.includes(elem) )){
+          var descendingLeaves = this.tree.select_all_descendants(parentNode,true,false) //select terminal nodes
+          if(!descendingLeaves.every(elem => leafnodeList.includes(elem) )){
             if(previousNode !== undefined){
               nodesToCollapse.push(previousNode)
             }
@@ -1583,7 +1585,7 @@ class App extends Component {
                   dialog={this.dialog}
                   shownNodes={shownNodes}
                   yscale = {this.state.yscale}
-                  selectedLeafs = {this.state.selectedLabels}
+                  selectedLeaves = {this.state.selectedLabels}
                   nodesToCollapse = {this.state.nodesToCollapse}
                   filterNodesBySNPContent = {this.handleFilterNodesBySNPContent}
                   collapseMultipleNodes = {this.handleCollapseMultipleNodes}
