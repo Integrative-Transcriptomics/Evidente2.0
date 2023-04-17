@@ -314,15 +314,17 @@ class Phylotree extends Component {
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
-            //this.labelNodesWithSNPContent();
+            this.labelNodesWithSNPContent();
             if(Object.keys(this.props.tree.get_leaves()).length > 150){
                 var filterNodes = this.props.filterNodesBySNPContent(0.5);
                 console.log(filterNodes)
+                document.body.style.cursor = "wait"
                 setTimeout(()=>{
-                   this.collapseMultipleNodes(filterNodes) 
-                }); 
-               
-            }
+                this.collapseMultipleNodes(filterNodes) 
+                document.body.style.cursor = "default";
+                });   
+             }
+            
             return
         } 
         if(this.props.selectedLeaves.length !== 0 && this.props.selectedLeaves.length !== 1){
