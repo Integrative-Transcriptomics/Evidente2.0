@@ -390,6 +390,14 @@ class Tools extends Component {
                 >
                   Choose a treshold
                 </Button>
+                <Button
+                  variant='secondary'
+                  onClick={() => {
+                    this.props.onRemoveFilterSNPs();
+                  }}
+                >
+                  Remove Filter
+                </Button>
                 </Form>
               </Card.Body>
             </Accordion.Collapse>

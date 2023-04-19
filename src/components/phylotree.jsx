@@ -316,8 +316,8 @@ class Phylotree extends Component {
             this.renderTree(this.props.newick);
             this.labelNodesWithSNPContent();
             if(Object.keys(this.props.tree.get_leaves()).length > 150){
-                var filterNodes = this.props.filterNodesBySNPContent(0.5);
-                console.log(filterNodes)
+                var filterNodes = this.props.filterNodesBySNPContent(5);
+                //console.log(filterNodes)
                 document.body.style.cursor = "wait"
                 setTimeout(()=>{
                 this.collapseMultipleNodes(filterNodes) 

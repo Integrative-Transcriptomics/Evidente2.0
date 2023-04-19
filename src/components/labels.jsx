@@ -22,7 +22,7 @@ class Labels extends Component {
         let global_margin = this.globalHeight * 0.05;
         //console.log(global_margin)
         let margin_top = this.props.treeSize* 0.05;
-        console.log("global: " + global_margin + " tree: "+ margin_top)
+        //console.log("global: " + global_margin + " tree: "+ margin_top)
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
         let div = d3.select("#tooltip");

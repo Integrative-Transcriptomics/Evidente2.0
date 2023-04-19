@@ -1364,6 +1364,24 @@ class App extends Component {
       this.setState({filterSNPModalShow:false})
     }
   }
+  handleRemoveFilterSNPs = ()=>{
+
+      const all_nodes = this.tree.get_nodes();
+      const root = [all_nodes[0]];
+      const descendants = root.concat(this.tree.select_all_descendants(root[0], true, true));
+      this.tree.modify_selection(descendants, undefined, undefined, undefined, "false");
+      all_nodes.forEach((node) => {
+        if (node["own-collapse"]) {
+          node["show-name"] = "";
+          node["own-collapse"] = false;
+          this.handleDecollapse(node, false);
+        }
+      });
+      this.handleShowNodes(root[0]);
+      this.tree.update();
+      this.tree.trigger_refresh();
+
+  }
 
   handleColorChange = (metadataName) => {
     this.chosenMD = metadataName;
@@ -1641,6 +1659,7 @@ class App extends Component {
                 onColorChange={this.handleColorChange}
                 onOpenFilter={this.handleFilterOpenModal}
                 onOpenFilterSNPs = {this.handleFilterSNPsOpenModal}
+                onRemoveFilterSNPs = {this.handleRemoveFilterSNPs}
                 SNPTable={this.state.SNPTable}
                 availableMDs={this.state.mdinfo}
                 availableSNPs={this.state.availableSNPs}

@@ -338,6 +338,7 @@ class Toolbox extends Component {
                     onColorChange={this.props.onColorChange}
                     onOpenFilter={this.props.onOpenFilter}
                     onOpenFilterSNPs = {this.props.onOpenFilterSNPs}
+                    onRemoveFilterSNPs = {this.props.onRemoveFilterSNPs}
                     createdFilters={this.props.createdFilters}
                     remainingNodes={this.props.remainingNodes}
                     nameOfFilters={this.props.nameOfFilters}
