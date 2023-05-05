@@ -45,6 +45,7 @@ class App extends Component {
   tx = 0;
   ty = 0;
   chosenMD = "";
+  numSNPs=0
   
   // Create vertical zoom for all components
   // verticalZoom = (e) => {
@@ -303,7 +304,6 @@ class App extends Component {
     loadAnimationShow: false,
     cladogram: false,
     yscale: 1,
-    treeSize: 929,
     selectedLabels:[],
     
 
@@ -404,7 +404,6 @@ class App extends Component {
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
           yscale: 1,
-          treeSize: 929, 
           selectedLabels:[],
         });
       }
@@ -412,24 +411,6 @@ class App extends Component {
       this.sortSnpData();
     }
   };
-
-  // resetZoom = function () {
-  //   for (let id of [
-  //     "#heatmap-container",
-  //     "#md-container",
-  //     "#zoom-phylotree",
-  //     "#container-labels",
-  //     "#guidelines-container",
-  //   ]) {
-  //     if (d3v5.select(id).node()) {
-  //       let selection = d3v5.select(id);
-  //       // let transformString = `translate(${0},${0})scale(${1},${1})`;
-  //       // selection.attr("transform", `${transformString}`);
-  //       selection.transition()
-  //         .call(this.zoom.transform, d3v5.zoomIdentity);
-  //     }
-  //   }
-  // };
 
   resetZoom = () => {
     var which_function = this.tree.spacing_x;
@@ -895,6 +876,10 @@ class App extends Component {
     this.sortSnpData();
   };
 
+  handleInitialSizes = (treeMargin, treeSize ) =>{
+    this.setState({treeMargin:treeMargin,treeSize:treeSize})
+   }
+
   /**
    * Verifies if the node is a visible End-node
    * @param {Object} node of Phylotree library
@@ -1007,6 +992,7 @@ class App extends Component {
       document.body.style.cursor = "";
     }, 5);
   };
+
   handleHideSNPs = (list_of_snps) => {
     const curr = this.state.visualizedSNPs;
     var next = curr.filter((snp) => !list_of_snps.includes(snp));
@@ -1435,7 +1421,9 @@ class App extends Component {
     });
     return nodes_to_collapse
   }
+
   handleCollapseMultipleNodes(nodeList){
+    const start = Date.now();
     //console.log(this.props.tree.get_max_depth_of_tree());
     if(nodeList.length !== 0){
       nodeList.forEach(function(node){
@@ -1448,6 +1436,8 @@ class App extends Component {
       this.handleSelection(this.tree.get_selection());
     }
     this.tree.trigger_refresh();
+    const end = Date.now();
+    console.log(`Execution time: ${end - start} ms`);
   }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
@@ -1535,6 +1525,7 @@ class App extends Component {
       }
     });
     this.tree.trigger_refresh();
+
   }
 
 
@@ -1608,6 +1599,7 @@ class App extends Component {
                   filterNodesBySNPContent = {this.handleFilterNodesBySNPContent}
                   collapseMultipleNodes = {this.handleCollapseMultipleNodes}
                   treeSize = {this.state.treeSize}
+                  initialSizes ={this.handleInitialSizes}
                 />
 
                 <Labels 
@@ -1616,6 +1608,7 @@ class App extends Component {
                   onSelection={this.handleLabelSelection}
                   clearSelection = {this.clearLabelSelection}
                   treeSize = {this.state.treeSize}
+                  treeMargin ={this.state.treeMargin}
                   />
                 <div className='mchild'>
                   {this.state.isLoaded ? (
@@ -1637,6 +1630,7 @@ class App extends Component {
                       margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
                       SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
                       treeSize = {this.state.treeSize}
+                      treeMargin ={this.state.treeMargin}
                       
                     />
                   ) : null}

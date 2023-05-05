@@ -314,7 +314,7 @@ class Phylotree extends Component {
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
-            this.labelNodesWithSNPContent();
+            //this.labelNodesWithSNPContent();
             if(Object.keys(this.props.tree.get_leaves()).length > 150){
                 var filterNodes = this.props.filterNodesBySNPContent(5);
                 //console.log(filterNodes)
@@ -335,6 +335,7 @@ class Phylotree extends Component {
 
     componentDidMount() {
         let margin_top = this.container.offsetHeight * 0.05;
+        this.props.initialSizes(margin_top, this.container.offsetHeight);
         this.props.tree.size([this.container.offsetHeight, this.container.offsetWidth]).svg(
             d3
                 .select(this.container)

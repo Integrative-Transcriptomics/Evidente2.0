@@ -549,7 +549,7 @@ class Heatmap extends Component {
                 height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
                 {/* <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}> */}
-                <g transform={`translate( ${this.props.margin.left}, ${46.45})`}>
+                <g transform={`translate( ${this.props.margin.left}, ${this.props.treeMargin})`}>
                     <g id={this.props.containerID}>
                         {this.state.verticalGuideX ?
                             <line x1={this.state.verticalGuideX} x2={this.state.verticalGuideX}
@@ -561,7 +561,7 @@ class Heatmap extends Component {
                 </g>
                 {this.props.appendLines ?
                     // <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
-                    <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${46.45})`}>
+                    <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.treeMargin})`}>
                         <GuideLines yScale={this.props.yScale} width={this.props.margin.right}
                             height={this.props.height} setIsCustomWidth={this.props.setIsCustomWidth} />
                     </g>

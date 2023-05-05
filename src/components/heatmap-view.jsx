@@ -180,7 +180,7 @@ const HeatmapView = memo((props) => {
     const yScale = d3.scale
         .ordinal()
         .domain(shownNodes)
-        .rangeBands([0, (props.treeSize-929*0.05-props.margin.bottom)]);
+        .rangeBands([0, (props.treeSize - props.treeSize*0.05 - props.margin.bottom)]);
         
     let snpWidth = 0
     let mdWidth = 0;
@@ -223,7 +223,7 @@ const HeatmapView = memo((props) => {
             isSNP={true}
             appendLines={props.visualizedMD.length > 0}
             treeSize={props.treeSize}
-            //globalMargin={container.current.offsetHeight * 0.05}
+            treeMargin ={props.treeMargin}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
             dragActive={props.dragActive}
@@ -246,7 +246,7 @@ const HeatmapView = memo((props) => {
             createdFilters={props.createdFilters}
             appendLines={false}
             treeSize={props.treeSize}
-            //globalMargin={container.current.offsetHeight * 0.05}
+            treeMargin ={props.treeMargin}
         /> : null}
         {showAlert ? <Alert variant={"secondary"} style={{
             height: "100%",
