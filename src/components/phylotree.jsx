@@ -98,21 +98,6 @@ class Phylotree extends Component {
         }
         this.props.onSelection(this.props.tree.get_selection());
     }
-    /**
-     * Aggregates the selected clade
-     * @param {Object} node 
-     */
-    decollNode(node){
-        if (node["own-collapse"]) {
-            node["show-name"] = "";
-            node["own-collapse"] = false;
-            this.props.onDecollapse(node);
-            if(node["just-collapsed"]){
-                node["just-collapsed"]=false;
-            }
-        }
-        this.props.onSelection(this.props.tree.get_selection());
-    }
 
     collapseMultipleNodes(nodeList){
         nodeList.forEach(function(node){
@@ -314,10 +299,9 @@ class Phylotree extends Component {
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
-            //this.labelNodesWithSNPContent();
+            this.labelNodesWithSNPContent();
             if(Object.keys(this.props.tree.get_leaves()).length > 150){
                 var filterNodes = this.props.filterNodesBySNPContent(5);
-                //console.log(filterNodes)
                 document.body.style.cursor = "wait"
                 setTimeout(()=>{
                 this.collapseMultipleNodes(filterNodes) 
@@ -370,25 +354,10 @@ class Phylotree extends Component {
         } 
     }
 
-
-
     //Implements horizontal zoom only for the tree component
     horizontalZoom = (ev) => {
          if (ev.ctrlKey) {
              ev.preventDefault()
-            // let selection = d3.select("#zoom-phylotree")
-            // let transform = selection.attr("transform") || "translate(0,0)scale(1,1)"
-            // transform = d3.transform(transform)
-            // let scale = transform.scale[0]
-            // scale = scale + ev.deltaY * -0.001;
-            // scale = Math.min(Math.max(0.8, scale), 10);
-            // let scaleDifference = Math.min(0, this.container.offsetWidth - (this.container.offsetWidth * transform.scale[0]))
-            // let translateX = Math.max(transform.translate[0], scaleDifference);
-            // let transformString = `translate(${translateX},${transform.translate[1]})scale(${scale},${transform.scale[1]})`;
-            // selection.attr("transform",`${transformString}`
-            // );
-            // selection.attr("horizontal-scale", scale)
-            // selection.attr("x-koordinate", translateX)
             var which_function = this.props.tree.spacing_x;
             if(this.props.tree.size()[1]< 400 && ev.deltaY >0) { 
                 this.props.tree.size([this.props.tree.size()[0], 331]).update();  

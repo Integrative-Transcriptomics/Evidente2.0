@@ -19,10 +19,7 @@ class Labels extends Component {
     componentDidUpdate(prevProps, prevState) {       
         
         //!Important for zoom: global heigth anpassen
-        let global_margin = this.globalHeight * 0.05;
-        //console.log(global_margin)
         let margin_top = this.props.treeSize* 0.05;
-        console.log("global: " + global_margin + " tree: "+ margin_top)
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
         let div = d3.select("#tooltip");
@@ -90,7 +87,6 @@ class Labels extends Component {
             .attr("y2", 0)
             .style(guideStyle);
         d3.select("#adds-margin").attr("transform", `translate(${[0, this.props.treeMargin]})`);
-        console.log(this.props.treeMargin)
     }
 
     componentDidMount() {
@@ -160,7 +156,6 @@ class Labels extends Component {
                         .style("font-weight", 400)
                 }
             });
-            //console.log(list)
             this.selectedLabels = list
         }
         function endBrush(){
