@@ -60,7 +60,7 @@ header {
   page-break-inside: avoid;
 }
 .lchild {
-  max-width: 35%;
+  max-width: 30vw;
   -webkit-box-flex: 1;
   -webkit-flex: 1;
   -ms-flexbox: 1;
