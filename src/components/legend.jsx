@@ -66,7 +66,17 @@ class Legend extends Component {
     paper: {
       margin: theme.spacing(4),
     },
+    svgCell: {
+      width: "50%",
+      maxWidth: "50%",
+      overflow: "hidden",
+      whiteSpace: "nowrap",
+      textOverflow: "ellipsis",
+    },
   }));
+
+
+
 
   constructor(props) {
     super(props);
@@ -262,11 +272,12 @@ class Legend extends Component {
   renderTypes = (row) => {
     let isSNP = row.type.toLowerCase() === "snp";
     let cellWidth = document.body.clientWidth * 0.10;
+
     return (
 
       row.extent.length <= 12 ?
         <React.Fragment>
-          <TableCell align='left'>
+          <TableCell className={this.classes.svgCell} align='left'>
             <svg
               id={`svg-legend-${row.name.replace(/ /g, "-")} `}
               style={{ "width": cellWidth, height: isSNP ? "55px" : "15px" }}>
@@ -305,11 +316,13 @@ class Legend extends Component {
   }
 
   renderLegendRow = (row) => {
-    // let cellWidth = widthTools.current.clientWidth / 2;
+    let cellWidth = document.body.clientWidth * 0.05;
     // console.log(cellWidth)
+
     return (<React.Fragment key={`react - fragment - ${row.name} `}>
-      <TableRow key={row.name}>
-        <TableCell scope='row' style={{ alignItems: "center" }}>
+      <TableRow style={{ maxWidth: "100%" }} key={row.name}>
+        <TableCell scope='row'
+        >
           <div style={{ display: "flex" }}>
             <OverlayTrigger
               placement='left'
@@ -317,12 +330,8 @@ class Legend extends Component {
             >
               <span
                 style={{
-                  // maxWidth: containerCell.offsetWidth / 4,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  display: "block",
-                  cursor: "default",
+                  overflow: "hidden", whiteSpace: "nowrap",
+                  textOverflow: "ellipsis", maxWidth: cellWidth
                 }}
               >
                 {row.name}
@@ -347,7 +356,7 @@ class Legend extends Component {
       </TableRow>
 
 
-    </React.Fragment>)
+    </React.Fragment >)
   }
 
   header = ["Name", "Color Scale", ""];
@@ -372,7 +381,7 @@ class Legend extends Component {
     let accountForLegend = [...this.props.visMd, this.props.visSNPs.length > 0 ? "SNP" : null];
     return (
       <React.Fragment>
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", maxWidth: "100%" }}>
           <h4>Legend</h4>
           <AntSwitch
             size='small'
@@ -383,9 +392,9 @@ class Legend extends Component {
         <div style={{ padding: "0px 10px" }}>
           <div className={this.classes.container}>
             <Collapse in={this.state.checked}>
-              <Paper elevation={4} className={this.classes.paper} ref={containerCell}>
-                <TableContainer>
-                  <Table size='small' aria-label='sticky table'>
+              <Paper elevation={4} className={this.classes.paper} >
+                <TableContainer style={{ maxWidth: "100%" }}>
+                  <Table size='small' aria-label='sticky table' style={{ maxWidth: "100%" }}>
                     <TableHead>
                       <TableRow>
                         {this.header.map((title) => (
@@ -393,7 +402,7 @@ class Legend extends Component {
                         ))}
                       </TableRow>
                     </TableHead>
-                    <TableBody ref={containerWidth}>
+                    <TableBody>
                       <React.Fragment>
 
                         {
