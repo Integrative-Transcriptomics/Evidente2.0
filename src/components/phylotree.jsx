@@ -99,6 +99,10 @@ class Phylotree extends Component {
         this.props.onSelection(this.props.tree.get_selection());
     }
 
+    /**
+     * Aggregates all nodes of a list
+     * @param {Object} nodeList 
+     */
     collapseMultipleNodes(nodeList){
         nodeList.forEach(function(node){
             if(!this.props.tree.is_leafnode(node))
@@ -299,6 +303,8 @@ class Phylotree extends Component {
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
+
+            //collapse nodes by SNP conten 5 Percent if the tree has more than 150 leaves
             this.labelNodesWithSNPContent();
             if(Object.keys(this.props.tree.get_leaves()).length > 150){
                 var filterNodes = this.props.filterNodesBySNPContent(5);

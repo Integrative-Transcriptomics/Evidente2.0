@@ -17,13 +17,10 @@ class Labels extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {       
-        
-        //!Important for zoom: global heigth anpassen
         let margin_top = this.props.treeSize* 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
-        let div = d3.select("#tooltip");
-        //let height = this.globalHeight;
+        let div = d3.select("#tooltip");;
         let height = this.props.treeSize;
         let props = this.props;
         let shownNodes = props.shownNodes;

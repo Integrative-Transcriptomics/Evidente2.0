@@ -47,6 +47,9 @@ class App extends Component {
   chosenMD = "";
   numSNPs=0
   
+  /**
+  Panning in vertical direction
+   **/
   verticalDrag = (ev) => {
     if (this.state.dragActive && !ev.ctrlKey && !ev.shiftKey){ 
       for (let id of [
@@ -71,6 +74,9 @@ class App extends Component {
     } 
   };
 
+  /**
+  Semantic zoom in vertical direction
+   **/
   verticalZoom = (e) => { 
     if (!e.ctrlKey&&!e.shiftKey) {  
       
@@ -281,6 +287,9 @@ class App extends Component {
     }
   };
 
+    /**
+   * Resets the zoom to the original state of the visualization.
+   */
   resetZoom = () => {
     var which_function = this.tree.spacing_x;
     this.tree.size([929, 691]) 
@@ -1162,8 +1171,6 @@ class App extends Component {
     }
   }
 
-
-
   handleFilterSNPsOpenModal =()=>{
     this.setState({filterSNPModalShow:true});
   }
@@ -1389,7 +1396,6 @@ class App extends Component {
     this.tree.trigger_refresh();
 
   }
-
 
   componentDidMount() {
     d3.select("body")
