@@ -201,52 +201,84 @@ class Legend extends Component {
 
   }
   renderCategorical = (row, cellWidth, elementHeight, marginText, yPosition) => {
+    const startDrag = (event) => {
+      event.preventDefault();
+      const group = event.target;
+
+      // Store initial positions
+      const initialMousePos = { x: event.clientX };
+      const initialRectPos = { x: group.getAttribute("x") };
+
+      const drag = (event) => {
+        const distanceX = event.clientX - initialMousePos.x;
+
+        // Update the group element position
+        group.setAttribute("x", parseInt(initialRectPos.x) + distanceX);
+      };
+
+      const stopDrag = () => {
+        // Remove event listeners
+        document.removeEventListener("mousemove", drag);
+        document.removeEventListener("mouseup", stopDrag);
+      };
+
+      // Register event listeners
+      document.addEventListener("mousemove", drag);
+      document.addEventListener("mouseup", stopDrag);
+    };
+
     let textWidth = [];
-    let cummulativeWidth = 0;
+    let cumulativeWidth = 0;
     let canvas = document.createElement("canvas");
     let context = canvas.getContext("2d");
     context.font = "10px Arial";
-
-    let text = row.extent.map(a => {
+    row.extent.forEach((a) => {
       let thisWidth = context.measureText(a).width + 10;
-      let textElement = <g key={`legend-rectangles-allCategories-${a}`}
-        style={{ "cursor": "grab" }}
-        onDragStart={(d) => {
-          console.log("second")
-        }}
-        onDrag={(d) => {
-          console.log(d)
-          console.log("first")
-          this.attr("transform", "translate(" + d.x + "," + d.y + ")")
-        }
-        }>
-        <rect key={`legend-rectangles-${a}`}
-          fill={row.colorScale(a)}
-          x={cummulativeWidth}
-          y={yPosition - 10}
-          width={thisWidth}
-          height={elementHeight}
+      textWidth.push(thisWidth);
+      cumulativeWidth += thisWidth;
+    });
 
-        /><text className="noselect"
-          key={`legend-text-${a}`}
-          x={cummulativeWidth + thisWidth * 0.5}
-          textAnchor="middle"
-          fontSize="10px"
-          fill={this.calculateTextColor(row.colorScale(a))}
-          y={yPosition}
-        >{a}</text>
-      </g >
-      cummulativeWidth += thisWidth
-      return textElement
+    let scalingFactor = cellWidth / cumulativeWidth;
+    if (scalingFactor > 1) {
+      textWidth = textWidth.map((a) => a * scalingFactor);
     }
-    )
-    // text.forEach(d => textWidth.push(d.getComputedTextLength() + 10));
-    return text
+    let startPosition = 0;
+    let text = row.extent.map((text, i) => {
+      let textElement = (
+        <g
+          key={`legend-rectangles-allCategories-${text}`}
+          style={{ cursor: "grab" }}
+          onMouseDown={startDrag}
+        >
+          <rect
+            key={`legend-rectangles-${text}`}
+            fill={row.colorScale(text)}
+            x={startPosition}
+            y={yPosition - 10}
+            width={textWidth[i]}
+            height={elementHeight}
+          />
+          <text
+            className="noselect"
+            key={`legend-text-${text}`}
+            x={startPosition + textWidth[i] * 0.5}
+            textAnchor="middle"
+            fontSize="10px"
+            fill={this.calculateTextColor(row.colorScale(text))}
+            y={yPosition}
+          >
+            {text}
+          </text>
+        </g>
+      );
+      startPosition += textWidth[i];
+      return textElement;
+    });
+    return text;
+  };
 
-  }
 
   fillSVG = (row, cellWidth) => {
-    console.log(row.type)
     let marginText = 2;
     let yPosition = 15 * 0.75;
     let elementHeight = 15;
@@ -277,10 +309,11 @@ class Legend extends Component {
 
       row.extent.length <= 12 ?
         <React.Fragment>
-          <TableCell className={this.classes.svgCell} align='left'>
+          <TableCell align='left'>
             <svg
               id={`svg-legend-${row.name.replace(/ /g, "-")} `}
               style={{ "width": cellWidth, height: isSNP ? "55px" : "15px" }}>
+
               {this.fillSVG(row, cellWidth)}
             </svg>
           </TableCell>
@@ -296,7 +329,7 @@ class Legend extends Component {
               <EditIcon />
             </IconButton>
           </TableCell>
-        </React.Fragment>
+        </React.Fragment >
         :
         <TableCell align='center' colSpan={2}>
           <Button

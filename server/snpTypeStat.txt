@@ -1,0 +1,3 @@
+Monophyletic Alleles: 25
+Paraphyletic Alleles: 2
+Polyphyletic Alleles: 3

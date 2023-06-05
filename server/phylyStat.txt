@@ -1,0 +1,3 @@
+Monophyletic SNPs: 52
+Paraphyletic SNPs: 5
+Polyphyletic SNPs: 6

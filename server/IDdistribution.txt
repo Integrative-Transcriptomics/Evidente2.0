@@ -1,0 +1,13 @@
+1	Toy_strain_1
+2	Toy_strain_2
+3	Toy_strain_3
+4	2,3,
+5	Toy_strain_4
+6	4,5,
+7	1,6,
+8	Toy_strain_5
+9	Toy_strain_6
+10	8,9,
+11	Toy_strain_7
+12	10,11,
+13	7,12,
