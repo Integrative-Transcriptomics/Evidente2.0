@@ -13,9 +13,9 @@ body,
   height: 100%;
 }
 
-.overflow-allowed{
+/* .overflow-allowed{
   overflow: auto !important;
-}
+} */
 .overflow-blocked{
   overflow: hidden !important;
 }

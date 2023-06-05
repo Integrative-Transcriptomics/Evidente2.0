@@ -337,6 +337,8 @@ class Toolbox extends Component {
                     orderChanged={this.props.orderChanged}
                     onColorChange={this.props.onColorChange}
                     onOpenFilter={this.props.onOpenFilter}
+                    onOpenFilterSNPs = {this.props.onOpenFilterSNPs}
+                    onRemoveFilterSNPs = {this.props.onRemoveFilterSNPs}
                     createdFilters={this.props.createdFilters}
                     remainingNodes={this.props.remainingNodes}
                     nameOfFilters={this.props.nameOfFilters}

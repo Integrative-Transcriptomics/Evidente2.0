@@ -162,7 +162,7 @@ def call_classico(tmpdir, nwk, snp):
         fp_nwk.flush()
         fp_snp.flush()
         env = dict(os.environ)
-        subprocess.run(["java", "-jar", ScriptDir + "/classico.jar", fp_snp.name,
+        subprocess.run(["java", "-jar", "-Xms4G", ScriptDir + "/classico.jar", fp_snp.name,
                         fp_nwk.name, tmpdir], env=env)
 
 

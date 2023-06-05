@@ -38,7 +38,8 @@ class Heatmap extends Component {
             this.state.expectedWidth !== nextState.expectedWidth ||
             this.state.actualWidth !== nextState.actualWidth ||
             this.props.maxWidth !== nextProp.maxWidth ||
-            this.state.verticalGuideX !== nextState.verticalGuideX;
+            this.state.verticalGuideX !== nextState.verticalGuideX
+            ||((nextProp.treeSize !== undefined && nextProp.treeSize !== this.props.treeSize));
     }
 
     updateComponent(init) {
@@ -66,9 +67,7 @@ class Heatmap extends Component {
         }
         if (this.state.expectedWidth !== expectedVizWidth) {
             this.setState({ expectedWidth: expectedVizWidth })
-
         }
-
 
         if (init) {
             this.initHeatmap(container);
@@ -86,8 +85,10 @@ class Heatmap extends Component {
                 .tickFormat((d) => d)
                 .orient("top");
 
-            let yScale = d3.scale.ordinal().domain(props.y_elements).rangeBands([0, this.props.height]);
-
+            let yScale = d3.scale
+            .ordinal()
+            .domain(props.y_elements)
+            .rangeBands([0, this.props.height]);
             let yAxis = d3.svg
                 .axis()
                 .scale(yScale)
@@ -95,6 +96,7 @@ class Heatmap extends Component {
                 .orient("left");
 
             let cellHeight = (this.props.height / props.y_elements.length - 1) - 2 * cellMargin;
+            //let cellHeight = (this.props.height / props.y_elements.length - 1) - 2 * cellMargin;
             container
                 .selectAll(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
                 .call(yAxis)
@@ -165,14 +167,15 @@ class Heatmap extends Component {
                 });
             }
 
-        }
+        }        
         this.highlight_leaves(this.props.selectedNodes);
     }
 
     componentDidUpdate(prevProp, prevState) {
         if (prevState.expectedWidth === this.state.expectedWidth
             && prevState.actualWidth === this.state.actualWidth
-            && prevState.verticalGuideX === this.state.verticalGuideX) {
+            && prevState.verticalGuideX === this.state.verticalGuideX
+            ) {
             this.updateComponent(prevProp.nodes !== this.props.nodes)
         }
     }
@@ -485,7 +488,7 @@ class Heatmap extends Component {
         let transform = d3v5.select("#zoom-phylotree").attr("transform") || "translate(0,0)scale(1,1)"
         transform = d3.transform(transform)
         container.attr("transform", `translate(0,${transform.translate[1]}), scale(1,${transform.scale[1]}) `)
-        container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`);
+        container.append("g").attr("class", `${this.isSNP ? "SNP" : "Metadata"} y axis`)
         container.append("g").attr("class", "x axis");
     }
 
@@ -493,6 +496,8 @@ class Heatmap extends Component {
         this.updateComponent(true)
         this.container.addEventListener("mousemove", this.horizontalDrag)
         this.container.addEventListener('wheel', this.horizontalZoom)
+        d3.select(`#${this.props.containerID}`).attr("horizontal-scale", 1)
+        d3.select(`#${this.props.containerID}`).attr("x-koordinate", 0)
     }
 
     horizontalZoom = (ev) => {
@@ -512,9 +517,9 @@ class Heatmap extends Component {
                 "transform",
                 `${transformString}`
             );
-
+            selection.attr("horizontal-scale", scale)
+            selection.attr("x-koordinate", translateX)
         }
-
     }
 
     horizontalDrag = (ev) => {
@@ -531,6 +536,7 @@ class Heatmap extends Component {
                 "transform",
                 `${transformString}`
             );
+            selection.attr("x-koordinate", translateX)
         }
     }
 
@@ -542,7 +548,8 @@ class Heatmap extends Component {
                 width={this.state.expectedWidth}
                 height={this.props.height + this.props.margin.top + this.props.margin.bottom}
             >
-                <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}>
+                {/* <g transform={`translate( ${this.props.margin.left}, ${this.props.margin.top})`}> */}
+                <g transform={`translate( ${this.props.margin.left}, ${this.props.treeMargin})`}>
                     <g id={this.props.containerID}>
                         {this.state.verticalGuideX ?
                             <line x1={this.state.verticalGuideX} x2={this.state.verticalGuideX}
@@ -553,7 +560,8 @@ class Heatmap extends Component {
 
                 </g>
                 {this.props.appendLines ?
-                    <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
+                    // <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.margin.top})`}>
+                    <g transform={`translate( ${this.state.actualWidth - this.props.margin.right}, ${this.props.treeMargin})`}>
                         <GuideLines yScale={this.props.yScale} width={this.props.margin.right}
                             height={this.props.height} setIsCustomWidth={this.props.setIsCustomWidth} />
                     </g>

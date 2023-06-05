@@ -20,6 +20,9 @@ import UploadFilesModal from "./components/upload-files-modal";
 import UploadGOFilesModal from "./components/upload-go-files-modal";
 import GOResultModal from "./components/go-result-modal";
 import TreeResultModal from "./components/tree-result-modal";
+import CollapseModal from "./components/collapse-depth-modal";
+import FilterSNPsModal from "./components/filter-SNP-modal";
+import ApplyFilterModal from "./components/apply-filter-modal";
 
 //import ResizableModal from "./components/resizable";
 // import { PushSpinner } from "react-spinners-kit";
@@ -31,45 +34,24 @@ import * as d3 from "d3";
 import * as d3v5 from "d3v5";
 import * as $ from "jquery";
 import * as _ from "lodash";
-
 import "bootstrap";
 import HeatmapView from "./components/heatmap-view";
+//import { ThreeSixty } from "@material-ui/icons";
+
 
 class App extends Component {
+  zoom = null;
   state = {};
+  tx = 0;
+  ty = 0;
   chosenMD = "";
-  // Create vertical zoom for all components
-  verticalZoom = (e) => {
-    if (!e.ctrlKey) {
-      for (let id of [
-        "#heatmap-container",
-        "#md-container",
-        "#zoom-phylotree",
-        "#container-labels",
-        "#guidelines-container",
-      ]) {
-        if (d3v5.select(id).node()) {
-          let selection = d3v5.select(id);
-          let transform = selection.attr("transform") || "translate(0,0)scale(1,1)";
-          transform = d3.transform(transform);
-          let horizontalZoom = { x: transform.translate[0], k: transform.scale[0] };
-          let transformY = { y: transform.translate[1], k: transform.scale[1] };
-          let scale = transformY.k + e.deltaY * -0.001;
-          scale = Math.min(Math.max(0.8, scale), 10);
-          //TODO if scale is smaller than one, allow movement
-          let scaleDifference = Math.min(
-            0,
-            this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
-          );
-          let translateY = Math.max(transformY.y, scaleDifference);
-          let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${scale})`;
-          selection.attr("transform", `${transformString}`);
-        }
-      }
-    }
-  };
+  numSNPs=0
+  
+  /**
+  Panning in vertical direction
+   **/
   verticalDrag = (ev) => {
-    if (this.state.dragActive) {
+    if (this.state.dragActive && !ev.ctrlKey && !ev.shiftKey){ 
       for (let id of [
         "#heatmap-container",
         "#md-container",
@@ -85,15 +67,34 @@ class App extends Component {
           let transformY = { y: transform.translate[1], k: transform.scale[1] };
 
           let translateY = transformY.y + ev.movementY;
-          let scaleDifference = Math.min(
-            0,
-            this.svgContainer.offsetHeight - this.svgContainer.offsetHeight * transformY.k
-          );
-          translateY = Math.max(Math.min(0, translateY), scaleDifference);
-          let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${transformY.k})`;
+          let transformString = `translate(${horizontalZoom.x},${translateY})scale(${horizontalZoom.k},${1})`;
           selection.attr("transform", `${transformString}`);
         }
       }
+    } 
+  };
+
+  /**
+  Semantic zoom in vertical direction
+   **/
+  verticalZoom = (e) => { 
+    if (!e.ctrlKey&&!e.shiftKey) {  
+      
+      var which_function = this.tree.spacing_x;
+
+      //Restrict zooming if tree gets small
+      if(this.tree.size()[0]< 1049 && e.deltaY >0) {     
+        this.tree.size([928, this.tree.size()[1]]).update()  
+        which_function(which_function()-e.deltaY/100).update()
+        this.setState({treeSize:this.tree.size()[0]}) //*1.0075
+      }
+      else{
+         this.tree.size([this.tree.size()[0]-e.deltaY, this.tree.size()[1]]).update()  
+         which_function(which_function()-e.deltaY/100).update()
+         this.setState({treeSize:this.tree.size()[0]})
+         //d3.select("#tree-display").attr("height",this.state.treeSize)
+      }
+
     }
   };
 
@@ -152,27 +153,34 @@ class App extends Component {
   tree = this.tree.branch_length(this.tree_branch_upgma);
 
   initialState = {
-    // resetClick: 0,
     isLoaded: false,
     dragActive: false,
     hiddenNodes: [],
+    filteredNodes:[],
     cladeNumber: 0,
     mdinfo: [],
     availableSNPs: [],
     collapsedClades: [],
     selectedNodes: [],
+    nodesToCollapse: [],
     visualizedMD: [],
     visualizedSNPs: [],
     SNPTable: {},
     selectedNodeId: null,
     ordinalModalShow: false,
     renameModalShow: false,
+    collapsedModalShow: false,
+    filterSNPModalShow:false,
+    applyFilterModalShow:false,
     createdFilters: [],
     nameOfFilters: [],
     activeFilters: [],
     orderChanged: false,
     loadAnimationShow: false,
     cladogram: false,
+    yscale: 1,
+    selectedLabels:[],
+    
 
     //-------------------------------------------------
     // added for holding preprocessed statistical data
@@ -185,6 +193,7 @@ class App extends Component {
     all_snps: [],
     node_to_snps: {},
     tree_size: 0,
+    tree_depth: 0,
     tree_snps: 0,
     in_gene_tree: 0,
     subtree_size: 0,
@@ -269,6 +278,8 @@ class App extends Component {
           tree_size: json.tree_size,
           tree_snps: json.num_snps,
           all_snps: json.all_snps,
+          yscale: 1,
+          selectedLabels:[],
         });
       }
       $("#welcome-modal-button").text("Close");
@@ -276,25 +287,33 @@ class App extends Component {
     }
   };
 
-  resetZoom = function () {
+    /**
+   * Resets the zoom to the original state of the visualization.
+   */
+  resetZoom = () => {
+    var which_function = this.tree.spacing_x;
+    this.tree.size([929, 691]) 
+    which_function(which_function()-20).update()
+    this.setState({treeSize:this.tree.size()[0]})
+    this.tree.update();
+    this.tree.trigger_refresh();
+
     for (let id of [
-      "#heatmap-container",
-      "#md-container",
-      "#zoom-phylotree",
-      "#container-labels",
-      "#guidelines-container",
-    ]) {
-      if (d3v5.select(id).node()) {
-        let selection = d3v5.select(id);
+        "#heatmap-container",
+        "#md-container",
+        "#zoom-phylotree",
+        "#container-labels",
+        "#guidelines-container",
+      ]) {
+        let selection = d3.select(id);
         let transformString = `translate(${0},${0})scale(${1},${1})`;
         selection.attr("transform", `${transformString}`);
-      }
     }
   };
+
   /**
    * Resets the view to the original state of the visualization.
    */
-
   resetApp = () => {
     this.setState({
       hiddenNodes: [],
@@ -317,6 +336,9 @@ class App extends Component {
       visualizedSNPs: [],
       SNPTable: {},
       selectedNodeId: null,
+      yscale: 1,
+      treeSize: 929,
+      selectedLabels :[],
     });
     this.resetZoom();
     const all_nodes = this.tree.get_nodes();
@@ -332,6 +354,9 @@ class App extends Component {
         node["own-collapse"] = false;
         this.handleDecollapse(node, false);
       }
+      if(node["just-collapsed"]){
+        node["just-collapsed"]=false;
+      }
     });
     this.handleShowNodes(root[0]);
     this.tree.update();
@@ -344,6 +369,7 @@ class App extends Component {
    * @param {string} exampleName - Name of the example data to load.
    */
   handleExampleLoad = async (exampleName) => {
+    this.resetApp()
     this.setState(this.initialState);
     this.handleLoadingToggle(true);
 
@@ -683,6 +709,7 @@ class App extends Component {
    * @param formData
    */
   handleSubmit = async (formData) => {
+    this.resetApp()
     this.handleLoadingToggle(true);
     let response = await fetch(`/api/upload`, {
       method: "post",
@@ -726,6 +753,10 @@ class App extends Component {
     this.handleLoadingToggle(false);
     this.sortSnpData();
   };
+
+  handleInitialSizes = (treeMargin, treeSize ) =>{
+    this.setState({treeMargin:treeMargin,treeSize:treeSize})
+   }
 
   /**
    * Verifies if the node is a visible End-node
@@ -804,7 +835,7 @@ class App extends Component {
   };
   handleMDChange = (ev) => {
     this.setState({
-      visualizedMD: ev.map(({ value }) => value),
+      visualizedMD: ev.map(({ value }) => value) 
     });
   };
   updateSNPTable = (nodeID, supportSNPTable, nonSupportSNPTable) => {
@@ -839,6 +870,7 @@ class App extends Component {
       document.body.style.cursor = "";
     }, 5);
   };
+
   handleHideSNPs = (list_of_snps) => {
     const curr = this.state.visualizedSNPs;
     var next = curr.filter((snp) => !list_of_snps.includes(snp));
@@ -893,8 +925,26 @@ class App extends Component {
     });
   };
   handleDeleteAllFilters = () => {
-    this.handleShowNodes(this.tree.get_nodes()[0]);
     this.setState({ createdFilters: [], nameOfFilters: [] });
+    if(this.state.hidden){
+      this.handleShowNodes(this.tree.get_nodes()[0]); 
+    }
+    else{
+      const all_nodes = this.tree.get_nodes();
+      const root = [all_nodes[0]];
+      const descendants = root.concat(this.tree.select_all_descendants(root[0], true, true));
+      this.tree.modify_selection(descendants, undefined, undefined, undefined, "false");
+      all_nodes.forEach((node) => {
+        if (node["own-collapse"]) {
+          node["show-name"] = "";
+          node["own-collapse"] = false;
+          this.handleDecollapse(node, false);
+        }
+      });
+      this.handleShowNodes(root[0]);
+      this.tree.update();
+      this.tree.trigger_refresh();
+    }  
   };
   handleFilterCloseModal = (save, filter, name) => {
     let newFilters = [...this.state.createdFilters, filter];
@@ -946,6 +996,7 @@ class App extends Component {
       if (!node["hidden-t"]) {
         node["hidden-t"] = true;
         this.tree.modify_selection([node], "notshown", true, true, "true");
+
       }
     }
     this.handleHide(nodeList);
@@ -960,8 +1011,8 @@ class App extends Component {
     this.handleShowOnHeatmap(this.tree.descendants(node));
   }
 
-  handleApplyAllFilter = () => {
-    let root = this.tree.get_nodes()[0];
+  handleFindNodesToFilter = () => {
+    let root = this.tree.get_nodes()[0]; //get root
     this.tempShowNodes(root);
     let taxaDataModified = _.keyBy(this.state.taxamd, "Information");
     let resultingNodes = this.tree
@@ -971,12 +1022,66 @@ class App extends Component {
         let filterResult = this.testForFilters(node, this.state.createdFilters, taxaDataModified);
         return !filterResult;
       });
-    this.handleHideMultipleNodes(resultingNodes);
+    return resultingNodes
+  }
+ 
+  handleApplyAllFilter = () => {
+    this.handleApplyFilterModalOpen();
   };
+  handleApplyFilterModalOpen = () =>{
+    this.setState({applyFilterModalShow:true});
+  }
+  handleApplyFilterModalClose = (save, hide, collapseAll) =>{
+    if(save){
+      let resultingNodes =  this.handleFindNodesToFilter();
+      if(hide){
+        this.setState({hidden:true})
+        this.handleHideMultipleNodes(resultingNodes);
+        this.setState({applyFilterModalShow:false});
+        return
+      }
+      else{
+        this.setState({hidden:false})
+        var nodesToCollapse = this.handleFindNodesToFilterForCollapse(resultingNodes, collapseAll)
+        this.setState({filteredNodes:nodesToCollapse})
+        document.body.style.cursor = "wait";
+        setTimeout(()=>{
+          this.handleCollapseMultipleNodes(nodesToCollapse)
+          document.body.style.cursor = "default";
+        });
+      }
+    }
+    this.setState({applyFilterModalShow:false});    
+  }
+
+  handleFindNodesToFilterForCollapse = (leafnodeList, collapseAll) =>{
+    var nodesToCollapse = [];
+    leafnodeList.forEach(function(node, i){
+        var pathToRoot = this.tree.path_to_root(node)
+        pathToRoot.shift(); //remove first element
+        var previousNode;
+        pathToRoot.every((parentNode)=>{
+          var descendingLeaves = this.tree.select_all_descendants(parentNode,true,false) //select terminal nodes
+          if(!descendingLeaves.every(elem => leafnodeList.includes(elem) )){
+            if(previousNode !== undefined){
+              nodesToCollapse.push(previousNode)
+            }
+            else if (collapseAll){
+              nodesToCollapse.push(parentNode)
+            }
+            return false
+          }
+          previousNode = parentNode;
+          return true;
+        })
+    },this)
+    return nodesToCollapse
+  }
 
   handleRenameOpenModal = (node) => {
     this.setState({ renameModalShow: true, changingCladeNode: node });
   };
+
   handleRenameCloseModal = (save, node, name) => {
     name = name.replace(/[^a-zA-Z0-9_-]/g, "_");
     let given_names = this.tree
@@ -1012,6 +1117,132 @@ class App extends Component {
       });
     }
   };
+  handleCollapseOpenModal =()=>{
+    this.setState({collapsedModalShow:true, tree_depth:this.tree.get_max_depth_of_tree()});
+  }
+
+  handleCollapseModalSelection =(value)=>{
+    this.tree.modify_selection(
+      this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+      undefined,
+      undefined,
+      undefined,
+      "false"
+    );
+    var selectedNodes = this.handlefindNodesByDepth(parseInt(value));
+    this.setState({nodesToCollapse:selectedNodes})
+
+    selectedNodes.forEach((node)=>{
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(node, true, true),
+        undefined,
+        undefined,
+        undefined,
+        "true"
+      );
+    });
+  }
+  handleCollapseCloseModal=(save)=>{
+    if(save){
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+        undefined,
+        undefined,
+        undefined,
+        "false"
+      );   
+      this.setState({collapsedModalShow:false})
+      document.body.style.cursor = "wait";
+      setTimeout(()=>{
+        this.handleCollapseMultipleNodes(this.state.nodesToCollapse)
+        document.body.style.cursor = "default";
+      });
+      return
+    }
+    else{
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+        undefined,
+        undefined,
+        undefined,
+        "false"
+      );   
+      this.setState({collapsedModalShow:false})
+    }
+  }
+
+  handleFilterSNPsOpenModal =()=>{
+    this.setState({filterSNPModalShow:true});
+  }
+
+  handleFilterSNPsModalSelection =(value)=>{
+    this.tree.modify_selection(
+      this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+      undefined,
+      undefined,
+      undefined,
+      "false"
+    );
+    var selectedNodes = this.handleFilterNodesBySNPContent(parseInt(value));
+    this.setState({nodesToCollapse:selectedNodes})
+
+    selectedNodes.forEach((node)=>{
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(node, true, true),
+        undefined,
+        undefined,
+        undefined,
+        "true"
+      );
+    });
+  }
+  handleFilterSNPsCloseModal=(save)=>{
+    if(save){
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+        undefined,
+        undefined,
+        undefined,
+        "false"
+      );   
+      this.setState({filterSNPModalShow:false})
+      document.body.style.cursor = "wait";
+      setTimeout(()=>{
+        this.handleCollapseMultipleNodes(this.state.nodesToCollapse)
+        document.body.style.cursor = "default";
+      });
+      return
+    }
+    else{
+      this.tree.modify_selection(
+        this.tree.select_all_descendants(this.tree.get_nodes()[0], true, true),
+        undefined,
+        undefined,
+        undefined,
+        "false"
+      );   
+      this.setState({filterSNPModalShow:false})
+    }
+  }
+  handleRemoveFilterSNPs = ()=>{
+
+      const all_nodes = this.tree.get_nodes();
+      const root = [all_nodes[0]];
+      const descendants = root.concat(this.tree.select_all_descendants(root[0], true, true));
+      this.tree.modify_selection(descendants, undefined, undefined, undefined, "false");
+      all_nodes.forEach((node) => {
+        if (node["own-collapse"]) {
+          node["show-name"] = "";
+          node["own-collapse"] = false;
+          this.handleDecollapse(node, false);
+        }
+      });
+      this.handleShowNodes(root[0]);
+      this.tree.update();
+      this.tree.trigger_refresh();
+
+  }
+
   handleColorChange = (metadataName) => {
     this.chosenMD = metadataName;
     this.setState({ colorScaleModalShow: true });
@@ -1039,23 +1270,63 @@ class App extends Component {
       nodes: nodes,
     });
   };
+  handlefindNodesByDepth(depth){
+    const nodes = this.tree.get_nodes();
+    var nodes_to_collapse = [];
+    nodes.forEach(function(node){
+        if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
+            if(node.depth === depth){
+                nodes_to_collapse.push(node);                
+            }
+        }     
+    });
+    return nodes_to_collapse
+  }
+
+  handleFilterNodesBySNPContent(percentage){
+    const nodes = this.tree.get_nodes();
+    var nodes_to_collapse = [];
+    nodes.forEach(function(node){
+        if(!d3.layout.phylotree.is_leafnode(node)&&node.name!=="root"){
+            if(node["percent-support-SNPs"] <= percentage){
+                nodes_to_collapse.push(node);                
+            }
+        }     
+    });
+    return nodes_to_collapse
+  }
+
+  handleCollapseMultipleNodes(nodeList){
+    if(nodeList.length !== 0){
+      nodeList.forEach(function(node){
+        if(!node["hidden"] && !node["own-collapse"] && !node["notshown"]){
+          node["own-collapse"] = true;
+          node["show-name"] = this.handleCollapse(node);
+          node["just-collapsed"]=true;
+        }
+      },this)
+      this.handleSelection(this.tree.get_selection());
+    }
+    this.tree.trigger_refresh();
+  }
   handleCollapse = (cladeNode) => {
     let collapsedNodes = this.tree.descendants(cladeNode).filter(d3.layout.phylotree.is_leafnode);
-
     let clade = {
       name: "Clade_" + this.state.cladeNumber,
       showname: "Clade_" + this.state.cladeNumber,
       cladeParent: cladeNode,
       cladeLeaves: collapsedNodes,
     };
-    cladeNode.name = clade.name;
 
+    cladeNode.name = clade.name;
     cladeNode["show-name"] = clade.name;
     let actualNumber = this.state.cladeNumber;
     let jointNodes = this.state.collapsedClades.concat([clade]);
+    
     this.tree.toggle_collapse(cladeNode).update();
 
     this.setState({ collapsedClades: jointNodes, cladeNumber: actualNumber + 1 });
+
     return clade.name;
   };
   handleDecollapse = (cladeNode, should_update = true) => {
@@ -1082,6 +1353,7 @@ class App extends Component {
     this.handleShowOnHeatmap(this.tree.descendants(node));
     this.handleSelection(this.tree.get_selection());
   };
+
   handleShowOnHeatmap = (showNodes) => {
     let namesShowNodes = showNodes.map(({ name }) => name);
     let filteredNodes = this.state.hiddenNodes.filter((n) => {
@@ -1089,6 +1361,14 @@ class App extends Component {
     });
     this.setState({ hiddenNodes: filteredNodes });
   };
+
+  handleLabelSelection = (list)=>{
+    this.setState({selectedLabels : list});
+  }
+  clearLabelSelection = ()=>{
+    this.setState({selectedLabels : []})
+  }
+
 
   handleSelection = (selection) => {
     let filteredSelection = selection.filter((node) => {
@@ -1104,8 +1384,18 @@ class App extends Component {
     this.setState({ cladogram: !this.state.cladogram });
     this.tree.placenodes();
     this.tree.update();
-    // this.tree.update();
   };
+  handleMouseDown = () =>{
+    this.setState({ dragActive: true })
+    const all_nodes = this.tree.get_nodes();
+    all_nodes.forEach((node) => {
+      if(node["just-collapsed"]){
+        node["just-collapsed"]=false;
+      }
+    });
+    this.tree.trigger_refresh();
+
+  }
 
   componentDidMount() {
     d3.select("body")
@@ -1114,7 +1404,6 @@ class App extends Component {
       .attr("class", "tooltip")
       .attr("id", "tooltip")
       .style("display", "none");
-
     this.handleInitTool();
   }
 
@@ -1135,16 +1424,18 @@ class App extends Component {
                 className='parent-svgs'
                 ref={(el) => (this.svgContainer = el)}
                 onWheel={this.verticalZoom}
-                onMouseDown={() => this.setState({ dragActive: true })}
+                onMouseDown={this.handleMouseDown}
                 onMouseMove={this.verticalDrag}
                 onMouseUp={() => this.setState({ dragActive: false })}
               >
                 <Phylotree
                   //
+
                   dragActive={this.state.dragActive}
                   sendStatisticsRequest={this.sendStatisticsRequest}
                   handleLoadingToggle={this.handleLoadingToggle}
                   showRenameModal={this.state.renameModalShow}
+                  showCollapseModal={this.state.collapsedModalShow}
                   allowComputeStatistics={this.allowComputeStatistics}
                   computeStatistics={this.state.computeStatistics}
                   showStatisticsModal={this.showStatisticsModal}
@@ -1161,15 +1452,31 @@ class App extends Component {
                   onHide={this.handleHide}
                   onSelection={this.handleSelection}
                   onOpenRenameClade={this.handleRenameOpenModal}
+                  onOpenCollapseModal = {this.handleCollapseOpenModal}
+                  findNodesByDepth={this.handlefindNodesByDepth}
                   newick={this.state.newick}
                   snpdata={this.state.snpdata}
                   ids={this.state.ids}
                   cladogramState={this.state.cladogram}
                   dialog={this.dialog}
                   shownNodes={shownNodes}
+                  yscale = {this.state.yscale}
+                  selectedLeaves = {this.state.selectedLabels}
+                  nodesToCollapse = {this.state.nodesToCollapse}
+                  filterNodesBySNPContent = {this.handleFilterNodesBySNPContent}
+                  collapseMultipleNodes = {this.handleCollapseMultipleNodes}
+                  treeSize = {this.state.treeSize}
+                  initialSizes ={this.handleInitialSizes}
                 />
 
-                <Labels divID={"labels_viz"} shownNodes={shownNodes} />
+                <Labels 
+                  divID={"labels_viz"} 
+                  shownNodes={shownNodes} 
+                  onSelection={this.handleLabelSelection}
+                  clearSelection = {this.clearLabelSelection}
+                  treeSize = {this.state.treeSize}
+                  treeMargin ={this.state.treeMargin}
+                  />
                 <div className='mchild'>
                   {this.state.isLoaded ? (
                     <HeatmapView
@@ -1189,6 +1496,9 @@ class App extends Component {
                       mdinfo={this.state.mdinfo}
                       margin={{ top: 0, right: 20, bottom: 0, left: 0 }}
                       SNPcolorScale={_.get(this.state.mdinfo, "SNP.colorScale", "")}
+                      treeSize = {this.state.treeSize}
+                      treeMargin ={this.state.treeMargin}
+                      
                     />
                   ) : null}
                 </div>
@@ -1209,6 +1519,8 @@ class App extends Component {
                 onSNPChange={this.handleSNPChange}
                 onColorChange={this.handleColorChange}
                 onOpenFilter={this.handleFilterOpenModal}
+                onOpenFilterSNPs = {this.handleFilterSNPsOpenModal}
+                onRemoveFilterSNPs = {this.handleRemoveFilterSNPs}
                 SNPTable={this.state.SNPTable}
                 availableMDs={this.state.mdinfo}
                 availableSNPs={this.state.availableSNPs}
@@ -1331,6 +1643,30 @@ class App extends Component {
                 changingCladeNode={this.state.changingCladeNode}
                 name={this.state.changingCladeNode["show-name"]}
                 handleClose={this.handleRenameCloseModal}
+              />
+            )}
+            {this.state.collapsedModalShow && (
+              <CollapseModal
+                id='collapse-modal'
+                show={this.state.collapsedModalShow}
+                tree_depth={this.state.tree_depth}
+                handleChanges={this.handleCollapseModalSelection}
+                handleClose={this.handleCollapseCloseModal}
+              />
+            )}
+            {this.state.filterSNPModalShow && (
+              <FilterSNPsModal
+                id='filter-SNPs-modal'
+                show={this.state.filterSNPModalShow}
+                handleChanges={this.handleFilterSNPsModalSelection}
+                handleClose={this.handleFilterSNPsCloseModal}
+              />
+            )}
+                        {this.state.applyFilterModalShow && (
+              <ApplyFilterModal
+                id='apply-filter-modal'
+                show={this.state.applyFilterModalShow}
+                handleClose={this.handleApplyFilterModalClose}
               />
             )}
             {this.state.decideOrdinalModalShow && (

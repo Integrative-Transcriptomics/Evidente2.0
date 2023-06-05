@@ -1,31 +1,37 @@
 import React, { Component } from "react";
 import * as d3 from "d3";
 import { isEqual } from "lodash";
+import * as d3v5 from "d3v5";
 
 class Labels extends Component {
     state = {};
+    selectedLabels = [];
     globalHeight = 0;
     globalWidth = 0;
 
     shouldComponentUpdate(nextProp, nextState) {
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
-        return !isEqual(newNodes, oldNodes)
+        return (!isEqual(newNodes, oldNodes)) ||
+        ((nextProp.treeSize !== undefined && nextProp.treeSize !== this.props.treeSize))
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        let margin_top = this.globalHeight * 0.05;
+    componentDidUpdate(prevProps, prevState) {       
+        let margin_top = this.props.treeSize* 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
-        let div = d3.select("#tooltip");
-        let height = this.globalHeight;
+        let div = d3.select("#tooltip");;
+        let height = this.props.treeSize;
         let props = this.props;
         let shownNodes = props.shownNodes;
+
         let yScale = d3.scale
             .ordinal()
             .domain(shownNodes)
             .rangeBands([0, height - margin_top]);
+        
         let cellHeight = (height - margin_top) / shownNodes.length;
+        
         let yAxis = d3.svg
             .axis()
             .scale(yScale)
@@ -43,14 +49,7 @@ class Labels extends Component {
         ticks
             .selectAll("text")
             .classed("noselect", true)
-            .on("mouseover", (d) => {
-                d3.selectAll(`.node-${d}.guides`).classed("highlighted-guide", true);
-                div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
-                div
-                    .html(d)
-                    .style("left", d3.event.pageX + "px")
-                    .style("top", d3.event.pageY - 28 + "px");
-            })
+            .on("mouseover", this.defaultMouseOver)
             .on("mouseout", (d) => {
                 d3.selectAll(`.node-${d}.guides`).classed("highlighted-guide", false);
                 div.transition().duration(500).style("opacity", 0);
@@ -84,9 +83,11 @@ class Labels extends Component {
             .attr("y1", 0)
             .attr("y2", 0)
             .style(guideStyle);
+        d3.select("#adds-margin").attr("transform", `translate(${[0, this.props.treeMargin]})`);
     }
 
     componentDidMount() {
+        
         let svg = d3
             .select(`#${this.props.divID}`)
             .append("svg")
@@ -103,8 +104,8 @@ class Labels extends Component {
             .append("g")
             .attr("class", " own-label y axis")
             .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
-
-        this.globalHeight = this.container.offsetHeight;
+        
+        this.globalHeight = this.props.treeSize;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
@@ -113,8 +114,68 @@ class Labels extends Component {
                 ev.preventDefault()
             }
         })
+        this.selectLabels();
     }
 
+    defaultMouseOver = (d) => {
+        let div = d3.select("#tooltip")
+        d3.selectAll(`.node-${d}.guides`).classed("highlighted-guide", true);
+        div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
+        div
+            .html(d)
+            .style("left", d3.event.pageX + "px")
+            .style("top", d3.event.pageY - 28 + "px");
+    }
+
+    selectLabels = ()=>{
+        var list =[];
+
+        function brushed() {
+            list = [];
+            d3v5.select("#container-labels").selectAll("text").each(function(d){     
+                var elementBox = this.getBoundingClientRect();
+                var rectBox = d3v5.select("rect.selection").node().getBoundingClientRect()
+                if(
+                    rectBox.left <= elementBox.left &&
+                    rectBox.top <= elementBox.top &&
+                    rectBox.right >= elementBox.right &&
+                    rectBox.bottom >= elementBox.bottom  
+                ){
+                    d3v5.select(this)
+                        .style("fill", "blue")
+                        .style("font-weight", 1000)
+                    list.push(d);
+                    
+                }
+                else{
+                    d3v5.select(this)
+                        .style("fill", "black")
+                        .style("font-weight", 400)
+                }
+            });
+            this.selectedLabels = list
+        }
+        function endBrush(){
+            if (!d3v5.event.sourceEvent) return; // Only transition after input.
+            if (!d3v5.event.selection) return; // Ignore empty selections.
+            this.props.onSelection(this.selectedLabels);
+            d3v5.select("#selection-group").call(brush.move, null);
+            this.props.clearSelection();
+        }
+        var brush = d3v5.brushY()
+                        .filter(() => {
+                            if (d3v5.event.type === 'mousedown') {
+                            // do not allow brushing if ctrl is not pressed
+                            return d3v5.event.ctrlKey;
+                            }
+                            return true;
+                        })
+                        .on("start brush", brushed.bind(this));
+        
+        brush.on("end", endBrush.bind(this))
+        
+        d3v5.select("#container-labels").append('g').attr("id", "selection-group").call(brush);       
+    }
     render() {
         return (
             <div id={this.props.divID} className='labels-child' ref={(el) => (this.container = el)}></div>

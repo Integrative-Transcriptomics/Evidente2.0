@@ -309,7 +309,8 @@ class Tools extends Component {
                   <Form.Label size={"sm"}>Create a filter group with metadata <OverlayTrigger style={{ "z-index": 1 }} placement='top' overlay={
                     <Tooltip id={`tooltip-tree-analysis`}>
                       A filter group defines all the characteristics a certain node should contain in order to be
-                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.</Tooltip>
+                      shown. Within filter groups, the nodes need to belong to at least one group to be shown.
+                    </Tooltip>
                   }>
                     <HelpIcon />
                   </OverlayTrigger>
@@ -364,6 +365,47 @@ class Tools extends Component {
               </Card.Body>
             </Accordion.Collapse>
           </Card>
+
+
+          <Card>
+            <Accordion.Toggle
+              as={Card.Header}
+              eventKey='6'
+              id='export-card'
+              className='noselect header-accordion'
+            >
+              Filter nodes by SNPs content
+            </Accordion.Toggle>
+            <Accordion.Collapse eventKey='6'>
+              <Card.Body>
+                <Form>
+                  <Form.Label size={"sm"}>
+                    Collapse nodes with low a SNP content
+                  </Form.Label>
+                  <Button
+                    variant='primary'
+                    onClick={() => {
+                      this.props.onOpenFilterSNPs();
+                    }}
+                  >
+                    Choose a treshold
+                  </Button>
+                  <Button
+                    variant='secondary'
+                    onClick={() => {
+                      this.props.onRemoveFilterSNPs();
+                    }}
+                  >
+                    Remove Filter
+                  </Button>
+                </Form>
+              </Card.Body>
+            </Accordion.Collapse>
+          </Card>
+
+
+
+
           <Card>
             <Accordion.Toggle
               as={Card.Header}

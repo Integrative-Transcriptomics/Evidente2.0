@@ -12,9 +12,11 @@ const HeatmapView = memo((props) => {
     const SNPprefix = "Pos";
     const container = createRef();
     const handleResize = useCallback(() => {
-        const margin = container.current.offsetHeight * 0.05
+        //const margin = container.current.offsetHeight * 0.05
+        const margin = props.treeSize * 0.05
         setMarginTop(margin);
-        setheight(container.current.offsetHeight - margin - props.margin.bottom)
+        //setheight(container.current.offsetHeight - margin - props.margin.bottom)
+        setheight(props.treeSize - margin - props.margin.bottom)
         setwidth(container.current.offsetWidth - props.margin.left - props.margin.right)
 
 
@@ -175,7 +177,11 @@ const HeatmapView = memo((props) => {
         taxaData = taxaData.filter(({Information}) => shownNodes.includes(Information))
         return taxaData;
     }, [clusterData, props.collapsedClades.length, props.mdinfo, props.taxadata, shownNodes]);
-    const yScale = d3.scale.ordinal().domain(shownNodes).rangeBands([0, height]);
+    const yScale = d3.scale
+        .ordinal()
+        .domain(shownNodes)
+        .rangeBands([0, (props.treeSize - props.treeSize*0.05 - props.margin.bottom)]);
+        
     let snpWidth = 0
     let mdWidth = 0;
     let linesWidth = 50;
@@ -197,7 +203,7 @@ const HeatmapView = memo((props) => {
     return <div ref={container} style={{height: "100%", display: "flex"}}>
         {props.visSNPs.length > 0 ? <Heatmap
             dragActive={props.dragActive}
-            height={height}
+            height={(props.treeSize - props.treeSize*0.05 - props.margin.bottom)}
             maxWidth={snpWidth}
             data={filteredSNPData}
             yScale={yScale}
@@ -206,7 +212,7 @@ const HeatmapView = memo((props) => {
             mdinfo={props.mdinfo}
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
-            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
+            margin={{top: props.treeSize*0.05, right: linesWidth, bottom: 0, left: 0}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -216,10 +222,12 @@ const HeatmapView = memo((props) => {
             SNPcolorScale={_.get(props.mdinfo, "SNP.colorScale", "")}
             isSNP={true}
             appendLines={props.visualizedMD.length > 0}
+            treeSize={props.treeSize}
+            treeMargin ={props.treeMargin}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
             dragActive={props.dragActive}
-            height={height}
+            height={(props.treeSize - props.treeSize*0.05   - props.margin.bottom)}
             maxWidth={mdWidth}
             data={filteredTaxaData}
             yScale={yScale}
@@ -228,7 +236,7 @@ const HeatmapView = memo((props) => {
             mdinfo={props.mdinfo}
             divID={"md_viz"}
             containerID={"md-container"}
-            margin={{top: marginTop, right: linesWidth, bottom: 0, left: 0}}
+            margin={{top: props.treeSize*0.05, right: linesWidth, bottom: 0, left: 0}}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -237,6 +245,8 @@ const HeatmapView = memo((props) => {
             isSNP={false}
             createdFilters={props.createdFilters}
             appendLines={false}
+            treeSize={props.treeSize}
+            treeMargin ={props.treeMargin}
         /> : null}
         {showAlert ? <Alert variant={"secondary"} style={{
             height: "100%",
