@@ -350,9 +350,15 @@ class Phylotree extends Component {
             .attr({ offset: "100%", "stop-color": "white" });
     }
 
-    wheelCollapse = (node) => {
+    wheelCollapse = (ev, node) => {
         if (d3.event.shiftKey && !this.props.tree.is_leafnode(node)) {
-            this.collapseNode(node);
+            if (ev.deltaX > 0 & node["own-collapse"]) {
+                this.collapseNode(node)
+            }
+            else if (ev.deltaX < 0 & !node["own-collapse"]) {
+                this.collapseNode(node)
+            }
+
         }
     }
 
@@ -378,7 +384,7 @@ class Phylotree extends Component {
                 }
             }).bind(this))
                 .on("mouseleave", function () { document.body.style.cursor = "default" })
-                .on("wheel", this.wheelCollapse.bind(this))
+                .on("wheel", this.wheelCollapse.bind(this, ev))
         }
     }
 
