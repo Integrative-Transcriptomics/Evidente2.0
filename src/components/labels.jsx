@@ -13,11 +13,11 @@ class Labels extends Component {
         let oldNodes = this.props.shownNodes;
         let newNodes = nextProp.shownNodes;
         return (!isEqual(newNodes, oldNodes)) ||
-        ((nextProp.treeSize !== undefined && nextProp.treeSize !== this.props.treeSize))
+            ((nextProp.treeSize !== undefined && nextProp.treeSize !== this.props.treeSize))
     }
 
-    componentDidUpdate(prevProps, prevState) {       
-        let margin_top = this.props.treeSize* 0.05;
+    componentDidUpdate(prevProps, prevState) {
+        let margin_top = this.props.treeSize * 0.05;
 
         d3.select("#adds-margin").attr("transform", `translate(${[0, margin_top]})`);
         let div = d3.select("#tooltip");;
@@ -29,9 +29,9 @@ class Labels extends Component {
             .ordinal()
             .domain(shownNodes)
             .rangeBands([0, height - margin_top]);
-        
+
         let cellHeight = (height - margin_top) / shownNodes.length;
-        
+
         let yAxis = d3.svg
             .axis()
             .scale(yScale)
@@ -87,7 +87,7 @@ class Labels extends Component {
     }
 
     componentDidMount() {
-        
+
         let svg = d3
             .select(`#${this.props.divID}`)
             .append("svg")
@@ -104,7 +104,7 @@ class Labels extends Component {
             .append("g")
             .attr("class", " own-label y axis")
             .attr("transform", `translate(${[this.container.offsetWidth, 0]})`);
-        
+
         this.globalHeight = this.props.treeSize;
         this.globalWidth = this.container.offsetWidth;
         let margin_top = this.globalHeight * 0.05;
@@ -127,27 +127,27 @@ class Labels extends Component {
             .style("top", d3.event.pageY - 28 + "px");
     }
 
-    selectLabels = ()=>{
-        var list =[];
+    selectLabels = () => {
+        var list = [];
 
         function brushed() {
             list = [];
-            d3v5.select("#container-labels").selectAll("text").each(function(d){     
+            d3v5.select("#container-labels").selectAll("text").each(function (d) {
                 var elementBox = this.getBoundingClientRect();
                 var rectBox = d3v5.select("rect.selection").node().getBoundingClientRect()
-                if(
+                if (
                     rectBox.left <= elementBox.left &&
                     rectBox.top <= elementBox.top &&
                     rectBox.right >= elementBox.right &&
-                    rectBox.bottom >= elementBox.bottom  
-                ){
+                    rectBox.bottom >= elementBox.bottom
+                ) {
                     d3v5.select(this)
                         .style("fill", "blue")
                         .style("font-weight", 1000)
                     list.push(d);
-                    
+
                 }
-                else{
+                else {
                     d3v5.select(this)
                         .style("fill", "black")
                         .style("font-weight", 400)
@@ -155,7 +155,7 @@ class Labels extends Component {
             });
             this.selectedLabels = list
         }
-        function endBrush(){
+        function endBrush() {
             if (!d3v5.event.sourceEvent) return; // Only transition after input.
             if (!d3v5.event.selection) return; // Ignore empty selections.
             this.props.onSelection(this.selectedLabels);
@@ -163,22 +163,22 @@ class Labels extends Component {
             this.props.clearSelection();
         }
         var brush = d3v5.brushY()
-                        .filter(() => {
-                            if (d3v5.event.type === 'mousedown') {
-                            // do not allow brushing if ctrl is not pressed
-                            return d3v5.event.ctrlKey;
-                            }
-                            return true;
-                        })
-                        .on("start brush", brushed.bind(this));
-        
+            .filter(() => {
+                if (d3v5.event.type === 'mousedown') {
+                    // do not allow brushing if ctrl is not pressed
+                    return d3v5.event.shiftKey;
+                }
+                return true;
+            })
+            .on("start brush", brushed.bind(this));
+
         brush.on("end", endBrush.bind(this))
-        
-        d3v5.select("#container-labels").append('g').attr("id", "selection-group").call(brush);       
+
+        d3v5.select("#container-labels").append('g').attr("id", "selection-group").call(brush);
     }
     render() {
         return (
-            <div id={this.props.divID} className='labels-child' ref={(el) => (this.container = el)}></div>
+            <div id={this.props.divID} style={{ "cursor": "default" }} className='labels-child' ref={(el) => (this.container = el)}></div>
         );
     }
 }

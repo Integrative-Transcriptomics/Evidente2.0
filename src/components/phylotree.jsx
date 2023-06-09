@@ -15,7 +15,7 @@ class Phylotree extends Component {
      * @param {Object} node
      */
     nodeStyler = (container, node) => {
-        this.did_collapse=false;
+        this.did_collapse = false;
         let is_leaf = d3.layout.phylotree.is_leafnode(node)
         let is_collapsed = node["own-collapse"]
         let div = d3.select("#tooltip");
@@ -79,8 +79,8 @@ class Phylotree extends Component {
         } else {
             node["show-name"] = "";
             node["own-collapse"] = false;
-            if(node["just-collapsed"]){
-                node["just-collapsed"]=false;
+            if (node["just-collapsed"]) {
+                node["just-collapsed"] = false;
             }
             this.props.onDecollapse(node);
         }
@@ -92,7 +92,7 @@ class Phylotree extends Component {
      * @param {Object} node 
      */
     collNode(node) {
-        if (!node["own-collapse"]&& !node["hidden"]) {
+        if (!node["own-collapse"] && !node["hidden"]) {
             node["own-collapse"] = true;
             node["show-name"] = this.props.onCollapse(node);
         }
@@ -103,34 +103,29 @@ class Phylotree extends Component {
      * Aggregates all nodes of a list
      * @param {Object} nodeList 
      */
-    collapseMultipleNodes(nodeList){
-        nodeList.forEach(function(node){
-            if(!this.props.tree.is_leafnode(node))
-            this.collNode(node)
-        },this)
+    collapseMultipleNodes(nodeList) {
+        nodeList.forEach(function (node) {
+            if (!this.props.tree.is_leafnode(node))
+                this.collNode(node)
+        }, this)
     }
     /**
      * Find the LCA of a list of nodes and aggregate it
      * @param {Object} list_of_nodenames 
      */
-    collapse_lca = function(list_of_nodenames){
-
+    collapse_lca = function (list_of_nodenames) {
         var ancestor = this.props.tree.get_lca(list_of_nodenames);
-
-        if(ancestor !== undefined && !d3.layout.phylotree.is_leafnode(ancestor)){
+        if (ancestor !== undefined && !d3.layout.phylotree.is_leafnode(ancestor)) {
             this.collapseNode(ancestor)
-            ancestor["just-collapsed"]=true
+            ancestor["just-collapsed"] = true
             this.props.tree.trigger_refresh();
         }
-        else{
+        else {
             alert("Clades can not be collapsed further. You need to select at least two more leafnodes.")
         }
-        
-    }
-  
-    filterSupportingSNPs(){
 
-    }  
+    }
+
     /**
      * Opens modal for rename of clade
      * @param {Object} node
@@ -142,14 +137,14 @@ class Phylotree extends Component {
     /**
      * Labels each node with the SNP content of all its descendants
      */
-    labelNodesWithSNPContent(){
+    labelNodesWithSNPContent() {
         let nodes = this.props.tree.get_nodes();
         let rootNode = nodes[0];
         let totalNumSupportSNPs = this.getSNPsfromNode(rootNode)[0];
 
-        nodes.forEach((node)=>{
+        nodes.forEach((node) => {
             var supportSNPs = this.getSNPsfromNode(node)[0];
-            node["percent-support-SNPs"] = (supportSNPs.length/totalNumSupportSNPs.length)*100;
+            node["percent-support-SNPs"] = (supportSNPs.length / totalNumSupportSNPs.length) * 100;
         })
     }
 
@@ -288,39 +283,40 @@ class Phylotree extends Component {
     shouldComponentUpdate(nextProp) {
 
         return (nextProp.newick !== undefined && nextProp.newick !== this.props.newick) ||
-        (nextProp.yscale !== undefined && nextProp.yscale !== this.props.yscale) ||
-        (nextProp.selectedLeaves !== undefined && nextProp.selectedLeaves !== this.props.selectedLeaves) 
+            (nextProp.yscale !== undefined && nextProp.yscale !== this.props.yscale) ||
+            (nextProp.selectedLeaves !== undefined && nextProp.selectedLeaves !== this.props.selectedLeaves)
     }
 
     componentDidUpdate(prevProp) {
-        
-        d3.selectAll("circle").on("mouseover", (function(d){
-            if(d3.event.shiftKey && !this.props.tree.is_leafnode(d)){
+
+        d3.selectAll("circle").on("mouseover", (function (d) {
+            if (d3.event.shiftKey && !this.props.tree.is_leafnode(d)) {
                 document.body.style.cursor = "zoom-in"
-            }}).bind(this))
-        .on("mouseleave", function(){document.body.style.cursor = "default"})
-        .on("wheel", this.wheelCollapse.bind(this)) 
+            }
+        }).bind(this))
+            .on("mouseleave", function () { document.body.style.cursor = "default" })
+            .on("wheel", this.wheelCollapse.bind(this))
 
         if (prevProp.newick !== this.props.newick) {
             this.renderTree(this.props.newick);
 
             //collapse nodes by SNP conten 5 Percent if the tree has more than 150 leaves
             this.labelNodesWithSNPContent();
-            if(Object.keys(this.props.tree.get_leaves()).length > 150){
+            if (Object.keys(this.props.tree.get_leaves()).length > 150) {
                 var filterNodes = this.props.filterNodesBySNPContent(5);
                 document.body.style.cursor = "wait"
-                setTimeout(()=>{
-                this.collapseMultipleNodes(filterNodes) 
-                document.body.style.cursor = "default";
-                });   
-             }
-            
+                setTimeout(() => {
+                    this.collapseMultipleNodes(filterNodes)
+                    document.body.style.cursor = "default";
+                });
+            }
+
             return
-        } 
-        if(this.props.selectedLeaves.length !== 0 && this.props.selectedLeaves.length !== 1){
+        }
+        if (this.props.selectedLeaves.length !== 0 && this.props.selectedLeaves.length !== 1) {
             this.collapse_lca(this.props.selectedLeaves);
             return
-        }    
+        }
     }
 
     componentDidMount() {
@@ -331,14 +327,14 @@ class Phylotree extends Component {
                 .select(this.container)
                 .append("svg")
                 .attr("id", "tree-display")
-                .attr({ height: this.container.offsetHeight, width: this.container.offsetWidth})
+                .attr({ height: this.container.offsetHeight, width: this.container.offsetWidth })
                 .append("g")
                 .attr("id", "transform-group")
                 .attr("transform", `translate(${[0, margin_top]})`)
                 .append("g")
                 .attr("id", "zoom-phylotree")
                 .attr("horizontal-scale", 1)
-                .attr("x-koordinate",0)
+                .attr("x-koordinate", 0)
         );
 
         this.container.addEventListener("mousemove", this.horizontalDrag)
@@ -353,36 +349,37 @@ class Phylotree extends Component {
         gradient.append("stop")
             .attr({ offset: "100%", "stop-color": "white" });
     }
-    
-    wheelCollapse = (node)=>{
-        if(d3.event.shiftKey && !this.props.tree.is_leafnode(node)){
+
+    wheelCollapse = (node) => {
+        if (d3.event.shiftKey && !this.props.tree.is_leafnode(node)) {
             this.collapseNode(node);
-        } 
+        }
     }
 
     //Implements horizontal zoom only for the tree component
     horizontalZoom = (ev) => {
-         if (ev.ctrlKey) {
-             ev.preventDefault()
+        if (ev.ctrlKey) {
+            ev.preventDefault()
             var which_function = this.props.tree.spacing_x;
-            if(this.props.tree.size()[1]< 400 && ev.deltaY >0) { 
-                this.props.tree.size([this.props.tree.size()[0], 331]).update();  
-                which_function(which_function()-ev.deltaY/100).update(); 
+            if (this.props.tree.size()[1] < 400 && ev.deltaY > 0) {
+                this.props.tree.size([this.props.tree.size()[0], 331]).update();
+                which_function(which_function() - ev.deltaY / 100).update();
             }
-            else{
-                this.props.tree.size([this.props.tree.size()[0], this.props.tree.size()[1]-ev.deltaY]).update();  
-                which_function(which_function()-ev.deltaY/100).update(); 
+            else {
+                this.props.tree.size([this.props.tree.size()[0], this.props.tree.size()[1] - ev.deltaY]).update();
+                which_function(which_function() - ev.deltaY / 100).update();
             }
 
         }
         if (ev.shiftKey) {
-            d3.selectAll("circle").on("mouseover", (function(d){
-                if(d3.event.shiftKey && !this.props.tree.is_leafnode(d)){
+            d3.selectAll("circle").on("mouseover", (function (d) {
+                if (d3.event.shiftKey && !this.props.tree.is_leafnode(d)) {
                     document.body.style.cursor = "zoom-in"
-                }}).bind(this))
-            .on("mouseleave", function(){document.body.style.cursor = "default"})
-            .on("wheel", this.wheelCollapse.bind(this)) 
-        } 
+                }
+            }).bind(this))
+                .on("mouseleave", function () { document.body.style.cursor = "default" })
+                .on("wheel", this.wheelCollapse.bind(this))
+        }
     }
 
     //Implements horizontal drag only for the tree component
@@ -440,12 +437,13 @@ class Phylotree extends Component {
             d3.layout.phylotree.add_custom_menu(
                 tnode, // add to this node
                 () => "Collapse nodes by depth ", // display this text for the menu
-                () => {this.props.onOpenCollapseModal(tnode);                        
-                    }
+                () => {
+                    this.props.onOpenCollapseModal(tnode);
+                }
                 ,
                 (node) => node.depth === 0  // condition on when to display the menu
             );
-            
+
             d3.layout.phylotree.add_custom_menu(
                 tnode,
                 () => "Show SNPs in sidebar",
