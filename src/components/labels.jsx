@@ -173,8 +173,29 @@ class Labels extends Component {
             .on("start brush", brushed.bind(this));
 
         brush.on("end", endBrush.bind(this))
+        let div = d3v5.select("#tooltip");;
+        let context_brush = d3v5.select("#container-labels").append('g').attr("id", "selection-group")
+        context_brush.call(brush);
 
-        d3v5.select("#container-labels").append('g').attr("id", "selection-group").call(brush);
+
+        // context_brush.select(".overlay")
+        //     .attr("width", 400 - 2)
+        //     .attr("fill", "none");
+        // context_brush.select(".overlay")
+        //     .attr("width", 400 - 2)
+        //     .on("mouseover.tooltip", (d) => {
+        //         console.log("mouseover")
+        //         console.log(d)
+        //     }
+        //     )
+        //     .on("mouseout.tooltip", (d) => {
+        //         console.log("mouseout")
+        //         // console.log(d)
+        //         // d3.selectAll(`.node-${d}.guides`).classed("highlighted-guide", false);
+        //         // div.transition().duration(500).style("opacity", 0);
+        //     })
+        //     .on("mousemove.tooltip", (d) => { console.log(d) })
+
     }
     render() {
         return (
