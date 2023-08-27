@@ -152,7 +152,6 @@ class App extends Component {
   tree = this.tree.branch_length(this.tree_branch_upgma);
 
   initialState = {
-    // resetClick: 0,
     isLoaded: false,
     dragActive: false,
     hiddenNodes: [],
