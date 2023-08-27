@@ -123,7 +123,7 @@ class Heatmap extends Component {
                 .select(`g${this.isSNP ? ".SNP" : ".Metadata"}.y.axis`)
                 .selectAll(".tick");
 
-            container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line`).remove(); //remove before new creation
+            container.selectAll(`.cell, .boxplot, .histo, .pattern, .guides, .division-line, .pattern-paraphyletic, .pattern-not-supporting `).remove(); //remove before new creation
 
             if (props.x_elements.length > 0) {
                 props.x_elements.forEach((x_elem) => {
@@ -216,7 +216,7 @@ class Heatmap extends Component {
                 .style("left", d3.event.pageX + "px")
                 .style("top", d3.event.pageY - 28 + "px");
         };
-
+        // If a SNP, take the position as subtype
         let subtype = isSNP ? type.split(this.SNPprefix)[1] : "";
         data = data.filter((d) => _.keys(d).includes(isSNP ? subtype : type));
         let div = d3.select("#tooltip");
@@ -239,19 +239,25 @@ class Heatmap extends Component {
         if (isSNP) {
             d3.select(`#${this.props.containerID}`)
                 .selectAll(`.pattern.md-${this.transformNameToClass(type)}`)
-                .data(data.filter((d) => _.get(d, `${subtype}.notsupport`, false)))
+                // Check if is notsupport or paraphyletic
+                .data(data.filter((d) => _.get(d, `${subtype}.type`) !== "support"))
                 .enter()
                 .append("svg:rect")
                 .attr("width", innerCellWidth)
                 .attr("height", innerCellHeight)
                 .attr("y", ({ Information }) => yScale(Information) + borderWidth)
                 .attr("x", () => xScale(type) + borderWidth)
-                .attr("fill", "white")
+                // fill white if paraphyletic, black if notsupporting
+                .attr("fill", ({ [subtype]: { type } }) => type === "paraphyletic" ? "white" : "black")
+                .attr("class", ({ Information }) => `pattern-not-supporting node-${Information} md-${type}`)
                 .on("mouseover", onMouseOverCell)
                 .on("mouseout", function (d) {
                     d3.selectAll(`.node-${d.Information}.guides`).classed("highlighted-guide", false);
                     div.transition().duration(500).style("opacity", 0);
                 });
+
+
+
         }
         cells.on("mouseover", onMouseOverCell).on("mouseout", function ({ Information }) {
             d3.selectAll(`.node-${Information}.guides`).classed("highlighted-guide", false);
@@ -366,7 +372,7 @@ class Heatmap extends Component {
         const onMouseOverBars = function (d) {
             div.transition().duration(200).style("opacity", 0.9).style("display", "flex");
             div
-                .html(`${isSNP ? `SNP:${subtype}` : type} <br/> ${d[0]}: ${d[1]}`)
+                .html(isSNP ? `SNP:${subtype} <br/> ${d[1]["type"]} ${d[1]["allele"]}: ${d[1]["count"]}` : `${type} <br/> ${d[0]}: ${d[1]}`)
                 .style("left", d3.event.pageX + "px")
                 .style("top", d3.event.pageY - 28 + "px");
         };
@@ -396,20 +402,20 @@ class Heatmap extends Component {
             .enter()
             .append("rect")
             .attr("class", `.bars.md-${this.transformNameToClass(type)}`)
-            .attr("fill", (d) => colorScale(isSNP ? d[0][0] : d[0]));
+            .attr("fill", (d) => colorScale(isSNP ? d[1]["allele"] : d[0]));
 
         const borderWidth = (0.05 * cellWidth < 0.05 * cellHeight ? 0.05 * cellWidth : 0.05 * cellHeight) + cellMargin;
         const innerCellHeight = cellHeight - borderWidth * 2;
         const innerCellWidth = cellWidth - borderWidth * 2
-        let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([borderWidth, cellWidth -borderWidth]);
-        let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight-borderWidth, borderWidth]);
+        let xScaleBar = d3.scale.ordinal().domain(dataDomain).rangeBands([borderWidth, cellWidth - borderWidth]);
+        let yScaleBar = d3.scale.linear().domain([0, max]).range([cellHeight - 2 * borderWidth, borderWidth]);
 
         let barWidth = innerCellWidth / dataDomain.length - cellMargin;
         bars
-            .attr("x", (d) => xScaleBar(isSNP ? d[0][0] : d[0]))
-            .attr("y", (d) => yScaleBar(d[1]))
+            .attr("x", (d) => xScaleBar(isSNP ? d[1]["allele"] : d[0]))
+            .attr("y", (d) => yScaleBar(isSNP ? d[1]["count"] : d[1]))
             .attr("width", barWidth)
-            .attr("height", (d) => innerCellHeight - yScaleBar(d[1]))
+            .attr("height", (d) => innerCellHeight - yScaleBar(isSNP ? d[1]["count"] : d[1]))
             .on("mouseover", onMouseOverBars)
             .on("mouseout", function () {
                 div.transition().duration(500).style("opacity", 0);
@@ -421,19 +427,17 @@ class Heatmap extends Component {
             const innerHeight = innerCellHeight - borderWidth;
             heatmapCell
                 .selectAll(`.pattern-bars.md-${this.transformNameToClass(type)}`)
-                .data((d) =>
-                    Object.entries(_.get(d, isSNP ? subtype : type, {})).filter(
-                        (datum) => datum[0][1] === "-"
-                    )
-                )
+                .data((d) => Object.entries(_.get(d, subtype, {})).filter(
+                    (datum) => datum[1]["type"] !== "support" // Account only for paraphyletic and non-supporting SNPs
+                ))
                 .enter()
                 .append("svg:rect")
                 .attr("class", `pattern-bars md-${this.transformNameToClass(type)}`)
                 .attr("width", innerWidth)
-                .attr("height", (d) => innerHeight - yScaleBar(d[1]))
-                .attr("y", (d) => yScaleBar(d[1]) + borderWidth)
-                .attr("x", (d) => xScaleBar(d[0][0]) + borderWidth)
-                .attr("fill", "white")
+                .attr("height", (d) => Math.max(innerHeight - yScaleBar(d[1]["count"]), 0))
+                .attr("y", (d) => yScaleBar(d[1]["count"]) + borderWidth)
+                .attr("x", (d) => xScaleBar(d[1]["allele"]) + borderWidth)
+                .attr("fill", (d) => d[1]["type"] === "paraphyletic" ? "white" : "black")
                 .on("mouseover", onMouseOverBars)
                 .on("mouseout", function () {
                     div.transition().duration(500).style("opacity", 0);
@@ -441,8 +445,8 @@ class Heatmap extends Component {
         }
         heatmapCell
             .append("line")
-            .attr("x1", cellMargin+1)
-            .attr("x2", cellWidth - cellMargin-1)
+            .attr("x1", cellMargin + 1)
+            .attr("x2", cellWidth - cellMargin - 1)
             .attr("y1", innerCellHeight)
             .attr("y2", innerCellHeight)
             .attr("stroke", "black")
@@ -463,10 +467,10 @@ class Heatmap extends Component {
      */
     highlight_leaves(selection = []) {
         if (selection.length === 0) {
-            $(".cell, .boxplot, .histo, .pattern").css("opacity", 1); // Nothing selected, everythin bold
+            $(".cell, .boxplot, .histo, .pattern, .pattern-not-supporting, .pattern-paraphyletic").css("opacity", 1); // Nothing selected, everythin bold
             d3.selectAll(`.guides`).classed("fixed-guide", false);
         } else {
-            $(".cell, .boxplot, .histo, .pattern").css("opacity", 0.2);
+            $(".cell, .boxplot, .histo, .pattern, .pattern-not-supporting, .pattern-paraphyletic").css("opacity", 0.2);
             d3.selectAll(`.guides`).classed("fixed-guide", false);
 
             selection.forEach((t) => {

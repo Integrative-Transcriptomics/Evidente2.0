@@ -160,6 +160,7 @@ class Phylotree extends Component {
             .map((d) => this.props.ids.numToLabel[d.tempid]);
         let supportSNPs = this.props.snpdata.support;
         let notSupportSNPs = this.props.snpdata.notsupport;
+        let paraphyleticSNPs = this.props.snpdata.paraphyletic;
         const modifyListOfSNPs = (listSNPs, listNames) =>
             _.uniqWith(
                 listSNPs
@@ -187,12 +188,31 @@ class Phylotree extends Component {
                 node => node["show-snp-table"] = false)
         node["show-snp-table"] = true;
         let node_name = this.props.ids.numToLabel[node.tempid];
-        let listOfSNPs = this.getSNPsfromNode(node);
-        let uniqSupportSNPs = listOfSNPs[0]
+        let descendants = this.props.tree
+            .descendants(node)
+            .filter((d) => d.tempid !== node.tempid)
+            .map((d) => this.props.ids.numToLabel[d.tempid]);
+        let supportSNPs = this.props.snpdata.support;
+        let notSupportSNPs = this.props.snpdata.notsupport;
+        let paraphyleticSNPs = this.props.snpdata.paraphyletic;
+        const modifyListOfSNPs = (listSNPs, listNames) =>
+            _.uniqWith(
+                listSNPs
+                    .filter((snp) => listNames.includes(snp.node))
+                    .map((snp) => ({
+                        pos: snp.pos,
+                        allele: snp.allele,
+                        inActualNode: snp.node === listNames[0],
+                    }))
+                    .sort((a, b) => d3.ascending(parseInt(a.pos), parseInt(b.pos))),
+                _.isEqual
+            );
+        let uniqSupportSNPs = modifyListOfSNPs(supportSNPs, [node_name, ...descendants]);
         let groupedSupport = _.groupBy(uniqSupportSNPs, "inActualNode");
-        let uniqNonSupportSNPs = listOfSNPs[1]
+        let uniqNonSupportSNPs = modifyListOfSNPs(notSupportSNPs, [node_name, ...descendants]);
         let groupedNonSupport = _.groupBy(uniqNonSupportSNPs, "inActualNode");
-
+        let uniqParaphyleticSNPs = modifyListOfSNPs(paraphyleticSNPs, [node_name, ...descendants]);
+        let groupedParaphyletic = _.groupBy(uniqParaphyleticSNPs, uniqNonSupportSNPs, "inActualNode");
         let supportSNPTable = {
             actualNode: groupedSupport.true,
             descendants: groupedSupport.false,
@@ -203,10 +223,15 @@ class Phylotree extends Component {
             descendants: groupedNonSupport.false,
         };
 
-        this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable);
+        let paraphyleticSNPTable = {
+            actualNode: groupedParaphyletic.true,
+            descendants: groupedParaphyletic.false,
+        };
+
+        this.props.updateSNPTable(node_name, supportSNPTable, nonSupportSNPTable, paraphyleticSNPTable);
         this.props.tree.trigger_refresh();
 
-        if (uniqSupportSNPs.length === 0 && uniqNonSupportSNPs.length === 0) {
+        if (uniqSupportSNPs.length === 0 && uniqNonSupportSNPs.length === 0 && uniqParaphyleticSNPs.length === 0) {
             alert("This node contains no SNP. Please select another node.");
         } else if (uniqSupportSNPs.length > 0) {
             if (!$("#supportingSNPs-card").hasClass("show")) {
@@ -301,17 +326,17 @@ class Phylotree extends Component {
             this.renderTree(this.props.newick);
 
             //collapse nodes by SNP conten 5 Percent if the tree has more than 150 leaves
-            this.labelNodesWithSNPContent();
-            if (Object.keys(this.props.tree.get_leaves()).length > 150) {
-                var filterNodes = this.props.filterNodesBySNPContent(5);
-                document.body.style.cursor = "wait"
-                setTimeout(() => {
-                    this.collapseMultipleNodes(filterNodes)
-                    document.body.style.cursor = "default";
-                });
-            }
+            // this.labelNodesWithSNPContent();
+            // if (Object.keys(this.props.tree.get_leaves()).length > 150) {
+            //     var filterNodes = this.props.filterNodesBySNPContent(5);
+            //     document.body.style.cursor = "wait"
+            //     setTimeout(() => {
+            //         this.collapseMultipleNodes(filterNodes)
+            //         document.body.style.cursor = "default";
+            //     });
+            // }
 
-            return
+            // return
         }
         if (this.props.selectedLeaves.length !== 0 && this.props.selectedLeaves.length !== 1) {
             this.collapse_lca(this.props.selectedLeaves);

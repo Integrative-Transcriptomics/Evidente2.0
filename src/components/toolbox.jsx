@@ -1,29 +1,48 @@
-import React, { Component } from "react";
+import React from "react";
 import HeaderButtons from "./header-buttons";
 import NodeInformation from "./nodeinfo";
 import Legend from "./legend";
 import Tools from "./tools";
 import { clamp, last, round, toPairs } from "lodash";
 import * as d3 from "d3";
+import { Button } from "@material-ui/core";
+import { ExpandLess, ExpandMore } from "@material-ui/icons";
+
 
 /**
  * Tools sidebar component
  * Calls Legend, NodeInformation and Tools
  *
  */
-class Toolbox extends Component {
-    state = {};
 
-    calculateTextColor = (fill => {
+const Toolbox = (props) => {
+    const [open, setOpen] = React.useState(true);
+    const handleClick = (event) => {
+        setOpen(!open);
+    };
+    /**
+   * Transforms the metadata from Object of key->values to array of objects
+   *
+   * @param {Object} metadata Object containng the metadata names as keys, content as value.
+   */
+    const metadataToRows = (metadata) =>
+        toPairs(metadata)
+            .filter((d) => d[1].type.toLowerCase() !== "type")
+            .map((d) => ({
+                name: d[0],
+                colorScale: d[1].colorScale,
+                extent: d[1].extent,
+                type: d[1].type,
+            }));
+    const calculateTextColor = (fill) => {
         const aRgbHex = fill.slice(1).match(/.{1,2}/g);
         if (parseInt(aRgbHex[0], 16) * 0.299 + parseInt(aRgbHex[1], 16) * 0.587 + parseInt(aRgbHex[2], 16) * 0.114 > 186) {
             return ("#000000")
         } else {
             return ("#ffffff")
         }
-    })
 
-
+    }
 
     /**
      * Creates the legend within the given container.
@@ -34,7 +53,7 @@ class Toolbox extends Component {
      * @param {Object} rowOfData, defines the data
      * @param {Boolean} isStatic, defines if the output created is done for the tool or for the exporting object
      */
-    addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
+    const addLegend = (container, cellWidth, { name, colorScale, extent, type }, isStatic = false) => {
         let svg = container.append("g").attr("id", `g-legend-${name.replace(/ /g, "-")}`);
         let div = d3.select("#tooltip");
         let elementHeight = 15;
@@ -48,7 +67,7 @@ class Toolbox extends Component {
                     x: posX,
                     y: posY,
                 })
-                .attr("fill", this.calculateTextColor(background))
+                .attr("fill", calculateTextColor(background))
                 .classed("noselect", true)
                 .text(text);
         };
@@ -112,7 +131,7 @@ class Toolbox extends Component {
                     addMouseOver(textLeft, minExtent);
                     addMouseOver(textRight, maxExtent);
                 }
-                if (isStatic) {
+                else {
 
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
                         height: elementHeight * 2,
@@ -121,9 +140,11 @@ class Toolbox extends Component {
                 break;
 
             case "snp":
-                let cladeSpecificity = ["+", "—"];
-                let specificityLabels = ["sup.", "non-sup."];
-                let [posSpecificity, negSpecificity] = cladeSpecificity;
+
+                // Define the data for the SNP legend
+
+                let cladeSpecificity = ["mono", "para", "poly"];
+                let specificityLabels = ["sup.", "para.", "non-sup."];
                 let marginLeft = 40;
 
                 const createScale = (extent, maxRange) => {
@@ -139,9 +160,9 @@ class Toolbox extends Component {
                 };
 
                 let xScale = createScale(extent, cellWidth - marginLeft);
-                let yScale = createScale(cladeSpecificity, 30);
+                let yScale = createScale(cladeSpecificity, 45);
                 let xAxis = createAxis(xScale, "top");
-                let yAxis = createAxis(createScale(specificityLabels, 30), "left");
+                let yAxis = createAxis(createScale(specificityLabels, 45), "left");
 
                 const renderAxis = (classType, axis, transform = "") => {
                     return svg
@@ -162,21 +183,28 @@ class Toolbox extends Component {
 
                 let groupAllele = svg.selectAll("rect").data(extent).enter();
 
-                const addRectangle = (posY, fill, isMargin) => {
-                    let isPositiveN = (snp) => !isMargin && snp === "N"
+
+                // Function definition that actively adds a rectangle for each SNP to the legend
+                const addRectangle = (typeSNP) => {
+                    let fill = colorScale
+                    let posY = yScale(typeSNP);
+                    let isPositiveN = (snp) => typeSNP === "mono" && snp === "N"
                     groupAllele
                         .append("svg:rect")
                         .attr("width", legendCubeWidth - 4)
-                        .attr("height", legendCubeHeight - 4)
+                        .attr("height", legendCubeHeight - 6)
                         .attr("y", posY)
                         .attr("x", (d) => xScale(d))
-                        .attr("fill", (d) => !isMargin && d !== "N" ? fill(d) : "white")
+                        .attr("fill", (d) => typeSNP === "mono" ? fill(d) : typeSNP === "poly" ? "black" : "white")
                         .attr("stroke", (d) => isPositiveN(d) ? "white" : fill(d))
                         .attr("id", (d) => isPositiveN(d) ? "SNP-legend-N" : null)
                         .attr("stroke-width", 2);
                 };
-                addRectangle(yScale(posSpecificity), colorScale, false); // adds Positive SNPs
-                addRectangle(yScale(negSpecificity), colorScale, true); // adds Negative SNPs
+
+                for (let snp of cladeSpecificity) {
+                    addRectangle(snp);
+                }
+
                 if (svg.select("#SNP-legend-N").node()) {
                     let textForSupportingN = svg.insert("text", "#SNP-legend-N")
                         .attr("x", parseInt(svg.select("#SNP-legend-N").attr("x")) + (legendCubeWidth / 2 - 1))
@@ -194,13 +222,12 @@ class Toolbox extends Component {
 
                 }
 
-                svg.attr("transform", `translate(${marginLeft}, 12)`);
                 if (isStatic) {
-
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
-                        height: elementHeight * 3,
+                        height: elementHeight * 4,
                     });
                 }
+                svg.attr("transform", `translate(${marginLeft}, 12)`);
                 break;
 
             default:
@@ -228,14 +255,10 @@ class Toolbox extends Component {
                 let positionX, positionY;
                 if (isStatic) {
                     let temp = textWidth.map(ceiledCumulativeSum);
-                    console.log(temp)
                     positionX = [0, ...temp.map((d) => d[0])];
                     positionY = [0, ...temp.map((d) => d[1] * elementHeight)];
-                    console.log(positionX, positionY);
-                    console.log(Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight))
                     d3.select(`#testing-output-${name.replace(/[^a-zA-Z0-9_-]/g, "_")}`).attr({
                         height: Math.max(positionY.slice(-1)[0] + elementHeight, elementHeight),
-                        //TODO: here adapt the height
                     });
                 }
 
@@ -244,11 +267,11 @@ class Toolbox extends Component {
                         ? {
                             x: (d, i) => positionX[i] + textWidth[i] * 0.5,
                             y: (d, i) => positionY[i] + 12,
-                            fill: (d) => this.calculateTextColor(colorScale(d)),
+                            fill: (d) => calculateTextColor(colorScale(d)),
                         }
                         : {
                             x: (d, i) => positions[i] + textWidth[i] * 0.5,
-                            fill: (d) => this.calculateTextColor(colorScale(d)),
+                            fill: (d) => calculateTextColor(colorScale(d)),
                         }
                 );
 
@@ -283,77 +306,67 @@ class Toolbox extends Component {
                 break;
         }
     };
-
-    /**
-     * Transforms the metadata from Object of key->values to array of objects
-     *
-     * @param {Object} metadata Object containng the metadata names as keys, content as value.
-     */
-    metadataToRows = (metadata) =>
-        toPairs(metadata)
-            .filter((d) => d[1].type.toLowerCase() !== "type")
-            .map((d) => ({
-                name: d[0],
-                colorScale: d[1].colorScale,
-                extent: d[1].extent,
-                type: d[1].type,
-            }));
-
-    render() {
-        let modifiedMetadata = this.metadataToRows(this.props.availableMDs);
-        return (
-            <div id='toolbox' className='rchild'>
-                <HeaderButtons
-                    resetApp={this.props.resetApp}
-                    resetZoom={this.props.resetZoom} />
-                <Legend
-                    addLegend={this.addLegend}
-                    orderChanged={this.props.orderChanged}
-                    visSNPs={this.props.visSNPs}
-                    visMd={this.props.visMd}
-                    availableMDs={modifiedMetadata}
-                    onChange={this.props.onColorChange}
-                    onChangeOrder={this.props.onChangeOrder}
-                />
-                <NodeInformation
-                    SNPTable={this.props.SNPTable}
-                    onSNPaddition={this.props.onSNPaddition}
-                    onMultipleSNPaddition={this.props.onMultipleSNPaddition}
-                >
-                    Clade SNPs
-                </NodeInformation>
-                <Tools
-                    handleLoadingToggle={this.props.handleLoadingToggle}
-                    availableMDs={this.props.availableMDs}
-                    availableSNPs={this.props.availableSNPs}
-                    loadFiles={this.props.loadFiles}
-                    onStatisticsTreeRequest={this.props.onStatisticsTreeRequest}
-                    showLatestResults={this.props.showLatestResults}
-                    showLatestResultsTree={this.props.showLatestResultsTree}
-                    onMDChange={this.props.onMDChange}
-                    onSNPChange={this.props.onSNPChange}
-                    visMd={this.props.visMd}
-                    visSNPs={this.props.visSNPs}
-                    orderChanged={this.props.orderChanged}
-                    onColorChange={this.props.onColorChange}
-                    onOpenFilter={this.props.onOpenFilter}
-                    onOpenFilterSNPs = {this.props.onOpenFilterSNPs}
-                    onRemoveFilterSNPs = {this.props.onRemoveFilterSNPs}
-                    createdFilters={this.props.createdFilters}
-                    remainingNodes={this.props.remainingNodes}
-                    nameOfFilters={this.props.nameOfFilters}
-                    onDeleteFilter={this.props.onDeleteFilter}
-                    onDeleteAllFilters={this.props.onDeleteAllFilters}
-                    onApplyAllFilters={this.props.onApplyAllFilters}
-                    addLegend={this.addLegend}
-                    metadataToRows={this.metadataToRows}
-                    handleExampleLoad={this.props.handleExampleLoad}
-                >
-                    Tools
-                </Tools>
-            </div >
-        );
+    const renderTools = (props, statusOpen) => {
+        return (<React.Fragment>
+            <HeaderButtons
+                resetApp={props.resetApp}
+                resetZoom={props.resetZoom} />
+            <Legend
+                toolsShowing={statusOpen}
+                addLegend={addLegend}
+                orderChanged={props.orderChanged}
+                visSNPs={props.visSNPs}
+                visMd={props.visMd}
+                availableMDs={metadataToRows(props.availableMDs)}
+                onChange={props.onColorChange}
+                onChangeOrder={props.onChangeOrder}
+            />
+            <NodeInformation
+                SNPTable={props.SNPTable}
+                onSNPaddition={props.onSNPaddition}
+                onMultipleSNPaddition={props.onMultipleSNPaddition}
+            >
+                Clade SNPs
+            </NodeInformation>
+            <Tools
+                handleLoadingToggle={props.handleLoadingToggle}
+                availableMDs={props.availableMDs}
+                availableSNPs={props.availableSNPs}
+                loadFiles={props.loadFiles}
+                onStatisticsTreeRequest={props.onStatisticsTreeRequest}
+                showLatestResults={props.showLatestResults}
+                showLatestResultsTree={props.showLatestResultsTree}
+                onMDChange={props.onMDChange}
+                onSNPChange={props.onSNPChange}
+                visMd={props.visMd}
+                visSNPs={props.visSNPs}
+                orderChanged={props.orderChanged}
+                onColorChange={props.onColorChange}
+                onOpenFilter={props.onOpenFilter}
+                createdFilters={props.createdFilters}
+                remainingNodes={props.remainingNodes}
+                nameOfFilters={props.nameOfFilters}
+                onDeleteFilter={props.onDeleteFilter}
+                onDeleteAllFilters={props.onDeleteAllFilters}
+                onApplyAllFilters={props.onApplyAllFilters}
+                addLegend={addLegend}
+                metadataToRows={metadataToRows}
+                handleExampleLoad={props.handleExampleLoad}
+            >
+                Tools
+            </Tools>
+        </React.Fragment>)
     }
+
+    return (
+        <div id='toolbox' className={open ? 'rchild' : "rchild-closed"} >
+            <Button onClick={handleClick}>
+                {open ? <ExpandLess /> : <ExpandMore />}
+            </Button>
+            {open ? renderTools(props, open) : null}
+        </div >
+    )
+
 }
 
 export default Toolbox;

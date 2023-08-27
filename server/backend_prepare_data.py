@@ -92,24 +92,31 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
     taxainfo_mod = []
     support = []
     not_support = []
+    paraphyletic = []
 
     with tempfile.TemporaryDirectory() as tmpdir:
         call_classico(tmpdir, nwk, snp)
         # create nmmber <-> label mappings
         # noinspection SpellCheckingInspection,SpellCheckingInspection
+        snp_to_leaves = from_snp_to_leaves(snp)
         create_number_label_mapping(
             ids, os.path.join(tmpdir, "IDdistribution.txt"))
         # fill support
         # noinspection SpellCheckingInspection
         fill_support(support, os.path.join(
-            tmpdir, "supportSplitKeys.txt"), ids)
+            tmpdir, "mono.txt"), ids, snp_to_leaves)
+
+        fill_paraphyletic(paraphyletic, os.path.join(
+            tmpdir, "para.txt"), ids, snp_to_leaves)
+
         # fill 'notSupport'
         # noinspection SpellCheckingInspection
         fill_not_support(not_support,
-                         os.path.join(tmpdir, "notSupportSplitKeys.txt"), ids)
+                         os.path.join(tmpdir, "poly.txt"), ids, snp_to_leaves)
 
     # get available SNPS and SNP per column
-    available_snps, snp_per_column = get_snps(support, not_support)
+    available_snps, snp_per_column = get_snps(
+        support, not_support, paraphyletic)
     # fill metaDataInfo and taxainfo_mod:
     if has_taxainfo:
         get_meta_data(metadatainfo, taxainfo, taxainfo_sep, taxainfo_mod)
@@ -120,7 +127,7 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
     # propagate SNPs from Classico assignement down to leaves
     # needed for statistical computations
     node_to_snps, tree_size, num_snps, all_snps = propagate_snps_to_leaves(
-        support, not_support, ids["numToLabel"], nwk.decode('UTF-8'))
+        support, not_support, paraphyletic, ids["numToLabel"], nwk.decode('UTF-8'))
 
     # prepare data format for response to frontend:
     data = dict()
@@ -129,6 +136,7 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
     data["newick"] = re.sub("[^a-zA-Z0-9.:,()_-]", "_", nwk.decode('UTF-8'))
     data["support"] = support
     data["notSupport"] = not_support
+    data["paraphyletic"] = paraphyletic
     data["snpPerColumn"] = snp_per_column
     data["availableSNPs"] = available_snps
     data["taxaInfo"] = taxainfo_mod
@@ -136,13 +144,49 @@ def prepare_data(nwk, snp, taxainfo, taxainfo_sep, has_taxainfo, return_dict=Fal
     data["tree_size"] = tree_size
     data["num_snps"] = num_snps
     data["all_snps"] = all_snps
-
     if return_dict:
         return data, available_snps
 
     # convert data to json and send back to frontend
     # print(data)
     return jsonify(data)
+
+
+def from_snp_to_leaves(snp_path) -> dict:
+    """Reads a SNP table an creates a dictionary mapping the SNPs to the leaves where each snp is contained. 
+
+    Args:
+        snp_path (str): SNP table 
+    """
+    snp_to_leaves = dict()
+    with tempfile.NamedTemporaryFile() as fp_snp:
+        fp_snp.write(snp_path)
+        fp_snp.flush()
+        header = []
+        for line in open(fp_snp.name):
+            # Save the first line as header
+            if line.startswith("Position"):
+                header = line.strip().split("\t")
+                continue
+            # Split the line into the SNP
+            line = line.strip().split("\t")
+            position = line[0]
+            # Remove the first two columns and filter out references
+            snps_to_consider = filter(lambda x: x != ".", line[2:])
+            # snps_to_consider = line[2:].filter(lambda x: x != ".")
+            unique_snps = set(snps_to_consider)
+            snp_to_leaves.setdefault(
+                position, dict())
+            for snp in unique_snps:
+
+                # get all indeces of the snp in line
+                indeces = [i for i, x in enumerate(line) if x == snp]
+                # get the corresponding samples
+                samples = [header[i] for i in indeces]
+                # add the samples to the snp
+                snp_to_leaves[position].setdefault(snp, samples)
+
+    return snp_to_leaves
 
 
 def call_classico(tmpdir, nwk, snp):
@@ -162,8 +206,9 @@ def call_classico(tmpdir, nwk, snp):
         fp_nwk.flush()
         fp_snp.flush()
         env = dict(os.environ)
-        subprocess.run(["java", "-jar", "-Xms4G", ScriptDir + "/classico.jar", fp_snp.name,
-                        fp_nwk.name, tmpdir], env=env)
+        print(tmpdir)
+        subprocess.run(["java", "-jar", ScriptDir + "/classicoV2.jar", "--snptable", fp_snp.name,
+                        "--nwk", fp_nwk.name, "--out", tmpdir], env=env)
 
 
 def create_number_label_mapping(ids, filename):
@@ -181,41 +226,62 @@ def create_number_label_mapping(ids, filename):
     ids["labToNum"] = label_to_num
 
 
-def fill_support(support, filename, ids):
+def fill_support(support, filename, ids, snp_to_leaves):
     """Uses CLASSICO output to fill support part of result buffer
 
     :param support: result-storage as :type list
     :param filename: location of CLASSICO result - support as :type str
-    :param ids: number-label-mapping as :type dict"""
+    :param ids: number-label-mapping as :type dict
+    :param snp_to_leaves: mapping of snps to leaves as :type dict
+
+    """
 
     with open(filename) as tsv:
         for line in csv.reader(tsv, delimiter="\t"):
             # handle root case (no -> in line)
-            if(len(line[0].split(" ")) > 1):
+            if (len(line[0].split(" ")) > 1):
                 node = ids["numToLabel"][line[0].split(" ")[1]]
             else:
                 node = ids["numToLabel"][line[0].split("->")[1]]
             for pos, allele in re.findall(r"([0-9]+):\[(.)\]", line[2]):
-                support.append({"node": node, "pos": pos, "allele": allele})
+                support.append(
+                    {"node": node, "pos": pos, "allele": allele, "leaves": snp_to_leaves[pos][allele]})
 
 
-def fill_not_support(not_support, filename, ids):
+def fill_not_support(not_support, filename, ids, snp_to_leaves):
     """Uses CLASSICO output to fill notSupport part of result buffer
 
     :param not_support: result-storage as :type list
     :param filename: location of CLASSICO result - notsupport as :type str
-    :param ids: number-label-mapping as :type dict"""
+    :param ids: number-label-mapping as :type dict
+    :param snp_to_leaves: mapping of snps to leaves as :type dict"""
 
     with open(filename) as tsv:
         for line in csv.reader(tsv, delimiter="\t"):
             node = ids["numToLabel"][line[0].split("->")[1]]
             for pos, allele in re.findall(r"([0-9]+):\[(.)\]", line[2]):
                 not_support.append(
-                    {"node": node, "pos": pos, "allele": allele})
+                    {"node": node, "pos": pos, "allele": allele, "leaves": snp_to_leaves[pos][allele]})
+
+
+def fill_paraphyletic(paraphyletic, filename, ids, snp_to_leaves):
+    """Uses new Version of CLASSICO output to fill Paraphyltic part of result buffer
+
+    :param paraphyletic: result-storage as :type list
+    :param filename: location of CLASSICO result - paraphyletic as :type str
+    :param ids: number-label-mapping as :type dict
+    :param snp_to_leaves: mapping of snps to leaves as :type dict"""
+
+    with open(filename) as tsv:
+        for line in csv.reader(tsv, delimiter="\t"):
+            node = ids["numToLabel"][line[0].split("->")[1]]
+            for pos, allele in re.findall(r"([0-9]+):\[(.)\]", line[2]):
+                paraphyletic.append(
+                    {"node": node, "pos": pos, "allele": allele, "leaves": snp_to_leaves[pos][allele]})
 
 
 # noinspection SpellCheckingInspection
-def get_snps(support, not_support) -> Tuple[list, dict]:
+def get_snps(support, not_support, paraphyletic) -> Tuple[list, dict]:
     """Computes availableSNPs and snpPerColumn of result buffer.
 
     Uses support and notSupport of result buffer
@@ -234,6 +300,11 @@ def get_snps(support, not_support) -> Tuple[list, dict]:
     for snp in not_support:
         available_snps.add(snp["pos"])
         snp_per_column.setdefault(snp["pos"], set()).add(snp["allele"])
+    for snp in paraphyletic:
+        available_snps.add(snp["pos"])
+        snp_per_column.setdefault(snp["pos"], set()).add(snp["allele"])
+    # TODO: continue adapting here
+
     # convert sets to list for jsonifying data in prepare_data()
     snp_per_column = {k: list(v) for k, v in snp_per_column.items()}
     available_snps = list(available_snps)
@@ -362,8 +433,8 @@ def parse_meta_data(taxainfo_decode, taxainfo_sep, taxainfo_mod, columns,
             row += 1
 
 
-def propagate_snps_to_leaves(support, not_support, ids, nwk):
-    """Propagates SNPs from last common ancestor down tto all descendants.
+def propagate_snps_to_leaves(support, not_support, paraphyletic, ids, nwk):
+    """Propagates SNPs from last common ancestor down to all descendants.
 
     :param support: supportive snps as :type dict
     :param not_support: not-supportive snps as :type dict
@@ -372,7 +443,7 @@ def propagate_snps_to_leaves(support, not_support, ids, nwk):
     :return: node_to_snp: node-snp-mapping for all nodes in nwk as :type dict
     """
     tree = Tree()
-    snp = Snps(support, not_support, ids)
+    snp = Snps(support, not_support, paraphyletic, ids)
     tree.parse_nwk_string(nwk)
     tree.traverse_tree(snp)
     return snp.get_node_to_snps(), snp.get_number_of_nodes(), snp.get_num_snps(), snp.get_all_snps()

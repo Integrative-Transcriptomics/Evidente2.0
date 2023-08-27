@@ -1,9 +1,9 @@
-import React, {createRef, memo, useCallback, useEffect, useMemo, useState} from "react";
+import React, { createRef, memo, useCallback, useEffect, useMemo, useState } from "react";
 import * as _ from "lodash";
 import * as d3 from "d3";
 import * as boxplot from "d3-boxplot";
 import Heatmap from "./heatmap";
-import {Alert} from "react-bootstrap";
+import { Alert } from "react-bootstrap";
 
 const HeatmapView = memo((props) => {
     const [height, setheight] = useState(400)
@@ -21,6 +21,7 @@ const HeatmapView = memo((props) => {
 
 
     }, [container, props.margin])
+
     useEffect(() => {
         if (container.current !== null) {
             handleResize();
@@ -34,26 +35,17 @@ const HeatmapView = memo((props) => {
      * @param {Object} labelToID contains the dictionary that distributes the labels
      * @param {Boolean} notSupport Boolean to know which category is meant
      */
-    const modifySNPs = useCallback((SNPdata, labelToID, notSupport = false) => {
-        let nodes = props.tree.get_nodes();
+    const modifySNPs = useCallback((SNPdata, type = "support") => {
         let mappedSNPs = SNPdata.map((SNP) => {
-            let actualID = labelToID[SNP.node];
-            let actualPos = SNP.pos;
-            let actualAllele = SNP.allele;
-            let node = nodes.find(({tempid}) => {
-                return String(tempid) === actualID;
-            });
-
-            return props.tree
-                .descendants(node)
-                .filter(props.tree.is_leafnode)
-                .map(({name}) => ({
-                    Information: name,
-                    [actualPos]: {allele: actualAllele, notsupport: notSupport},
+            let leavesWithSNP = SNP.leaves;
+            return leavesWithSNP
+                .map((leafWithSNP) => ({
+                    Information: leafWithSNP, // This the name of leaf that contains the SNP
+                    [SNP.pos]: { allele: SNP.allele, type: type },
                 }));
         });
         return _.flatten(mappedSNPs);
-    }, [props.tree]);
+    }, []);
 
     /**
      *
@@ -64,18 +56,20 @@ const HeatmapView = memo((props) => {
      */
     const preprossesedSNPs = useMemo(() => {
         // Include only those that are visualized
-        let reducedSupportSNPs = props.snpdata.support.filter(({pos}) => props.visSNPs.includes(pos));
-        let reducedNotSupportSNPs = props.snpdata.notsupport.filter(({pos}) => props.visSNPs.includes(pos));
+        let reducedSupportSNPs = props.snpdata.support.filter(({ pos }) => props.visSNPs.includes(pos));
+        let reducedNotSupportSNPs = props.snpdata.notsupport.filter(({ pos }) => props.visSNPs.includes(pos));
+        let reducedparaphyleticSNPs = props.snpdata.paraphyletic.filter(({ pos }) => props.visSNPs.includes(pos));
         // Get the correct labelling
-        let modifiedSNPData = modifySNPs(reducedSupportSNPs, props.ids.labToNum);
-        modifiedSNPData = modifiedSNPData.concat(modifySNPs(reducedNotSupportSNPs, props.ids.labToNum, true));
-        // Unify to one entry per ndoe
+        let modifiedSNPData = modifySNPs(reducedSupportSNPs);
+        modifiedSNPData = modifiedSNPData.concat(modifySNPs(reducedNotSupportSNPs, "notsupport"));
+        modifiedSNPData = modifiedSNPData.concat(modifySNPs(reducedparaphyleticSNPs, "paraphyletic"));
+        // Unify to one entry per node
         return modifiedSNPData.reduce((acc, cur) => {
             let obj = acc.find((d) => d.Information === cur.Information) || {};
             let filteredOutput = acc.filter((d) => d.Information !== cur.Information);
-            return [...filteredOutput, {...obj, ...cur}];
+            return [...filteredOutput, { ...obj, ...cur }];
         }, []);
-    }, [modifySNPs, props.ids.labToNum, props.snpdata.notsupport, props.snpdata.support, props.visSNPs])
+    }, [modifySNPs, props.snpdata.notsupport, props.snpdata.support, props.snpdata.paraphyletic, props.visSNPs])
 
     /**
      *
@@ -84,10 +78,22 @@ const HeatmapView = memo((props) => {
      * @param mdinfo
      * @param {*} actualClade Object for the actual clade
      */
-    const clusterSNPs = (v, k, mdinfo, actualClade) =>
-        k === "Information"
-            ? actualClade.showname
-            : _.countBy(v.map((d) => `${d.allele}${d.notsupport ? "-" : "+"}`));
+    const clusterSNPs = (v, k, mdinfo, actualClade) => {
+        if (k === "Information") {
+            return actualClade.showname;
+        }
+        else {
+            // Summarize the number of SNPs by allele
+            // Each allele can only be classified to one class
+            let count_alleles = _.countBy(v, (d) => d.allele)
+            // Remove duplicates
+            let set_alleles = _.uniqBy(v, (d) => d.allele)
+            // Add the count to the object
+            set_alleles.map((d) => d.count = count_alleles[d.allele])
+            return set_alleles;
+        }
+    }
+
     /**
      *
      * @param {*} v Value -- Data for the group to aggregate
@@ -99,8 +105,8 @@ const HeatmapView = memo((props) => {
         mdinfo[k].type.toLowerCase() === "numerical"
             ? boxplot.boxplotStats(v)
             : ["categorical", "ordinal"].includes(mdinfo[k].type.toLowerCase())
-            ? _.countBy(v)
-            : actualClade.showname;
+                ? _.countBy(v)
+                : actualClade.showname;
     /**
      *
      * Helper function to aggregate the inforamtion of a clade
@@ -119,12 +125,12 @@ const HeatmapView = memo((props) => {
             (a, b) => b.cladeLeaves.length - a.cladeLeaves.length
         );
         actualClades.forEach((actualClade) => {
-            let leavesNames = actualClade.cladeLeaves.map(({name}) => name);
+            let leavesNames = actualClade.cladeLeaves.map(({ name }) => name);
             if (leavesNames.every((n) => hiddenLeaves.includes(n))) {
                 return; // this cluster is already included in another one
             }
             hiddenLeaves = hiddenLeaves.concat(leavesNames);
-            let metadataToAggregate = data.filter(({Information}) => leavesNames.includes(Information));
+            let metadataToAggregate = data.filter(({ Information }) => leavesNames.includes(Information));
             let jointMetadataInformation = _.mergeWith({}, ...metadataToAggregate, (a = [], b) =>
                 a.concat(b)
             );
@@ -138,6 +144,8 @@ const HeatmapView = memo((props) => {
 
         return [...allAggregatedData, ...data];
     }, [props.collapsedClades])
+
+
     /**
      * Test if the given node is visible
      *
@@ -162,7 +170,7 @@ const HeatmapView = memo((props) => {
                 clusterSNPs
             );
         }
-        snpData = snpData.filter(({Information}) => shownNodes.includes(Information))
+        snpData = snpData.filter(({ Information }) => shownNodes.includes(Information))
         return snpData;
     }, [clusterData, preprossesedSNPs, props.collapsedClades.length, shownNodes]);
     const filteredTaxaData = useMemo(() => {
@@ -174,36 +182,36 @@ const HeatmapView = memo((props) => {
                 props.mdinfo
             );
         }
-        taxaData = taxaData.filter(({Information}) => shownNodes.includes(Information))
+        taxaData = taxaData.filter(({ Information }) => shownNodes.includes(Information))
         return taxaData;
     }, [clusterData, props.collapsedClades.length, props.mdinfo, props.taxadata, shownNodes]);
     const yScale = d3.scale
         .ordinal()
         .domain(shownNodes)
-        .rangeBands([0, (props.treeSize - props.treeSize*0.05 - props.margin.bottom)]);
-        
+        .rangeBands([0, (props.treeSize - props.treeSize * 0.05 - props.margin.bottom)]);
+
     let snpWidth = 0
     let mdWidth = 0;
     let linesWidth = 50;
     let showAlert = false;
-        if (props.visualizedMD.length > 0) {
-            if (props.visSNPs.length > 0) {
-                snpWidth = (width+linesWidth)*(2/3);
-                mdWidth = (width-linesWidth)/3;
-            } else {
-                mdWidth = width;
-            }
+    if (props.visualizedMD.length > 0) {
+        if (props.visSNPs.length > 0) {
+            snpWidth = (width + linesWidth) * (2 / 3);
+            mdWidth = (width - linesWidth) / 3;
         } else {
-            if (props.visSNPs.length > 0) {
-                snpWidth = width;
-            } else {
-                showAlert = true;
-            }
+            mdWidth = width;
         }
-    return <div ref={container} style={{height: "100%", display: "flex"}}>
+    } else {
+        if (props.visSNPs.length > 0) {
+            snpWidth = width;
+        } else {
+            showAlert = true;
+        }
+    }
+    return <div ref={container} style={{ width: "auto", height: "100%", display: "flex" }}>
         {props.visSNPs.length > 0 ? <Heatmap
             dragActive={props.dragActive}
-            height={(props.treeSize - props.treeSize*0.05 - props.margin.bottom)}
+            height={(props.treeSize - props.treeSize * 0.05 - props.margin.bottom)}
             maxWidth={snpWidth}
             data={filteredSNPData}
             yScale={yScale}
@@ -212,7 +220,7 @@ const HeatmapView = memo((props) => {
             mdinfo={props.mdinfo}
             divID={"heatmap_viz"}
             containerID={"heatmap-container"}
-            margin={{top: props.treeSize*0.05, right: linesWidth, bottom: 0, left: 0}}
+            margin={{ top: props.treeSize * 0.05, right: linesWidth, bottom: 0, left: 0 }}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -223,11 +231,11 @@ const HeatmapView = memo((props) => {
             isSNP={true}
             appendLines={props.visualizedMD.length > 0}
             treeSize={props.treeSize}
-            treeMargin ={props.treeMargin}
+            treeMargin={props.treeMargin}
         /> : null}
         {props.visualizedMD.length > 0 ? <Heatmap
             dragActive={props.dragActive}
-            height={(props.treeSize - props.treeSize*0.05   - props.margin.bottom)}
+            height={(props.treeSize - props.treeSize * 0.05 - props.margin.bottom)}
             maxWidth={mdWidth}
             data={filteredTaxaData}
             yScale={yScale}
@@ -236,7 +244,7 @@ const HeatmapView = memo((props) => {
             mdinfo={props.mdinfo}
             divID={"md_viz"}
             containerID={"md-container"}
-            margin={{top: props.treeSize*0.05, right: linesWidth, bottom: 0, left: 0}}
+            margin={{ top: props.treeSize * 0.05, right: linesWidth, bottom: 0, left: 0 }}
             nodes={props.nodes}
             hiddenNodes={props.hiddenNodes}
             collapsedClades={props.collapsedClades}
@@ -246,15 +254,17 @@ const HeatmapView = memo((props) => {
             createdFilters={props.createdFilters}
             appendLines={false}
             treeSize={props.treeSize}
-            treeMargin ={props.treeMargin}
+            treeMargin={props.treeMargin}
         /> : null}
         {showAlert ? <Alert variant={"secondary"} style={{
             height: "100%",
+            width: "100%",
             margin: "10px",
             display: "flex",
         }}>
             <div style={{
                 height: "100%",
+                width: "100%",
                 display: "flex", justifyContent: "center",
                 alignItems: "center"
             }}>
