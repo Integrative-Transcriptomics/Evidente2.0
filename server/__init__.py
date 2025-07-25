@@ -238,4 +238,4 @@ def index():
 if __name__ == "__main__":
     mp.set_start_method('spawn')
 
-    app.run(debug=True, port=int("3001"))
+    app.run(port=int("3001"))
