@@ -19,6 +19,8 @@ from server.backend_nwk_parser import Tree
 from server.backend_tree_enrichment import FindClades
 from server.serialize_sets import serialize_sets
 
+import urllib.request
+
 # class NoDaemonProcess(multiprocessing.Process):
 #     @property
 #     def daemon(self):
@@ -179,7 +181,13 @@ def load_go_basic():
     :return: go: parsed obo-file
     """
 
-    go_obo_url = 'http://purl.obolibrary.org/obo/go/go-basic.obo'
+    url = "https://current.geneontology.org/ontology/go-basic.obo"
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
+
+    # go_obo_url = 'https://current.geneontology.org/ontology/go-basic.obo'
     data_folder = os.getcwd() + '/data'
     # Check if we have the ./data directory already
     if (not os.path.isdir(data_folder)):
@@ -188,16 +196,18 @@ def load_go_basic():
         except OSError as e:
             if (e.errno != 17):
                 raise e
+    go_obo = data_folder + '/go-basic.obo' 
     # Check if we have the .obo file already
     if (not os.path.isfile(data_folder + '/go-basic.obo')):
-        go_obo = wget.download(go_obo_url, data_folder + '/go-basic.obo')
+        with urllib.request.urlopen(req) as response, open(data_folder + '/go-basic.obo', "wb") as out:
+            out.write(response.read())
     else:
         time_since_last_modified = time.time() - os.path.getmtime(data_folder+'/go-basic.obo')
         if time_since_last_modified > 604800:
             os.remove(data_folder + '/go-basic.obo')
-            go_obo = wget.download(go_obo_url, data_folder + '/go-basic.obo')
-        else:
-            go_obo = data_folder + '/go-basic.obo'
+            with urllib.request.urlopen(req) as response, open(data_folder + '/go-basic.obo', "wb") as out:
+                out.write(response.read())
+            
     # parse hierarchy
     go = obo_parser.GODag(go_obo)
     return go
